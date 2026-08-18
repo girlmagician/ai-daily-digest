@@ -29,6 +29,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 CLI = shutil.which("claude") or shutil.which("claude.cmd") or shutil.which("claude.CMD")
 
@@ -62,7 +63,39 @@ def user_tail(contract: str) -> str:
 
 
 class LLMError(RuntimeError):
-    pass
+    """輸出不合格——重試同一個請求有機會改善。"""
+
+
+class LLMTransient(LLMError):
+    """伺服器壅塞、限流、逾時——等一下再送同樣的請求就好。
+
+    實測過的情形：GitHub Actions 在 UTC 00:00 觸發（整點是最熱門的排程時間），
+    策展呼叫收到 API Error 529 Overloaded。這種錯誤不重試就等於當天沒有日報。
+    """
+
+
+class LLMAuthError(LLMError):
+    """認證或權限問題——重試沒有意義，要人去處理。"""
+
+
+# 從 CLI 的錯誤字串判斷該不該重試。寧可把不確定的當成暫時性（多等一下），
+# 也不要把暫時性誤判為永久性（整天空白）。
+_TRANSIENT = re.compile(
+    r"\b(429|500|502|503|504|529)\b"
+    r"|overloaded|rate.?limit|too many requests"
+    r"|temporarily|try again|timeout|timed out"
+    r"|connection (reset|refused|error)|econnreset|socket hang up",
+    re.IGNORECASE,
+)
+_AUTH = re.compile(
+    r"not logged in|invalid api key|authentication|unauthorized"
+    r"|\b401\b|\b403\b|please run /login",
+    re.IGNORECASE,
+)
+
+# 遇到暫時性錯誤的等待秒數。總計約 7.5 分鐘後放棄；
+# 工作流程的 timeout 要留得比這個寬裕
+BACKOFF = (10, 30, 60, 120, 240)
 
 
 def available() -> bool:
@@ -136,12 +169,13 @@ def _run(system: str, user: str, model: str, timeout: int) -> dict:
             timeout=timeout,
         )
     except subprocess.TimeoutExpired:
-        raise LLMError(f"CLI 逾時（{timeout}s）")
+        raise LLMTransient(f"CLI 逾時（{timeout}s）")
 
     raw = proc.stdout.decode("utf-8", "replace").strip()
     err = proc.stderr.decode("utf-8", "replace").strip()
     if not raw:
-        raise LLMError(f"CLI 無輸出（returncode={proc.returncode}）：{err[:300]}")
+        # 沒有任何輸出通常是行程被殺或網路斷掉，值得再試
+        raise LLMTransient(f"CLI 無輸出（returncode={proc.returncode}）：{err[:300]}")
 
     try:
         env = json.loads(raw)
@@ -150,7 +184,12 @@ def _run(system: str, user: str, model: str, timeout: int) -> dict:
 
     # 注意：is_error 為 true 時 subtype 仍可能是 "success"，只能看 is_error
     if env.get("is_error"):
-        raise LLMError(f"CLI 回報錯誤：{env.get('result', '')[:300]}")
+        detail = str(env.get("result") or "")[:300]
+        if _AUTH.search(detail):
+            raise LLMAuthError(detail)
+        if _TRANSIENT.search(detail):
+            raise LLMTransient(detail)
+        raise LLMError(f"CLI 回報錯誤：{detail}")
     if env.get("stop_reason") == "max_tokens":
         raise LLMError("輸出被長度上限截斷，請縮小批次")
 
@@ -182,18 +221,42 @@ def ask_json(
     contract 是輸出結構範例，會貼在使用者訊息末端。
     validate(data) 應在結構不符時拋出 LLMError；錯誤訊息會回饋給下一次嘗試，
     讓模型知道上次哪裡錯了。回傳 {"data":…, "cost":…, "usage":…, "attempts":…}。
+
+    兩種失敗分開計數，因為處理方式完全不同：
+      內容不合格  改寫提示詞、附上錯誤原因後立刻重送（最多 attempts 次）
+      暫時性錯誤  同樣的請求，等一段時間再送（BACKOFF）
+    認證問題直接往上拋——重試只是浪費時間，需要人去換權杖。
     """
     tail = user_tail(contract)
     prompt = user + tail
     last = ""
     cost_total = 0.0
     usage_total = {"input": 0, "output": 0, "cache_read": 0, "cache_write": 0}
+    content_tries = 0
+    waits = 0
 
-    for n in range(1, attempts + 1):
-        res = _run(system, prompt, model, timeout)
+    while True:
+        try:
+            res = _run(system, prompt, model, timeout)
+        except LLMAuthError as e:
+            raise LLMAuthError(
+                f"認證失敗，重試無用：{e}。"
+                f"請重新執行 claude setup-token 並更新 CLAUDE_CODE_OAUTH_TOKEN"
+            ) from e
+        except LLMTransient as e:
+            if waits >= len(BACKOFF):
+                raise LLMTransient(f"暫時性錯誤重試 {waits} 次仍失敗：{e}") from e
+            wait = BACKOFF[waits]
+            waits += 1
+            print(f"  伺服器忙碌（{str(e)[:120]}）；{wait} 秒後重試（第 {waits}/{len(BACKOFF)} 次）")
+            time.sleep(wait)
+            continue
+
         cost_total += res["cost"]
         for k in usage_total:
             usage_total[k] += res["usage"][k]
+
+        content_tries += 1
         try:
             data = extract_json(res["text"])
             if validate:
@@ -202,17 +265,19 @@ def ask_json(
                 "data": data,
                 "cost": cost_total,
                 "usage": usage_total,
-                "attempts": n,
+                "attempts": content_tries,
+                "waits": waits,
             }
+        except (LLMTransient, LLMAuthError):
+            raise
         except LLMError as e:
             last = str(e)
-            print(f"  第 {n} 次輸出不合格：{last[:200]}")
-            if n < attempts:
-                prompt = (
-                    f"{user}\n\n"
-                    f"（上一次你的輸出有問題：{last[:300]}。"
-                    f"請重新輸出完整且合法的 JSON 物件。）"
-                    f"{tail}"
-                )
-
-    raise LLMError(f"連續 {attempts} 次無法取得合法輸出：{last}")
+            print(f"  第 {content_tries} 次輸出不合格：{last[:200]}")
+            if content_tries >= attempts:
+                raise LLMError(f"連續 {attempts} 次無法取得合法輸出：{last}") from e
+            prompt = (
+                f"{user}\n\n"
+                f"（上一次你的輸出有問題：{last[:300]}。"
+                f"請重新輸出完整且合法的 JSON 物件。）"
+                f"{tail}"
+            )

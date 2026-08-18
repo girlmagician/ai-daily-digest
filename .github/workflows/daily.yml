@@ -2,9 +2,11 @@ name: 每日 AI 情報
 
 on:
   schedule:
-    # UTC 00:00 = 台北 08:00。GitHub 的排程常延遲 5～20 分鐘，
-    # 提早半小時跑才能穩定在台北時間 08:30 之前更新完成。
-    - cron: "0 0 * * *"
+    # UTC 23:23 = 台北 07:23。刻意避開整點：
+    #   1. 整點是全球最熱門的 cron 時間，GitHub 的排程佇列會延遲更久
+    #   2. Anthropic 端同樣是尖峰，實測 UTC 00:00 觸發時策展呼叫收到 529 Overloaded
+    # 提早到 07:23 也讓遇到壅塞時有一小時可以重試，仍趕得上 08:30。
+    - cron: "23 23 * * *"
   workflow_dispatch:        # 也可以手動觸發，用來補跑或測試
 
 permissions:
@@ -17,7 +19,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # 放寬到 75 分：遇到 529 時每次呼叫最多會退避等待約 7.5 分鐘，
+    # 七次呼叫全都撞上的話原本的 45 分鐘會被 timeout 砍掉
+    timeout-minutes: 75
 
     steps:
       - uses: actions/checkout@v4

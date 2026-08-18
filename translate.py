@@ -201,17 +201,23 @@ TRANSLATE_SYSTEM = f"""你是專業的科技新聞譯者，把 AI 情報翻譯�
 **術語對照表（請一致使用）：**
 {GLOSSARY}"""
 
-TRANSLATE_CONTRACT = """{
+# 字數限制一定要寫在這裡。實測只寫在系統提示詞裡，模型會從 4000 字的原文
+# 寫出 1500 字的摘要而被退回重譯；契約貼在使用者訊息末端才是模型最服從的位置。
+TRANSLATE_CONTRACT = f"""{{
   "items": [
-    {"id": "輸入的 id，原字串照抄",
-     "title_zh": "標題的繁體中文譯文",
-     "summary_zh": "摘要的繁體中文譯文；原文無摘要時給空字串 \\"\\"",
-     "kind": "只能是「譯」「摘」「僅標題」三者之一"}
+    {{"id": "輸入的 id，原字串照抄",
+     "title_zh": "標題的繁體中文譯文，{TITLE_ASK} 字以內",
+     "summary_zh": "摘要的繁體中文譯文，**{SUMMARY_ASK} 字以內、四到六句**；原文無內文時給空字串 \\"\\"",
+     "kind": "只能是「譯」「摘」「僅標題」三者之一"}}
   ]
-}
+}}
 
 items 的長度必須等於我給你的則數。每個元素只能有 id、title_zh、summary_zh、kind
-這四個欄位，不得加入 url、source、date 等任何其他欄位。"""
+這四個欄位，不得加入 url、source、date 等任何其他欄位。
+
+**送出前逐則數一次 summary_zh 的字數。** 這是摘要不是全文翻譯：
+原文再長都要壓在 {SUMMARY_ASK} 字左右，只留最重要的事實。
+超過 {SUMMARY_MAX} 字會被程式退回，整批重做。"""
 
 
 def _shape_translate(data: dict) -> None:
