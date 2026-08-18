@@ -194,8 +194,13 @@ def _fetch_feed(src: dict) -> tuple[object | None, str, str]:
     return None, src["urls"][0], "；".join(errors[:3])
 
 
-def fetch_source(src: dict, cutoff: datetime) -> dict:
-    """抓一個來源。任何失敗都只記錄，不拋出。"""
+def fetch_source(src: dict, cutoff: datetime, cap: int | None = None) -> dict:
+    """抓一個來源。任何失敗都只記錄，不拋出。
+
+    cap 是單一來源的取用上限，預設值是為 48 小時的時間窗調的。
+    回補歷史時（backfill.py）時間窗有好幾天，沿用同一個上限會讓每個來源
+    只留最新的十二則，較早的日期因此餓死——那種情況要傳入更大的 cap。
+    """
     report = {
         "name": src["name"], "url": src["url"], "lang": src["lang"], "cat": src["cat"],
         "status": "ok", "error": "", "entries": 0, "in_window": 0, "kept": 0,
@@ -259,11 +264,11 @@ def fetch_source(src: dict, cutoff: datetime) -> dict:
         })
 
     # 每個來源設上限，取最新的幾則（arXiv 單日數百篇會淹沒整池）
-    cap = PAPER_SOURCE_CAP if src["cat"] == "paper" else PER_SOURCE_CAP
+    limit = cap or (PAPER_SOURCE_CAP if src["cat"] == "paper" else PER_SOURCE_CAP)
     items.sort(key=lambda i: i["published_utc"], reverse=True)
-    if len(items) > cap:
-        report["capped"] = len(items) - cap
-        items = items[:cap]
+    if len(items) > limit:
+        report["capped"] = len(items) - limit
+        items = items[:limit]
 
     report["kept"] = len(items)
     return {"report": report, "items": items}

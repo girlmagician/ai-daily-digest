@@ -387,6 +387,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--replay", action="store_true",
                     help="重畫最後一次發布的內容（調版面用，不呼叫模型也不動已發布清單）")
+    ap.add_argument("--no-index", action="store_true",
+                    help="只寫當日存檔，不更新 index.html（回補歷史時用）")
     args = ap.parse_args()
 
     if args.replay:
@@ -401,9 +403,14 @@ def main() -> None:
         digest = json.loads(DIGEST.read_text(encoding="utf-8"))
         report = json.loads(REPORT.read_text(encoding="utf-8")) if REPORT.exists() else {}
 
-    gen = datetime.fromisoformat(digest["generated_at_utc"].replace("Z", "+00:00")).astimezone(TPE)
-    date_key = gen.strftime("%Y-%m-%d")
-    date_label = gen.strftime("%Y年%m月%d日")
+    # 回補歷史時，內容的日期不等於產生的日期，由 digest 明確帶 digest_date 指定
+    if digest.get("digest_date"):
+        day = datetime.strptime(digest["digest_date"], "%Y-%m-%d")
+    else:
+        day = datetime.fromisoformat(
+            digest["generated_at_utc"].replace("Z", "+00:00")).astimezone(TPE)
+    date_key = day.strftime("%Y-%m-%d")
+    date_label = day.strftime("%Y年%m月%d日")
 
     DOCS.mkdir(exist_ok=True)
     # 日期清單要先算出來（含今天），首頁與存檔頁的「近 7 日」切換都需要它
@@ -413,10 +420,11 @@ def main() -> None:
 
     html_out = render_digest(digest, report, date_key, date_label, dates)
     (DOCS / f"{date_key}.html").write_text(html_out, encoding="utf-8")
-    (DOCS / "index.html").write_text(html_out, encoding="utf-8")
+    if not args.no_index:
+        (DOCS / "index.html").write_text(html_out, encoding="utf-8")
+        (DOCS / "feed.xml").write_text(render_feed(digest, ""), encoding="utf-8")
 
     (DOCS / "archive.html").write_text(render_archive(dates), encoding="utf-8")
-    (DOCS / "feed.xml").write_text(render_feed(digest, ""), encoding="utf-8")
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
 
@@ -429,10 +437,12 @@ def main() -> None:
         print("（重播模式：未更新已發布清單）")
         return
 
-    LAST_DIGEST.parent.mkdir(exist_ok=True)
-    shutil.copyfile(DIGEST, LAST_DIGEST)
-    if REPORT.exists():
-        shutil.copyfile(REPORT, LAST_REPORT)
+    # last-digest 是「首頁現在長什麼樣」的快照，回補歷史時不該覆蓋它
+    if not args.no_index:
+        LAST_DIGEST.parent.mkdir(exist_ok=True)
+        shutil.copyfile(DIGEST, LAST_DIGEST)
+        if REPORT.exists():
+            shutil.copyfile(REPORT, LAST_REPORT)
 
     kept = update_seen(digest, date_key)
     print(f"已發布清單 {kept} 筆（保留 {SEEN_DAYS} 天，明天不會重複刊登）")
