@@ -111,6 +111,12 @@ GitHub 的排程佇列與 Anthropic 端都是尖峰——實測 UTC 00:00 觸發
 
 - **跨語言重複**只能靠策展階段的 LLM 判斷，程式的標題相似度比對抓不到。
 - **Reddit 全面擋機器人**（403／429），已從來源移除，社群熱度改用 Hacker News。
+- **資料中心 IP 會被部分站台擋。** GitHub Actions 上 `importai.substack.com` 與
+  `deeplearning.ai` 回 403，同樣的網址在本機完全正常。這是「本機能跑不代表雲端能跑」
+  的典型例子，只有真的在 CI 上跑過才會發現。
+  因此 `collect.py` 會依序嘗試 `sources.yaml` 裡的 `urls` 候選清單——
+  Import AI 改以 Jack Clark 自己的網站為主、Substack 為備援。
+  The Batch 目前找不到替代路徑，會每天出現在日報的「本次未取得來源」。
 - **Anthropic News、The Batch 沒有 RSS**，改爬公開索引頁（`scrape.py`）。索引頁改版時會壞，
   屆時 `run_report.json` 會回報「索引頁找不到文章連結」。
 - **機器之心**首頁只回 3,251 字的 JS 空殼，沒有瀏覽器抓不到，已放棄；簡中由量子位覆蓋。

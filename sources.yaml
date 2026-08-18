@@ -29,7 +29,9 @@ sources:
   # /atom/everything/ 混了文章、短連結與引言（「Quoting …」），不是每則都是新聞，
   # 因此權重從 1.8 降到 1.4，避免短貼文靠高權重擠進前段
   - {name: "Simon Willison",       lang: en, cat: analysis,   weight: 1.4, pinned: false, ai_filter: false, urls: ["https://simonwillison.net/atom/everything/"]}
-  - {name: "Import AI",            lang: en, cat: newsletter, weight: 1.6, pinned: false, ai_filter: false, urls: ["https://importai.substack.com/feed"]}
+  # importai.substack.com 對 GitHub Actions 的資料中心 IP 回 403（本機正常）。
+  # Jack Clark 自己的網站有同一份內容，改成優先用它，Substack 留作備援。
+  - {name: "Import AI",            lang: en, cat: newsletter, weight: 1.6, pinned: false, ai_filter: false, urls: ["https://jack-clark.net/feed/", "https://importai.net/feed", "https://importai.substack.com/feed"]}
   - {name: "Latent Space",         lang: en, cat: newsletter, weight: 1.4, pinned: false, ai_filter: false, urls: ["https://www.latent.space/feed"]}
   - {name: "Interconnects",        lang: en, cat: analysis,   weight: 1.4, pinned: false, ai_filter: false, urls: ["https://www.interconnects.ai/feed"]}
   - {name: "TLDR AI",              lang: en, cat: newsletter, weight: 1.2, pinned: false, ai_filter: false, urls: ["https://tldr.tech/api/rss/ai"]}
@@ -154,6 +156,7 @@ api_sources:
 # 收集器必須處理的已知資料品質問題（實測發現）
 # ══════════════════════════════════════════════════════════
 known_issues:
+  - "資料中心 IP 會被部分站台擋：GitHub Actions 上 importai.substack.com 與 deeplearning.ai 回 403，本機皆正常 → Import AI 改用 jack-clark.net（collect.py 會依序嘗試 urls 候選）；The Batch 目前找不到替代路徑，會每天出現在日報的「本次未取得來源」"
   - "遊戲陀螺、iThome 的 feed 時間戳為未來時間（時區標記錯誤）→ 超過現在時間一律夾回現在，否則永遠排在最新"
   - "Reddit 對資料中心 IP 限流，GitHub Actions 上可能整批失敗 → 允許失敗並在日報標注，不可讓整個流程中斷"
   - "Meta Newsroom 是綜合科技分類，非 AI 專屬 → 依 ai_filter 過濾"

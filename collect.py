@@ -168,6 +168,32 @@ def load_sources() -> list[dict]:
     return sources
 
 
+def _fetch_feed(src: dict) -> tuple[object | None, str, str]:
+    """依序嘗試 src["urls"]，回傳 (已解析的 feed, 實際成功的網址, 錯誤訊息)。
+
+    候選清單原本只有 verify_feeds.py 在用，每天實際執行的收集只取第一個——
+    於是第一個網址失敗就等於整個來源當天消失，即使備援網址是好的。
+    實測 GitHub Actions 的資料中心 IP 會被 importai.substack.com 回 403，
+    而 Jack Clark 自己網站的同一份內容完全正常。
+    """
+    errors = []
+    for url in src["urls"]:
+        try:
+            resp = polite_get(url, timeout=src.get("timeout"))
+        except Exception as e:
+            errors.append(f"{url.split('/')[2]}: {e.__class__.__name__}")
+            continue
+        if resp.status_code != 200:
+            errors.append(f"{url.split('/')[2]}: HTTP {resp.status_code}")
+            continue
+        parsed = feedparser.parse(resp.content)
+        if not parsed.entries:
+            errors.append(f"{url.split('/')[2]}: 解析不到項目")
+            continue
+        return parsed, url, ""
+    return None, src["urls"][0], "；".join(errors[:3])
+
+
 def fetch_source(src: dict, cutoff: datetime) -> dict:
     """抓一個來源。任何失敗都只記錄，不拋出。"""
     report = {
@@ -177,15 +203,13 @@ def fetch_source(src: dict, cutoff: datetime) -> dict:
     items: list[dict] = []
     fetched_at = datetime.now(timezone.utc)
 
-    try:
-        resp = polite_get(src["url"], timeout=src.get("timeout"))
-        if resp.status_code != 200:
-            report.update(status="fail", error=f"HTTP {resp.status_code}")
-            return {"report": report, "items": []}
-        parsed = feedparser.parse(resp.content)
-    except Exception as e:
-        report.update(status="fail", error=f"{e.__class__.__name__}: {str(e)[:120]}")
+    parsed, used_url, error = _fetch_feed(src)
+    report["url"] = used_url
+    if parsed is None:
+        report.update(status="fail", error=error or "無法取得")
         return {"report": report, "items": []}
+    if used_url != src["urls"][0]:
+        report["fallback"] = True
 
     report["entries"] = len(parsed.entries)
     if not parsed.entries:
@@ -524,6 +548,11 @@ def main() -> None:
             print(f"  {r['name']:<24} {r['in_window']:>3} → {r['kept']:>3} {capped}")
     if empty:
         print(f"\n時間窗內無新項目（{len(empty)} 個）：" + "、".join(r["name"] for r in empty))
+    fell_back = [r for r in ok if r.get("fallback")]
+    if fell_back:
+        print(f"\n改用備援網址（{len(fell_back)} 個，主網址失敗）：")
+        for r in fell_back:
+            print(f"  {r['name']:<24} {r['url']}")
     if failures:
         print(f"\n抓取失敗（{len(failures)} 個，日報必須標注）：")
         for r in failures:
