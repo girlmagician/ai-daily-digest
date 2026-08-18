@@ -49,6 +49,12 @@ jobs:
           p.write_text(json.dumps(cfg))
           PY
 
+      - name: 檢查 CLI 與認證
+        # 放在收集之前：認證問題三十秒內就爆，不必等收集與補抓跑完四五分鐘
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: python preflight.py
+
       - name: 收集情報
         # 時間窗 48 小時 > 執行間隔 24 小時：某天失敗也不會漏掉新聞。
         # 重複的部分由 state/seen.json 擋掉。
