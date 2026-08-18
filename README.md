@@ -59,6 +59,16 @@ python translate.py --target 30
 python render.py                        # 產出在 docs/index.html
 ```
 
+### 只想調版面
+
+```bash
+python render.py --replay               # 重畫最後一次發布的內容，不呼叫模型
+```
+
+`render.py` 每次成功發布都會把譯好的內容留一份在 `state/last-digest.json` 並進版控，
+所以改 CSS 或排版後可以立刻用真實內容看效果，不必為了看版面重跑一次
+要十一分鐘、約 US$0.8 的完整流程。重播不會更新已發布清單——那不算一次新的發布。
+
 試跑省成本：`python translate.py --limit 12 --target 8`
 
 ## 自動執行

@@ -13,14 +13,21 @@
 沒有任何外部資源（CSS/字型/JS 全部內嵌），因此離線可讀、載入無追蹤。
 
 用法：
-    python render.py
+    python render.py              # 讀 out/digest.json（translate.py 的產出）
+    python render.py --replay     # 讀 state/last-digest.json，重畫最後一次發布的內容
+
+--replay 是給調版面用的：譯好的內容會留一份在 state/ 並進版控，
+所以改 CSS 或排版後可以立刻看到真實內容的效果，不必為了看版面
+重跑一次要價十一分鐘、約 US$0.8 的完整流程。
 """
 
 from __future__ import annotations
 
+import argparse
 import html
 import json
 import re
+import shutil
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -35,6 +42,9 @@ DIGEST = OUT / "digest.json"
 REPORT = OUT / "run_report.json"
 SEEN = ROOT / "state" / "seen.json"
 SEEN_DAYS = 21          # 保留三週；時間窗只有兩天，這已經非常寬裕
+# 最後一次發布的內容與執行報告，進版控供 --replay 重畫版面用
+LAST_DIGEST = ROOT / "state" / "last-digest.json"
+LAST_REPORT = ROOT / "state" / "last-report.json"
 
 TPE = timezone(timedelta(hours=8))
 SITE_TITLE = "AI 情報日報"
@@ -53,7 +63,7 @@ CSS = """
 body{margin:0;background:var(--bg);color:var(--fg);
 font-family:-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
 line-height:1.75;font-size:16px}
-.wrap{max-width:1216px;margin:0 auto;padding:24px 18px 64px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 18px 64px}
 header{border-bottom:2px solid var(--line);padding-bottom:14px}
 h1{font-size:1.6rem;margin:0 0 4px}
 h1 a{color:inherit;text-decoration:none}
@@ -84,16 +94,21 @@ border-radius:999px;padding:3px 12px;white-space:nowrap}
 /* 錨點跳轉時標題不要被固定列遮住 */
 h2{font-size:1.05rem;margin:34px 0 4px;padding-top:12px;border-top:1px solid var(--line);
 color:var(--accent);letter-spacing:.02em;scroll-margin-top:56px}
+/* 兩欄卡片。用 grid 而不是 CSS columns：grid 是先左後右（1,2／3,4），
+   閱讀順序與排名一致；columns 會變成整列往下（1,2,3 在左欄），排名就讀不出來了。
+   align-items:start 讓卡片保持自然高度，不被同列的長卡片拉長。
+   卡片本身就把行寬限制在約 38 個中文字，所以文字不需要再另外設 max-width。 */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start;
+margin:12px 0}
 article{background:var(--card);border:1px solid var(--line);border-radius:10px;
-padding:14px 18px;margin:12px 0}
+padding:14px 18px;margin:0}
 .t{font-size:1.06rem;font-weight:600;margin:0 0 6px;line-height:1.5}
 .t a{color:var(--fg);text-decoration:none}
 .t a:hover{color:var(--accent);text-decoration:underline}
 .n{color:var(--dim);font-variant-numeric:tabular-nums;margin-right:6px;font-weight:400}
-/* 版面加寬後仍限制文字行寬：一行過長會讓中文閱讀時難以回到下一行行首 */
-.s{margin:6px 0 10px;font-size:.95rem;max-width:68em}
+.s{margin:6px 0 10px;font-size:.95rem}
 .orig{color:var(--dim);font-size:.82rem;margin:6px 0;
-overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px;max-width:68em}
+overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px}
 .meta{font-size:.78rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .tag{background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:.72rem}
 .hot{color:var(--hot);font-weight:600;text-decoration:none}
@@ -108,6 +123,8 @@ font-size:.82rem;margin:14px 0;max-width:68em}
 ul.arc{list-style:none;padding:0}
 ul.arc li{padding:8px 0;border-bottom:1px solid var(--line)}
 ul.arc a{color:var(--accent);text-decoration:none;font-weight:600}
+/* 視窗不夠寬時收成一欄：兩欄各 450px 以下，卡片會擠得難讀 */
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
 @media(max-width:640px){
   .groups{margin:0 -14px 4px;padding:8px 14px;gap:5px;font-size:.8rem}
   .wrap{padding:18px 14px 56px}
@@ -247,11 +264,12 @@ def render_digest(digest: dict, report: dict, date_key: str, date_label: str,
 
     n = 0
     for gi, (g, _) in enumerate(counts):
-        body.append(f'<h2 id="g{gi}">{esc(g)}</h2>')
+        body.append(f'<h2 id="g{gi}">{esc(g)}</h2><div class="grid">')
         for it in ordered:
             if it["group"] == g:
                 n += 1
                 body.append(render_item(it, n))
+        body.append("</div>")
 
     body.append(render_footer(digest, report))
     return page(f"{SITE_TITLE}｜{date_label}", "".join(body))
@@ -366,10 +384,22 @@ def update_seen(digest: dict, date_key: str) -> int:
 
 
 def main() -> None:
-    if not DIGEST.exists():
-        sys.exit(f"找不到 {DIGEST}，請先執行 python translate.py")
-    digest = json.loads(DIGEST.read_text(encoding="utf-8"))
-    report = json.loads(REPORT.read_text(encoding="utf-8")) if REPORT.exists() else {}
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--replay", action="store_true",
+                    help="重畫最後一次發布的內容（調版面用，不呼叫模型也不動已發布清單）")
+    args = ap.parse_args()
+
+    if args.replay:
+        if not LAST_DIGEST.exists():
+            sys.exit(f"找不到 {LAST_DIGEST}，要先成功執行過一次完整流程")
+        digest = json.loads(LAST_DIGEST.read_text(encoding="utf-8"))
+        report = json.loads(LAST_REPORT.read_text(encoding="utf-8")) if LAST_REPORT.exists() else {}
+        print(f"重播模式：{LAST_DIGEST.name}（{len(digest['items'])} 則）")
+    else:
+        if not DIGEST.exists():
+            sys.exit(f"找不到 {DIGEST}，請先執行 python translate.py")
+        digest = json.loads(DIGEST.read_text(encoding="utf-8"))
+        report = json.loads(REPORT.read_text(encoding="utf-8")) if REPORT.exists() else {}
 
     gen = datetime.fromisoformat(digest["generated_at_utc"].replace("Z", "+00:00")).astimezone(TPE)
     date_key = gen.strftime("%Y-%m-%d")
@@ -390,10 +420,21 @@ def main() -> None:
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
 
-    kept = update_seen(digest, date_key)
-
     print(f"已產生 {len(digest['items'])} 則 → {DOCS / 'index.html'}")
     print(f"存檔 {date_key}.html　歷史共 {len(dates)} 天")
+
+    if args.replay:
+        # 重播只是重畫版面，不算一次新的發布：不能動已發布清單，
+        # 否則會把項目重複消耗掉
+        print("（重播模式：未更新已發布清單）")
+        return
+
+    LAST_DIGEST.parent.mkdir(exist_ok=True)
+    shutil.copyfile(DIGEST, LAST_DIGEST)
+    if REPORT.exists():
+        shutil.copyfile(REPORT, LAST_REPORT)
+
+    kept = update_seen(digest, date_key)
     print(f"已發布清單 {kept} 筆（保留 {SEEN_DAYS} 天，明天不會重複刊登）")
 
 
