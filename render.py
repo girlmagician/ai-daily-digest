@@ -428,7 +428,8 @@ def main() -> None:
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
 
-    print(f"已產生 {len(digest['items'])} 則 → {DOCS / 'index.html'}")
+    target = f"{date_key}.html" if args.no_index else "index.html"
+    print(f"已產生 {len(digest['items'])} 則 → {DOCS / target}")
     print(f"存檔 {date_key}.html　歷史共 {len(dates)} 天")
 
     if args.replay:
