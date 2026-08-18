@@ -1,0 +1,88 @@
+name: 每日 AI 情報
+
+on:
+  schedule:
+    # UTC 00:00 = 台北 08:00。GitHub 的排程常延遲 5～20 分鐘，
+    # 提早半小時跑才能穩定在台北時間 08:30 之前更新完成。
+    - cron: "0 0 * * *"
+  workflow_dispatch:        # 也可以手動觸發，用來補跑或測試
+
+permissions:
+  contents: write           # 需要把 docs/ 與 state/ 推回 repo
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false # 寧可排隊也不要中斷寫到一半的執行
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: 安裝 Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: 信任工作目錄
+        # 未信任的目錄會讓 CLI 忽略設定並印出警告。這裡沒有要用 repo 裡的
+        # 任何設定（--tools "" 已經關掉所有工具），先標記以免噪音與非預期行為。
+        run: |
+          mkdir -p ~/.claude
+          python - <<'PY'
+          import json, os, pathlib
+          p = pathlib.Path.home() / ".claude.json"
+          cfg = json.loads(p.read_text()) if p.exists() else {}
+          cfg.setdefault("projects", {})[os.getcwd()] = {"hasTrustDialogAccepted": True}
+          p.write_text(json.dumps(cfg))
+          PY
+
+      - name: 收集情報
+        # 時間窗 48 小時 > 執行間隔 24 小時：某天失敗也不會漏掉新聞。
+        # 重複的部分由 state/seen.json 擋掉。
+        run: python collect.py --hours 48 --top 30
+
+      - name: 補抓原文全文
+        # RSS 多半只給導言。沒有這步，摘要就只能靠模型腦補
+        run: python extract.py
+
+      - name: 策展與翻譯
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: python translate.py --target 30
+
+      - name: 產生網頁
+        run: python render.py
+
+      - name: 發布
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs state
+          if git diff --staged --quiet; then
+            echo "沒有變更，跳過"
+          else
+            git commit -m "日報 $(TZ=Asia/Taipei date +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: 保留執行報告
+        if: always()        # 失敗時更需要這份報告
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-report
+          path: out/
+          retention-days: 14
+          if-no-files-found: ignore

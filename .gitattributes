@@ -1,0 +1,5 @@
+# 一律以 LF 存進 repo。workflow 的 run 區塊在 Linux runner 上執行，
+# 行尾若混進 CR 會讓 heredoc 與指令解析出錯。
+* text=auto eol=lf
+*.png binary
+*.jpg binary

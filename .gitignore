@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+
+# 中間產物：每次執行都會重新產生，不需要進版控
+out/
+
+# 來源驗證工具的產出（verify_feeds.py），是某一次執行的快照，
+# 不是設定檔——真正維護的來源清單是 sources.yaml
+sources_verified.yaml
+feed_report.md
+
+# docs/ 與 state/ 必須進版控：
+#   docs/  是 GitHub Pages 的網站內容與歷史存檔
+#   state/ 是已發布清單，跨執行才擋得掉重複刊登

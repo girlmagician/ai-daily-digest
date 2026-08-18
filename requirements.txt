@@ -1,0 +1,6 @@
+requests>=2.32
+feedparser>=6.0.11
+PyYAML>=6.0
+# 抽取文章正文：RSS 常常只給一段導言，摘要要寫得完整就得拿到全文
+trafilatura>=2.0
+# 不需要 anthropic SDK：模型呼叫走 Claude Code CLI（見 llm.py），不需要 API key

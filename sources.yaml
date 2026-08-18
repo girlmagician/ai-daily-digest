@@ -1,0 +1,160 @@
+# AI 每日情報來源清單（定案版 v3）
+#
+# 全部網址均經 verify_feeds.py 實測通過（2026-08-17）。
+#
+# 欄位說明：
+#   urls      候選網址，依序嘗試，第一個通過就採用（保留機制供日後新增來源）
+#   weight    排序權重，1.0 為基準
+#   pinned    true = 官方公告，當日一律收錄，不參與熱門排名淘汰
+#   ai_filter true = 綜合型來源，需先用 AI 關鍵字過濾才進入排序
+#             false = AI 專門來源，全部項目都算相關
+
+sources:
+  # ══ 各大 AI 公司官方（pinned，當日全收）═══════════════
+  - {name: "OpenAI News",          lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://openai.com/news/rss.xml"]}
+  - {name: "OpenAI Blog (legacy)", lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://openai.com/blog/rss.xml"]}
+  - {name: "Google DeepMind Blog", lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/technology/google-deepmind/rss/"]}
+  - {name: "Google AI Blog",       lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/technology/ai/rss/"]}
+  - {name: "Google Research Blog", lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://research.google/blog/rss/"]}
+  - {name: "Microsoft Source AI",  lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://news.microsoft.com/source/topics/ai/feed/"]}
+  - {name: "Mistral AI News",      lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://mistral.ai/rss.xml"]}
+  # Meta：勝出的是 Meta Newsroom 科技分類，不是 ai.meta.com/blog → 必須關鍵字過濾
+  - {name: "Meta Newsroom (Tech)", lang: en, cat: vendor, weight: 2.0, pinned: false, ai_filter: true,  urls: ["https://about.fb.com/news/category/technology-and-innovation/feed/"]}
+  - {name: "Microsoft Research",   lang: en, cat: vendor, weight: 1.3, pinned: false, ai_filter: false, urls: ["https://www.microsoft.com/en-us/research/feed/"]}
+  - {name: "AWS Machine Learning", lang: en, cat: vendor, weight: 1.2, pinned: false, ai_filter: false, urls: ["https://aws.amazon.com/blogs/machine-learning/feed/"]}
+  - {name: "Hugging Face Blog",    lang: en, cat: vendor, weight: 1.4, pinned: false, ai_filter: false, urls: ["https://huggingface.co/blog/feed.xml"]}
+  - {name: "NVIDIA Blog",          lang: en, cat: vendor, weight: 1.5, pinned: false, ai_filter: true,  urls: ["https://blogs.nvidia.com/feed/"]}
+
+  # ══ 高訊噪比分析／電子報 ══════════════════════════════
+  # /atom/everything/ 混了文章、短連結與引言（「Quoting …」），不是每則都是新聞，
+  # 因此權重從 1.8 降到 1.4，避免短貼文靠高權重擠進前段
+  - {name: "Simon Willison",       lang: en, cat: analysis,   weight: 1.4, pinned: false, ai_filter: false, urls: ["https://simonwillison.net/atom/everything/"]}
+  - {name: "Import AI",            lang: en, cat: newsletter, weight: 1.6, pinned: false, ai_filter: false, urls: ["https://importai.substack.com/feed"]}
+  - {name: "Latent Space",         lang: en, cat: newsletter, weight: 1.4, pinned: false, ai_filter: false, urls: ["https://www.latent.space/feed"]}
+  - {name: "Interconnects",        lang: en, cat: analysis,   weight: 1.4, pinned: false, ai_filter: false, urls: ["https://www.interconnects.ai/feed"]}
+  - {name: "TLDR AI",              lang: en, cat: newsletter, weight: 1.2, pinned: false, ai_filter: false, urls: ["https://tldr.tech/api/rss/ai"]}
+  # 2026-08-18 複查：官網已提供 feed（beehiiv 子網域的那個是 404），不必再走 Gmail
+  - {name: "Ben's Bites",          lang: en, cat: newsletter, weight: 1.3, pinned: false, ai_filter: false, urls: ["https://www.bensbites.com/feed"]}
+  # 2026-08-18 補強：深度分析型電子報，補既有清單偏重「發生了什麼」而少「為什麼」的缺口
+  - {name: "ChinaTalk",            lang: en, cat: analysis,   weight: 1.5, pinned: false, ai_filter: true,  urls: ["https://www.chinatalk.media/feed"]}
+  - {name: "Ahead of AI",          lang: en, cat: analysis,   weight: 1.4, pinned: false, ai_filter: false, urls: ["https://magazine.sebastianraschka.com/feed"]}
+  - {name: "Platformer",           lang: en, cat: analysis,   weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://www.platformer.news/rss/"]}
+  - {name: "Exponential View",     lang: en, cat: newsletter, weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://www.exponentialview.co/feed"]}
+
+  # ══ 英文媒體 ═════════════════════════════════════════
+  - {name: "MIT Tech Review AI",   lang: en, cat: media, weight: 1.3, pinned: false, ai_filter: false, urls: ["https://www.technologyreview.com/topic/artificial-intelligence/feed"]}
+  - {name: "TechCrunch AI",        lang: en, cat: media, weight: 1.2, pinned: false, ai_filter: false, urls: ["https://techcrunch.com/category/artificial-intelligence/feed/"]}
+  - {name: "The Verge AI",         lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"]}
+  - {name: "Ars Technica AI",      lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://arstechnica.com/ai/feed/"]}
+
+  # ══ 論文 ════════════════════════════════════════════
+  - {name: "arXiv cs.AI",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.AI"]}
+  - {name: "arXiv cs.CL",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.CL"]}
+  - {name: "arXiv cs.LG",          lang: en, cat: paper, weight: 0.8, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.LG"]}
+
+  # ══ 工程／版本發布 ════════════════════════════════════
+  - {name: "llama.cpp releases",   lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/ggml-org/llama.cpp/releases.atom"]}
+  - {name: "vLLM releases",        lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/vllm-project/vllm/releases.atom"]}
+  - {name: "Ollama releases",      lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/ollama/ollama/releases.atom"]}
+
+  # 社群熱度訊號改由 Hacker News（hn.py）提供——Reddit 全數移到 dropped，見下方
+
+  # ══ 日文 ════════════════════════════════════════════
+  - {name: "ITmedia AI+",          lang: ja, cat: media, weight: 1.4, pinned: false, ai_filter: false, urls: ["https://rss.itmedia.co.jp/rss/2.0/aiplus.xml"]}
+  - {name: "Preferred Networks",   lang: ja, cat: eng,   weight: 1.0, pinned: false, ai_filter: false, urls: ["https://tech.preferred.jp/ja/blog/feed/"]}
+  - {name: "Qiita AI タグ",         lang: ja, cat: eng,   weight: 0.7, pinned: false, ai_filter: false, urls: ["https://qiita.com/tags/ai/feed"]}
+  - {name: "GIGAZINE",             lang: ja, cat: media, weight: 0.8, pinned: false, ai_filter: true,  urls: ["https://gigazine.net/news/rss_2.0/"]}
+  - {name: "ASCII.jp",             lang: ja, cat: media, weight: 1.0, pinned: false, ai_filter: true,  urls: ["https://ascii.jp/rss.xml"]}
+  - {name: "Nikkei xTECH",         lang: ja, cat: media, weight: 1.0, pinned: false, ai_filter: true,  urls: ["https://xtech.nikkei.com/rss/index.rdf"]}
+
+  # ══ 中文 ════════════════════════════════════════════
+  - {name: "量子位 QbitAI",         lang: zh-CN, cat: media, weight: 1.3, pinned: false, ai_filter: false, urls: ["https://www.qbitai.com/feed"]}
+  - {name: "iThome",               lang: zh-TW, cat: media, weight: 1.2, pinned: false, ai_filter: true,  urls: ["https://www.ithome.com.tw/rss"]}
+  # 愛範兒／APPSO：簡中科技媒體，AI 報導量大且更新快，補機器之心抓不到的缺口
+  - {name: "APPSO (愛範兒)",        lang: zh-CN, cat: media, weight: 1.2, pinned: false, ai_filter: true,  urls: ["https://www.ifanr.com/feed"]}
+
+  # ══ 遊戲・娛樂產業 AI（你指定加權）═════════════════════
+  - {name: "GamesIndustry.biz",    lang: en,    cat: game, weight: 2.0, pinned: false, ai_filter: true, urls: ["https://www.gamesindustry.biz/feed"]}
+  - {name: "Game Developer",       lang: en,    cat: game, weight: 2.0, pinned: false, ai_filter: true, urls: ["https://www.gamedeveloper.com/rss.xml"]}
+  - {name: "Unity Blog",           lang: en,    cat: game, weight: 1.8, pinned: false, ai_filter: true, urls: ["https://blog.unity.com/feed"]}
+  - {name: "Unreal Engine",        lang: en,    cat: game, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://www.unrealengine.com/en-US/rss"]}
+  - {name: "4Gamer",               lang: ja,    cat: game, weight: 1.8, pinned: false, ai_filter: true, urls: ["https://www.4gamer.net/rss/index.xml"]}
+  - {name: "電ファミニコゲーマー",     lang: ja,    cat: game, weight: 1.6, pinned: false, ai_filter: true, urls: ["https://news.denfaminicogamer.jp/feed"]}
+  # 遊戲陀螺回應不穩（三次驗證有一次逾時）→ 給較長逾時，允許失敗
+  - {name: "遊戲陀螺",              lang: zh-CN, cat: game, weight: 1.6, pinned: false, ai_filter: true, timeout: 45, urls: ["https://www.youxituoluo.com/feed"]}
+  # 2026-08-18 補強：原本「遊戲 × AI」只有綜合遊戲媒體靠關鍵字過濾撈，
+  # 缺少真正專講遊戲 AI 的來源。以下皆已實測可用。
+  # AI and Games 是唯一整份都在講遊戲 AI 的，所以不過濾、權重最高；
+  # 其餘是遊戲產業媒體，必須過 ai_filter，否則會灌進大量純遊戲新聞。
+  - {name: "AI and Games",         lang: en,    cat: game, weight: 2.2, pinned: false, ai_filter: false, urls: ["https://www.aiandgames.com/feed"]}
+  - {name: "Naavik",               lang: en,    cat: game, weight: 1.8, pinned: false, ai_filter: true, urls: ["https://naavik.co/feed/"]}
+  - {name: "Deconstructor of Fun", lang: en,    cat: game, weight: 1.6, pinned: false, ai_filter: true, urls: ["https://www.deconstructoroffun.com/blog?format=rss"]}
+  - {name: "MobileGamer.biz",      lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://mobilegamer.biz/feed/"]}
+  # VentureBeat 的 AI 分類 feed 已停更（見 dropped），但遊戲分類仍在更新
+  - {name: "GamesBeat",            lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://venturebeat.com/category/games/feed/"]}
+
+  # ══ 法規／政策 ═══════════════════════════════════════
+  - {name: "EU AI Act",            lang: en, cat: policy, weight: 1.5, pinned: false, ai_filter: false, urls: ["https://artificialintelligenceact.eu/feed/"]}
+  - {name: "NIST News",            lang: en, cat: policy, weight: 1.0, pinned: false, ai_filter: true,  urls: ["https://www.nist.gov/news-events/news/rss.xml"]}
+
+
+# ══════════════════════════════════════════════════════════
+# 無 RSS，改用其他方式覆蓋（已實測確認沒有可用 feed）
+# ══════════════════════════════════════════════════════════
+no_feed:
+  # strategy: scraper 的項目由 scrape.py 實際執行，會併入每天的收集流程。
+  # link_pattern 是文章網址的路徑特徵；索引頁改版時這裡最先壞，
+  # 屆時 run_report 會回報「索引頁找不到文章連結」。
+  - {name: "Anthropic News", lang: en, cat: vendor, weight: 2.0, pinned: true, strategy: scraper,
+     target: "https://www.anthropic.com/news", link_pattern: "/news/", max_links: 15,
+     note: "官方公告，必須覆蓋。4 個 feed 候選全 404/403"}
+  - {name: "The Batch", lang: en, cat: newsletter, weight: 1.6, pinned: false, strategy: scraper,
+     target: "https://www.deeplearning.ai/the-batch/", link_pattern: "/the-batch/", max_links: 12,
+     note: "2026-08-18 複查仍無 RSS（/feed 與 /rss.xml 回 404/500），改爬公開頁面，不必動用 Gmail"}
+
+  - {name: "機器之心",           lang: zh-CN, strategy: none,    target: "https://www.jiqizhixin.com/",             note: "首頁只回 3,251 字的 JS 空殼，沒有瀏覽器抓不到內容。量子位覆蓋簡中"}
+  - {name: "The Batch",        lang: en,    strategy: gmail,   target: "訂閱信",                                    note: "2026-08-18 複查仍無 RSS（/feed 與 /rss.xml 回 404/500）。只能走 Gmail 或爬 the-batch 頁面"}
+  - {name: "Roblox Blog",      lang: en,    strategy: gdelt,   note: "量少，靠 GDELT + HN 交叉覆蓋"}
+  - {name: "Cohere Blog",      lang: en,    strategy: gdelt,   note: "同上"}
+  - {name: "Stability AI",     lang: en,    strategy: gdelt,   note: "同上"}
+  - {name: "Epoch AI",         lang: en,    strategy: gdelt,   note: "同上"}
+  - {name: "Stanford HAI",     lang: en,    strategy: gdelt,   note: "同上"}
+
+# 放棄（已有同語言同類型來源覆蓋，或站台無法連線）
+dropped:
+  - {name: "VentureBeat AI",  reason: "AI 分類 feed 最新一篇 89 天前，已停更。TechCrunch/Verge/Ars/MIT TR 已覆蓋"}
+  - {name: "36Kr",            reason: "403 擋機器人。量子位已覆蓋簡中"}
+  - {name: "Ledge.ai",        reason: "站台改版，feed 已撤。ITmedia AI+／ASCII.jp 已覆蓋日文"}
+  - {name: "Famitsu",         reason: "feed 已撤。4Gamer／電ファミ已覆蓋日文遊戲"}
+  - {name: "數位時代 BNext",    reason: "feed 已撤。iThome 已覆蓋繁中"}
+  - {name: "GameLook",        reason: "擋境外 IP，GitHub Actions 上同樣連不上。遊戲陀螺已覆蓋"}
+  - {name: "AI-SCHOLAR",      reason: "DNS 無法解析，網站疑似已停運"}
+  - {name: "r/MachineLearning", reason: "old.reddit 回 HTML 攔阻頁、www 回 429。Reddit 擋機器人，熱度訊號改用 Hacker News"}
+  - {name: "r/LocalLLaMA",      reason: "2026-08-18 起改回 403。連本機 IP 都被擋，GitHub Actions 只會更糟；每天失敗只會讓日報的「未取得來源」欄變成雜訊"}
+  - {name: "r/singularity",     reason: "持續 429。同上，且訊號品質本來就低（weight 0.7）"}
+  # 2026-08-18 評估過但不採用的電子報
+  - {name: "SemiAnalysis",      reason: "公開 feed 最新一篇 335 天前，深度內容都在付費牆後"}
+  - {name: "Last Week in AI",   reason: "實際是 podcast feed，最新 14 天前，且內容與既有來源高度重疊"}
+  - {name: "The Neuron",        reason: "找不到可用 feed"}
+  - {name: "Marktechpost",      reason: "更新極頻繁但多為新聞稿改寫，訊噪比低，會稀釋候選池"}
+  - {name: "日文綜合新聞三家",     reason: "Business Insider JP／Impress Watch／CNET Japan 皆可用，但 AI 佔比低；ITmedia AI+、ASCII.jp、Nikkei xTECH 已覆蓋日文"}
+
+# ══════════════════════════════════════════════════════════
+# 非 RSS 來源（第二階段接入）
+# ══════════════════════════════════════════════════════════
+api_sources:
+  - {name: "Hacker News (Algolia)", kind: api, priority: high, note: "熱度訊號主力。無需認證、穩定、有 points 欄位"}
+  - {name: "GDELT DOC 2.0",         kind: api, priority: high, note: "多語言全球新聞補網，覆蓋 no_feed 的長尾"}
+  - {name: "Gmail API",             kind: api, priority: high, note: "訂閱電子報。唯讀權限 + 指定標籤，refresh token 存 GitHub Secrets"}
+  - {name: "arXiv API",             kind: api, priority: mid,  note: "比 RSS 穩定，可指定日期範圍"}
+  - {name: "Hugging Face Trending", kind: api, priority: low,  note: "模型熱度指標"}
+  - {name: "Reddit OAuth",          kind: api, priority: low,  note: "選配。若要在 GitHub Actions 上穩定拿 Reddit 資料才需要申請"}
+
+# ══════════════════════════════════════════════════════════
+# 收集器必須處理的已知資料品質問題（實測發現）
+# ══════════════════════════════════════════════════════════
+known_issues:
+  - "遊戲陀螺、iThome 的 feed 時間戳為未來時間（時區標記錯誤）→ 超過現在時間一律夾回現在，否則永遠排在最新"
+  - "Reddit 對資料中心 IP 限流，GitHub Actions 上可能整批失敗 → 允許失敗並在日報標注，不可讓整個流程中斷"
+  - "Meta Newsroom 是綜合科技分類，非 AI 專屬 → 依 ai_filter 過濾"
+  - "arXiv RSS 只有當日更新，若要回補需改用 arXiv API"
