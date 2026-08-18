@@ -49,6 +49,18 @@ sources:
   - {name: "The Verge AI",         lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.theverge.com/rss/ai-artificial-intelligence/index.xml"]}
   - {name: "Ars Technica AI",      lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://arstechnica.com/ai/feed/"]}
 
+  # ══ 商業與資本（2026-08-18 加入）═══════════════════════
+  # 這三家的文章都在付費牆後，extract.py 抓不到全文，只能用 feed 的導言，
+  # 所以摘要會明顯比其他來源短——這是刻意接受的取捨：它們的「有沒有報導」
+  # 本身就是訊號，而且能替其他來源的傳聞提供跨來源佐證。
+  # Bloomberg 與 The Information 是綜合科技，必須過 ai_filter；
+  # FT 那個網址本身就是 AI 分類，不必過濾。
+  - {name: "The Information",      lang: en, cat: media, weight: 1.7, pinned: false, ai_filter: true,  urls: ["https://www.theinformation.com/feed"]}
+  - {name: "Bloomberg Technology", lang: en, cat: media, weight: 1.6, pinned: false, ai_filter: true,  urls: ["https://feeds.bloomberg.com/technology/news.rss"]}
+  # FT 的 feed 導言只有 74 字，幾乎只剩標題，權重壓低——
+  # 讓它只在議題真的熱、或有其他來源佐證時才擠進名單
+  - {name: "FT 人工智慧",           lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.ft.com/artificial-intelligence?format=rss"]}
+
   # ══ 論文 ════════════════════════════════════════════
   - {name: "arXiv cs.AI",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.AI"]}
   - {name: "arXiv cs.CL",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.CL"]}
@@ -140,6 +152,10 @@ dropped:
   - {name: "The Neuron",        reason: "找不到可用 feed"}
   - {name: "Marktechpost",      reason: "更新極頻繁但多為新聞稿改寫，訊噪比低，會稀釋候選池"}
   - {name: "日文綜合新聞三家",     reason: "Business Insider JP／Impress Watch／CNET Japan 皆可用，但 AI 佔比低；ITmedia AI+、ASCII.jp、Nikkei xTECH 已覆蓋日文"}
+  # 2026-08-18 評估「AI 產業與商業資訊追蹤推薦」清單的結果
+  - {name: "Reuters Technology", reason: "公開 RSS 已關閉（401／404），改成付費的 Reuters Connect。通訊社等級的覆蓋只能改走 GDELT DOC API"}
+  - {name: "Stanford HAI",       reason: "三個候選網址都回 200 但解析不到項目。AI Index 本質是年度報告，不是每日新聞來源"}
+  - {name: "CB Insights",        reason: "feed 可用（25 則、每日更新），但內容以 Executive Interview 等推廣性文章為主，真正的市場地圖與資金資料在付費牆後，訊噪比不划算"}
 
 # ══════════════════════════════════════════════════════════
 # 非 RSS 來源（第二階段接入）

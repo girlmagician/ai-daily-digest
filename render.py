@@ -45,31 +45,55 @@ LANG_LABEL = {"en": "英", "ja": "日", "zh-CN": "簡中", "zh-TW": "繁中", "k
 
 CSS = """
 :root{--bg:#fbfbfa;--card:#fff;--fg:#1a1a18;--dim:#6b6b66;--line:#e6e5e0;
---accent:#8a5a2b;--accent-bg:#f3ece3;--hot:#c0442e}
+--accent:#8a5a2b;--accent-bg:#f3ece3;--hot:#c0442e;--barbg:#fbfbfaf2}
 @media(prefers-color-scheme:dark){:root{--bg:#16161a;--card:#1e1e23;--fg:#e8e8e4;
---dim:#9a9a94;--line:#31313a;--accent:#d9a066;--accent-bg:#2a2620;--hot:#e0705a}}
+--dim:#9a9a94;--line:#31313a;--accent:#d9a066;--accent-bg:#2a2620;--hot:#e0705a;
+--barbg:#16161af2}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);
 font-family:-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
 line-height:1.75;font-size:16px}
-.wrap{max-width:760px;margin:0 auto;padding:24px 18px 64px}
-header{border-bottom:2px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+.wrap{max-width:1216px;margin:0 auto;padding:24px 18px 64px}
+header{border-bottom:2px solid var(--line);padding-bottom:14px}
 h1{font-size:1.6rem;margin:0 0 4px}
 h1 a{color:inherit;text-decoration:none}
-.sub{color:var(--dim);font-size:.85rem}
-.nav{margin-top:10px;font-size:.85rem}
-.nav a{color:var(--accent);text-decoration:none;margin-right:14px}
-h2{font-size:1.05rem;margin:32px 0 4px;padding-top:12px;border-top:1px solid var(--line);
-color:var(--accent);letter-spacing:.02em}
+.sub{color:var(--dim);font-size:.85rem;margin:0}
+
+/* 近 7 日快速切換 */
+.days{margin:12px 0 0;font-size:.85rem;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.days .lbl{color:var(--dim);margin-right:2px}
+.days a{color:var(--accent);text-decoration:none;border:1px solid var(--line);
+border-radius:6px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.days a:hover{background:var(--accent-bg)}
+.days .now{background:var(--accent);color:var(--bg);border-color:var(--accent);
+padding:2px 9px;border-radius:6px;font-variant-numeric:tabular-nums}
+.days .more{border-style:dashed}
+
+/* 分類篩選器：捲動時固定在頂端 */
+.groups{position:sticky;top:0;z-index:10;background:var(--barbg);
+backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+margin:0 -18px 4px;padding:9px 18px;display:flex;flex-wrap:wrap;gap:7px;
+align-items:center;font-size:.85rem}
+.groups a{color:var(--fg);text-decoration:none;border:1px solid var(--line);
+border-radius:999px;padding:3px 12px;white-space:nowrap}
+.groups a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.groups a b{color:var(--dim);font-weight:400;margin-left:5px;font-size:.78rem}
+.groups a:hover b{color:var(--accent)}
+.groups .top{margin-left:auto;border-style:dashed;color:var(--dim)}
+
+/* 錨點跳轉時標題不要被固定列遮住 */
+h2{font-size:1.05rem;margin:34px 0 4px;padding-top:12px;border-top:1px solid var(--line);
+color:var(--accent);letter-spacing:.02em;scroll-margin-top:56px}
 article{background:var(--card);border:1px solid var(--line);border-radius:10px;
-padding:14px 16px;margin:12px 0}
+padding:14px 18px;margin:12px 0}
 .t{font-size:1.06rem;font-weight:600;margin:0 0 6px;line-height:1.5}
 .t a{color:var(--fg);text-decoration:none}
 .t a:hover{color:var(--accent);text-decoration:underline}
 .n{color:var(--dim);font-variant-numeric:tabular-nums;margin-right:6px;font-weight:400}
-.s{margin:6px 0 10px;font-size:.95rem}
+/* 版面加寬後仍限制文字行寬：一行過長會讓中文閱讀時難以回到下一行行首 */
+.s{margin:6px 0 10px;font-size:.95rem;max-width:68em}
 .orig{color:var(--dim);font-size:.82rem;margin:6px 0;
-overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px}
+overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px;max-width:68em}
 .meta{font-size:.78rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .tag{background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:.72rem}
 .hot{color:var(--hot);font-weight:600;text-decoration:none}
@@ -79,10 +103,15 @@ footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);
 font-size:.8rem;color:var(--dim)}
 footer h3{font-size:.85rem;margin:18px 0 6px;color:var(--fg)}
 footer ul{margin:4px 0;padding-left:20px}
-.note{background:var(--accent-bg);border-radius:8px;padding:10px 14px;font-size:.82rem;margin:16px 0}
+.note{background:var(--accent-bg);border-radius:8px;padding:10px 14px;
+font-size:.82rem;margin:14px 0;max-width:68em}
 ul.arc{list-style:none;padding:0}
 ul.arc li{padding:8px 0;border-bottom:1px solid var(--line)}
 ul.arc a{color:var(--accent);text-decoration:none;font-weight:600}
+@media(max-width:640px){
+  .groups{margin:0 -14px 4px;padding:8px 14px;gap:5px;font-size:.8rem}
+  .wrap{padding:18px 14px 56px}
+}
 """
 
 
@@ -161,33 +190,64 @@ def render_item(it: dict, n: int) -> str:
     return "".join(parts)
 
 
-def render_digest(digest: dict, report: dict, date_label: str, is_index: bool) -> str:
+DAYS_SHOWN = 7
+
+
+def render_days(dates: list[str], current: str) -> str:
+    """近 7 日快速切換。更早的日期留給歷史存檔頁，否則列一整年會太長。"""
+    parts = ['<nav class="days"><span class="lbl">近 7 日</span>']
+    for d in dates[:DAYS_SHOWN]:
+        label = f"{d[5:7]}/{d[8:10]}"
+        if d == current:
+            parts.append(f'<span class="now">{label}</span>')
+        else:
+            parts.append(f'<a href="{d}.html">{label}</a>')
+    if len(dates) > DAYS_SHOWN:
+        parts.append(f'<a class="more" href="archive.html">更早（共 {len(dates)} 天）</a>')
+    else:
+        parts.append('<a class="more" href="archive.html">歷史存檔</a>')
+    parts.append('<a class="more" href="feed.xml">RSS</a></nav>')
+    return "".join(parts)
+
+
+def render_groups(groups: list[tuple[str, int]]) -> str:
+    """分類篩選器。用純錨點連結而不是 JS 篩選：
+
+    捲動到該段落比隱藏其他內容更符合「跳過去讀」的需求，
+    而且不依賴 JavaScript，離線存檔或關閉腳本時一樣能用。
+    """
+    parts = ['<nav class="groups">']
+    for n, (name, count) in enumerate(groups):
+        parts.append(f'<a href="#g{n}">{esc(name)}<b>{count}</b></a>')
+    parts.append('<a class="top" href="#">回到頂端</a></nav>')
+    return "".join(parts)
+
+
+def render_digest(digest: dict, report: dict, date_key: str, date_label: str,
+                  dates: list[str]) -> str:
     items = digest["items"]
     gen = tpe_str(digest["generated_at_utc"], "%Y/%m/%d %H:%M")
 
-    nav = ('<p class="nav"><a href="archive.html">歷史存檔</a>'
-           '<a href="feed.xml">RSS 訂閱</a></p>') if is_index else \
-          ('<p class="nav"><a href="index.html">回到今日</a>'
-           '<a href="archive.html">歷史存檔</a></p>')
+    ordered = sorted(items, key=lambda i: i["rank"])
+    seen_groups = [g for g in GROUP_ORDER if any(i["group"] == g for i in ordered)]
+    seen_groups += sorted({i["group"] for i in ordered} - set(seen_groups))
+    counts = [(g, sum(1 for i in ordered if i["group"] == g)) for g in seen_groups]
 
     head = (f'<header><h1><a href="index.html">{SITE_TITLE}</a></h1>'
             f'<p class="sub">{date_label}　共 {len(items)} 則　'
             f'取材自過去 {digest["source_window_hours"]} 小時　產生於 {gen}（台北時間）</p>'
-            f'{nav}</header>')
+            f'{render_days(dates, date_key)}</header>')
 
     note = ('<p class="note">所有內容由程式自動收集、機器翻譯，'
             '每則都附上原始連結與原文標題供查證。'
             '譯文只改寫來源提供的文字，不補充任何外部資訊；'
             '來源未提供摘要者標為「僅標題」。</p>')
 
-    body = [head, note]
-    ordered = sorted(items, key=lambda i: i["rank"])
-    seen_groups = [g for g in GROUP_ORDER if any(i["group"] == g for i in ordered)]
-    seen_groups += sorted({i["group"] for i in ordered} - set(seen_groups))
+    body = [head, render_groups(counts), note]
 
     n = 0
-    for g in seen_groups:
-        body.append(f"<h2>{esc(g)}</h2>")
+    for gi, (g, _) in enumerate(counts):
+        body.append(f'<h2 id="g{gi}">{esc(g)}</h2>')
         for it in ordered:
             if it["group"] == g:
                 n += 1
@@ -234,8 +294,7 @@ def render_footer(digest: dict, report: dict) -> str:
 def render_archive(dates: list[str]) -> str:
     head = (f'<header><h1><a href="index.html">{SITE_TITLE}</a></h1>'
             f'<p class="sub">歷史存檔　共 {len(dates)} 天</p>'
-            f'<p class="nav"><a href="index.html">回到今日</a>'
-            f'<a href="feed.xml">RSS 訂閱</a></p></header>')
+            f'{render_days(dates, "")}</header>')
     lis = "".join(f'<li><a href="{d}.html">{d}</a></li>' for d in dates)
     return page(f"{SITE_TITLE}｜歷史存檔", f"{head}<ul class=\"arc\">{lis}</ul>")
 
@@ -317,15 +376,15 @@ def main() -> None:
     date_label = gen.strftime("%Y年%m月%d日")
 
     DOCS.mkdir(exist_ok=True)
-    (DOCS / f"{date_key}.html").write_text(
-        render_digest(digest, report, date_label, is_index=False), encoding="utf-8")
-    (DOCS / "index.html").write_text(
-        render_digest(digest, report, date_label, is_index=True), encoding="utf-8")
+    # 日期清單要先算出來（含今天），首頁與存檔頁的「近 7 日」切換都需要它
+    known = {p.stem for p in DOCS.glob("*.html") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.stem)}
+    known.add(date_key)
+    dates = sorted(known, reverse=True)
 
-    dates = sorted(
-        (p.stem for p in DOCS.glob("*.html") if re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.stem)),
-        reverse=True,
-    )
+    html_out = render_digest(digest, report, date_key, date_label, dates)
+    (DOCS / f"{date_key}.html").write_text(html_out, encoding="utf-8")
+    (DOCS / "index.html").write_text(html_out, encoding="utf-8")
+
     (DOCS / "archive.html").write_text(render_archive(dates), encoding="utf-8")
     (DOCS / "feed.xml").write_text(render_feed(digest, ""), encoding="utf-8")
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
