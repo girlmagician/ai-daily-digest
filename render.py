@@ -184,10 +184,19 @@ def render_item(it: dict, n: int) -> str:
             f'<a class="src" href="{esc(url)}" target="_blank" rel="noopener">'
             f'{esc(it["source"])}｜{esc(domain(url))}</a>']
 
+    if it.get("social"):
+        # 抓不到內文，讀者拿到的常常只有一句話。標出來讓人自己判斷要不要點
+        meta.append('<span>社群貼文</span>')
+
     published = tpe_str(it.get("published_utc", ""))
     if published:
-        mark = "（時間存疑）" if it.get("time_clamped") else ""
-        meta.append(f'<span>{published}{mark}</span>')
+        if it.get("source") == "Hacker News":
+            # 這些是 hn.py 從 Algolia 補進來的，時間欄位只有「投稿到 HN 的時間」，
+            # 原文可能早好幾天就發表了。標成投稿時間，不要讓人誤讀成發布日期
+            meta.append(f'<span>{published} 投稿 HN</span>')
+        else:
+            mark = "（時間存疑）" if it.get("time_clamped") else ""
+            meta.append(f'<span>{published}{mark}</span>')
     if it.get("hn_points"):
         hn = it.get("hn_url") or url
         meta.append(f'<a class="hot" href="{esc(hn)}" target="_blank" rel="noopener">'

@@ -417,6 +417,7 @@ def main() -> None:
             "also_reported_by": src.get("also_reported_by", []),
             "merged_ids": s["duplicate_ids"],
             "time_clamped": src["time_clamped"],
+            "social": bool(src.get("social")),
         })
 
     OUT.mkdir(exist_ok=True)

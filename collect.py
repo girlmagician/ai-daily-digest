@@ -35,7 +35,8 @@ import yaml
 
 import hn
 import scrape
-from fetchlib import entry_time, item_id, normalize_url, polite_get, strip_html
+from fetchlib import (entry_time, is_social, item_id, normalize_url, polite_get,
+                      strip_html)
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -119,6 +120,12 @@ def ai_relevance(title: str, summary: str) -> tuple[bool, int]:
 # 而 HN 分數會讓它看起來像是有熱度的項目，反而不容易被剔除。
 VERSION_ONLY = re.compile(r"^[a-zA-Z]?v?\d[\w.\-]*$")
 MIN_SUBSTANCE = 80
+# 社群貼文的熱度加成折扣。半價：夠熱的仍然進得來，一般的推文就擠不過真正的報導
+SOCIAL_HN_DISCOUNT = 0.5
+# 一般新聞的分數下限。權重 1.0 的來源就算全新也只有 1.5，等於規定
+# 「沒有 HN 分數、也沒有跨來源佐證的普通來源不上稿」。
+# 官方公告與論文不受此限（見 select()）
+MIN_SCORE = 1.6
 
 
 def is_contentless(title: str, summary: str) -> bool:
@@ -257,6 +264,7 @@ def fetch_source(src: dict, cutoff: datetime, cap: int | None = None) -> dict:
             "summary_original": summary,
             "url": normalize_url(link),
             "url_raw": link,
+            "social": is_social(link),
             "published_utc": published.isoformat(),
             "time_clamped": clamped,      # feed 時區錯誤，時間被夾回現在
             "time_estimated": estimated,  # feed 無時間欄位，用抓取時間推估
@@ -317,6 +325,7 @@ def merge_hn(items: list[dict], stories: list[dict], cutoff: datetime) -> dict:
             "summary_original": "",  # HN 不提供摘要，翻譯階段只能用標題
             "url": story["url"],
             "url_raw": story["url"],
+            "social": is_social(story["url"]),
             "published_utc": published.isoformat(),
             "time_clamped": False,
             "time_estimated": False,
@@ -406,6 +415,10 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
     # （50 分 → 0.35、200 分 → 0.71、800 分 → 1.41，上限 1.6）
     points = item.get("hn_points", 0)
     hn_bonus = min(1.6, (points / 400) ** 0.5) if points else 0.0
+    # 社群貼文抓不到內文，讀者拿到的往往只有一句話。熱度打折而不是排除：
+    # 真正重大的宣布（常首發在 X）分數夠高，還是擠得進來
+    if item.get("social"):
+        hn_bonus *= SOCIAL_HN_DISCOUNT
 
     item["effective_weight"] = round(effective_weight, 3)
     item["score_breakdown"] = {
@@ -415,6 +428,7 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
         "cross_source_bonus": round(cross, 2),
         "hn_bonus": round(hn_bonus, 2),
         "hn_points": points,
+        "social": bool(item.get("social")),
         "recency_bonus": round(recency, 2),
         "estimated_time_penalty": penalty,
     }
@@ -423,7 +437,8 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
 
 
 def select(
-    items: list[dict], target: int, max_pinned: int, max_papers: int, max_per_source: int
+    items: list[dict], target: int, max_pinned: int, max_papers: int,
+    max_per_source: int, min_score: float = 0.0
 ) -> dict:
     """論文獨立成區，不與新聞在同一個池子裡競爭。
 
@@ -442,8 +457,14 @@ def select(
     pinned_selected = pinned[:max_pinned]
     pinned_ids = {i["id"] for i in pinned_selected}
 
+    # 分數下限只套用在一般新聞。官方公告是日報的骨幹，論文的分數訊號天生就弱
+    # （權重 0.8–0.9，加滿新鮮度也構不到 1.6），兩者一併套用會被整批清空。
+    # 目的不是湊滿 target，而是寧可當天少幾則，也不要拿沒有任何外部訊號的
+    # 一般來源硬湊——來源薄的日子本來就該看起來比較薄
+    contenders = [i for i in news if i["id"] not in pinned_ids]
+    below_floor = [i for i in contenders if i["score"] < min_score]
     rest = sorted(
-        (i for i in news if i["id"] not in pinned_ids),
+        (i for i in contenders if i["score"] >= min_score),
         key=lambda i: (-i["score"], i["published_utc"]),
     )
 
@@ -471,6 +492,7 @@ def select(
         "ranked": ranked,
         "papers": papers,
         "overflow_pinned": pinned[max_pinned:],
+        "below_floor": below_floor,
         "source_distribution": dict(sorted(per_source.items(), key=lambda kv: -kv[1])),
     }
 
@@ -484,6 +506,8 @@ def main() -> None:
     ap.add_argument("--max-pinned", type=int, default=12, help="官方公告最多佔幾則")
     ap.add_argument("--max-papers", type=int, default=5, help="論文區最多幾則")
     ap.add_argument("--max-per-source", type=int, default=3, help="單一來源在名單裡最多佔幾席")
+    ap.add_argument("--min-score", type=float, default=MIN_SCORE,
+                    help=f"一般新聞的分數下限，預設 {MIN_SCORE}（官方公告與論文不受限）；0 表示不設限")
     ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--no-hn", action="store_true", help="跳過 Hacker News（除錯用）")
     ap.add_argument("--ignore-seen", action="store_true", help="不排除前幾天已發布過的項目（重跑用）")
@@ -538,7 +562,8 @@ def main() -> None:
 
     scored = [score(i, now, args.hours) for i in fresh]
     selection = select(
-        scored, args.top, args.max_pinned, args.max_papers, args.max_per_source
+        scored, args.top, args.max_pinned, args.max_papers, args.max_per_source,
+        min_score=args.min_score,
     )
 
     # ── 終端摘要 ──
@@ -588,6 +613,14 @@ def main() -> None:
               + "、".join(f"{i['source']} {i['title_original'][:20]}" for i in contentless[:6]))
     if clamped or estimated:
         print(f"時間修正：夾回現在 {clamped} 則、無時間欄位改用抓取時間 {estimated} 則")
+    low = selection["below_floor"]
+    if low:
+        print(f"低於分數下限 {args.min_score} 而未列入 {len(low)} 則："
+              + "、".join(f"{i['source']} {i['score']}" for i in
+                          sorted(low, key=lambda i: -i["score"])[:6]))
+    social = [i for i in scored if i.get("social")]
+    if social:
+        print(f"社群貼文 {len(social)} 則（熱度加成已乘 {SOCIAL_HN_DISCOUNT}）")
 
     print(
         f"\n選入：官方公告 {len(selection['official'])} 則"

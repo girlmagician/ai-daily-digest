@@ -68,6 +68,22 @@ def polite_get(url: str, timeout: int | None = None, retries: int = 1) -> reques
     return resp
 
 
+# 社群平台。不排除——各家 AI 公司的重大宣布確實常常首發在 X 上——
+# 但這類網址抓不到內文，而且很多只是個人隨手發言，熱度加成要打折，
+# 免得一則爆紅推文擠掉真正的報導。折扣在 collect.score() 裡套用。
+SOCIAL_HOSTS = {
+    "twitter.com", "mobile.twitter.com", "x.com",
+    "bsky.app", "threads.net", "threads.com",
+    "mastodon.social", "fosstodon.org", "hachyderm.io",
+    "linkedin.com", "t.me", "reddit.com", "old.reddit.com",
+}
+
+
+def is_social(url: str) -> bool:
+    host = (urlparse(url or "").hostname or "").lower()
+    return (host[4:] if host.startswith("www.") else host) in SOCIAL_HOSTS
+
+
 def normalize_url(url: str) -> str:
     """剝掉追蹤參數、統一大小寫與尾斜線，作為去重主鍵的依據。"""
     try:

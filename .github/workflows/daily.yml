@@ -62,7 +62,9 @@ jobs:
       - name: 收集情報
         # 時間窗 48 小時 > 執行間隔 24 小時：某天失敗也不會漏掉新聞。
         # 重複的部分由 state/seen.json 擋掉。
-        run: python collect.py --hours 48 --top 30
+        # --top 45 而策展的 --target 是 30：候選數要大於目標數，策展才有得裁。
+        # 兩邊都是 30 的時候，只要擠進機械評分前 30 名幾乎就等於會上稿。
+        run: python collect.py --hours 48 --top 45
 
       - name: 補抓原文全文
         # RSS 多半只給導言。沒有這步，摘要就只能靠模型腦補
