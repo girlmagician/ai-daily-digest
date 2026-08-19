@@ -150,7 +150,145 @@ def domain(url: str) -> str:
     return m.group(1) if m else ""
 
 
-def page(title: str, body: str, desc: str = SITE_DESC) -> str:
+# ────────────────────────────────────────────────────────────
+# 收藏（全站唯一用到 JavaScript 的地方）
+#
+# 這是靜態站，沒有後端也沒有登入，收藏只能存在瀏覽器的 localStorage。
+# 全站原本刻意零 JavaScript（分類篩選器都用純錨點），這裡是唯一的例外——
+# 收藏做不到不用 JS。做法是漸進增強：關掉 JS 頁面完全照舊可讀，
+# 只是不會出現收藏按鈕，既有內容一個字都不依賴腳本。
+# 一樣不引任何外部資源，資料也不離開瀏覽器。
+#
+# 識別碼用「原文網址」而不是內部的 id：卡片標記裡本來就有網址，
+# 不必為了收藏去改每張卡片的 HTML，舊存檔頁也能靠注入腳本直接支援。
+# ────────────────────────────────────────────────────────────
+FAV_CSS = """
+button.fav{float:right;margin:1px 0 4px 10px;border:1px solid var(--line);
+background:var(--card);color:var(--dim);cursor:pointer;font-size:15px;line-height:1;
+padding:3px 8px;border-radius:6px;font-family:inherit}
+button.fav:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+button.fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+.fav-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.fav-bar button,.fav-bar label{border:1px solid var(--line);background:var(--card);
+color:var(--fg);border-radius:6px;padding:3px 12px;cursor:pointer;font-size:.85rem;
+font-family:inherit;line-height:1.7}
+.fav-bar button:hover,.fav-bar label:hover{border-color:var(--accent);
+color:var(--accent);background:var(--accent-bg)}
+.fav-bar input[type=file]{display:none}
+.fav-bar .danger:hover{border-color:var(--hot);color:var(--hot);background:transparent}
+"""
+
+_FAV_JS = r"""(function(){
+var KEY='ai-digest-favs';
+document.head.insertAdjacentHTML('beforeend','<style>'+FAVCSS+'<\/style>');
+
+function load(){try{var v=JSON.parse(localStorage.getItem(KEY));
+return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return {};}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true;}
+catch(e){alert('收藏沒有存成功：瀏覽器儲存空間已滿，或這個瀏覽器停用了本機儲存（無痕模式常見）。');
+return false;}}
+function count(){return Object.keys(load()).length;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function badge(){var n=count(),ls=document.querySelectorAll('a.fav-link');
+for(var i=0;i<ls.length;i++){ls[i].textContent=n?'收藏 '+n:'收藏';}}
+
+function metaText(art,re){var ns=art.querySelectorAll('.meta span');
+for(var i=0;i<ns.length;i++){var t=ns[i].textContent.trim();if(re.test(t))return t;}
+return '';}
+
+function snap(art,a){var src=art.querySelector('.meta .src');
+var grid=art.parentElement,h2=grid?grid.previousElementSibling:null;
+return {t:a.textContent.trim(),s:src?src.textContent.trim():'',
+d:metaText(art,/^[0-9]{2}\/[0-9]{2}/),
+g:(h2&&h2.tagName==='H2')?h2.textContent.trim():'',
+ts:new Date().toISOString()};}
+
+function decorate(){var arts=document.querySelectorAll('article');
+for(var i=0;i<arts.length;i++){(function(art){
+var t=art.querySelector('p.t'),a=t?t.querySelector('a'):null;
+if(!a||art.querySelector('button.fav'))return;
+var url=a.href,b=document.createElement('button');b.type='button';
+function paint(){var on=!!load()[url];b.textContent=on?'★':'☆';
+b.className='fav'+(on?' on':'');b.title=on?'取消收藏':'收藏';
+b.setAttribute('aria-pressed',on?'true':'false');}
+b.addEventListener('click',function(){var d=load();
+if(d[url]){delete d[url];}else{d[url]=snap(art,a);}
+if(save(d)){paint();badge();}});
+paint();t.insertBefore(b,t.firstChild);})(arts[i]);}}
+
+function renderList(){var box=document.getElementById('fav-list');if(!box)return;
+var d=load(),urls=Object.keys(d),sub=document.getElementById('fav-count');
+if(sub){sub.textContent=urls.length?('共 '+urls.length+' 則　依收藏時間由新到舊'):'還沒有收藏';}
+if(!urls.length){box.innerHTML='<p class="note">還沒有收藏。到任何一天的日報頁面，'
++'點卡片右上角的 ☆ 就會收進來。<\/p>';return;}
+urls.sort(function(x,y){return String(d[y].ts||'').localeCompare(String(d[x].ts||''));});
+var groups={},order=[];
+for(var i=0;i<urls.length;i++){var g=d[urls[i]].g||'其他';
+if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(urls[i]);}
+order.sort(function(x,y){var a=FAVORDER.indexOf(x),b=FAVORDER.indexOf(y);
+return (a<0?999:a)-(b<0?999:b);});
+var h='';
+for(var j=0;j<order.length;j++){var g=order[j],list=groups[g];
+h+='<h2>'+esc(g)+'<\/h2><div class="grid">';
+for(var k=0;k<list.length;k++){var u=list[k],it=d[u];
+h+='<article><p class="t"><button type="button" class="fav on" data-url="'+esc(u)
++'" title="移除收藏">★<\/button><a href="'+esc(u)+'" target="_blank" rel="noopener">'
++esc(it.t)+'<\/a><\/p><p class="meta">'
++(it.s?'<span>'+esc(it.s)+'<\/span>':'')
++(it.d?'<span>'+esc(it.d)+'<\/span>':'')
++'<span>收藏於 '+esc(String(it.ts||'').slice(0,10))+'<\/span><\/p><\/article>';}
+h+='<\/div>';}
+box.innerHTML=h;
+var bs=box.querySelectorAll('button.fav');
+for(var m=0;m<bs.length;m++){bs[m].addEventListener('click',function(){
+var d2=load();delete d2[this.getAttribute('data-url')];
+if(save(d2)){renderList();badge();}});}}
+
+function exportFavs(){var blob=new Blob([JSON.stringify(load(),null,2)],
+{type:'application/json'}),a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='ai-digest-favs-'+new Date().toISOString().slice(0,10)+'.json';
+document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(a.href);a.parentNode.removeChild(a);},0);}
+
+function importFavs(f){var r=new FileReader();
+r.onload=function(){var inc;
+try{inc=JSON.parse(r.result);}catch(e){alert('這個檔案不是有效的 JSON。');return;}
+if(!inc||typeof inc!=='object'||Array.isArray(inc)){alert('這個檔案不是收藏備份。');return;}
+var d=load(),n=0;
+for(var k in inc){if(Object.prototype.hasOwnProperty.call(inc,k)&&!d[k]
+&&inc[k]&&typeof inc[k]==='object'){d[k]=inc[k];n++;}}
+if(save(d)){renderList();badge();alert('匯入完成，新增 '+n+' 筆（重複的保留原本的）。');}};
+r.readAsText(f);}
+
+function wire(){var e=document.getElementById('fav-export');
+if(e)e.addEventListener('click',exportFavs);
+var i=document.getElementById('fav-import');
+if(i)i.addEventListener('change',function(){
+if(this.files&&this.files[0])importFavs(this.files[0]);this.value='';});
+var c=document.getElementById('fav-clear');
+if(c)c.addEventListener('click',function(){var n=count();if(!n)return;
+if(confirm('確定要清除全部 '+n+' 筆收藏？這個動作沒辦法復原，建議先匯出備份。')){
+if(save({})){renderList();badge();}}});}
+
+function init(){decorate();renderList();wire();badge();}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();"""
+
+
+def fav_js() -> str:
+    """收藏腳本。CSS 與分組順序由 Python 端注入，
+    用 json.dumps 產生安全的 JS 字面值，免得引號或反斜線把腳本弄壞。"""
+    js = (_FAV_JS
+          .replace("FAVCSS", json.dumps(FAV_CSS))
+          .replace("FAVORDER", json.dumps(GROUP_ORDER, ensure_ascii=False)))
+    return '<script id="fav">' + js + "</script>"
+
+
+def page(title: str, body: str, desc: str = SITE_DESC, script: str = "") -> str:
     return f"""<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -164,7 +302,7 @@ def page(title: str, body: str, desc: str = SITE_DESC) -> str:
 <link rel="alternate" type="application/rss+xml" title="{esc(SITE_TITLE)}" href="feed.xml">
 <style>{CSS}</style>
 </head>
-<body><div class="wrap">{body}</div></body>
+<body><div class="wrap">{body}</div>{script}</body>
 </html>
 """
 
@@ -232,6 +370,8 @@ def render_days(dates: list[str], current: str) -> str:
         parts.append(f'<a class="more" href="archive.html">更早（共 {len(dates)} 天）</a>')
     else:
         parts.append('<a class="more" href="archive.html">歷史存檔</a>')
+    # fav-link 這個 class 是給收藏腳本認的：它會把文字換成「收藏 3」帶上筆數
+    parts.append('<a class="more fav-link" href="favorites.html">收藏</a>')
     parts.append('<a class="more" href="feed.xml">RSS</a></nav>')
     return "".join(parts)
 
@@ -281,7 +421,7 @@ def render_digest(digest: dict, report: dict, date_key: str, date_label: str,
         body.append("</div>")
 
     body.append(render_footer(digest, report))
-    return page(f"{SITE_TITLE}｜{date_label}", "".join(body))
+    return page(f"{SITE_TITLE}｜{date_label}", "".join(body), script=fav_js())
 
 
 def render_footer(digest: dict, report: dict) -> str:
@@ -323,7 +463,36 @@ def render_archive(dates: list[str]) -> str:
             f'<p class="sub">歷史存檔　共 {len(dates)} 天</p>'
             f'{render_days(dates, "")}</header>')
     lis = "".join(f'<li><a href="{d}.html">{d}</a></li>' for d in dates)
-    return page(f"{SITE_TITLE}｜歷史存檔", f"{head}<ul class=\"arc\">{lis}</ul>")
+    return page(f"{SITE_TITLE}｜歷史存檔", f"{head}<ul class=\"arc\">{lis}</ul>",
+                script=fav_js())
+
+
+def render_favorites(dates: list[str]) -> str:
+    """收藏頁。內容完全由 fav_js() 從瀏覽器的 localStorage 畫出來，
+
+    這裡只產生一個空殼——伺服器端不知道、也不該知道誰收藏了什麼。
+    也因此這一頁不需要每天重畫內容，但仍然每次 render 都重寫，
+    這樣導覽列的日期與腳本才會跟著更新。
+    """
+    head = (f'<header><h1><a href="index.html">{SITE_TITLE}</a></h1>'
+            f'<p class="sub" id="fav-count">收藏</p>'
+            f'{render_days(dates, "")}'
+            '<div class="fav-bar">'
+            '<button type="button" id="fav-export">匯出 JSON</button>'
+            '<label for="fav-import">匯入</label>'
+            '<input type="file" id="fav-import" accept="application/json,.json">'
+            '<button type="button" class="danger" id="fav-clear">清除全部</button>'
+            '</div></header>')
+    body = (head
+            + '<noscript><p class="note">收藏功能需要 JavaScript。這一頁的內容存在你自己的'
+              '瀏覽器裡（localStorage），必須靠腳本才畫得出來。日報本身不需要 JavaScript，'
+              '關掉照樣完整可讀。</p></noscript>'
+            + '<div id="fav-list"></div>'
+            '<footer><p>收藏只存在這個瀏覽器裡（localStorage），不會上傳到任何地方，'
+            '也不會經過本站的伺服器。換裝置、換瀏覽器或清除網站資料就會消失——'
+            '想留著請先用「匯出 JSON」備份。</p>'
+            '<p>收藏記的是原文連結，日報頁面之後即使重新產生也不受影響。</p></footer>')
+    return page(f"{SITE_TITLE}｜收藏", body, script=fav_js())
 
 
 def render_feed(digest: dict, base: str) -> str:
@@ -393,18 +562,23 @@ def update_seen(digest: dict, date_key: str) -> int:
 
 
 DAYS_NAV_RE = re.compile(r'<nav class="days">.*?</nav>', re.S)
+FAV_SCRIPT_RE = re.compile(r'<script id="fav">.*?</script>', re.S)
 
 
-def refresh_days_nav(dates: list[str]) -> int:
-    """把既有存檔頁的「近 7 日」導覽換成最新的日期清單。
+def refresh_shell(dates: list[str]) -> int:
+    """把既有存檔頁的「外殼」重刷成最新版：日期導覽與收藏腳本。
 
     每一頁的導覽是產生當下寫死的，隔天多出一天，昨天以前的頁面就過期了
     （8/10 那頁一度只連得到 8/18 和 8/10）。archive.html 每次都重算所以不受影響，
     但日期列本身是給人快速跳頁用的，斷掉就失去意義。
 
+    收藏腳本同理：它是靠掃描 article 標記與原文網址運作的，不需要當天的資料，
+    所以注入舊頁之後，8/10 以來的每一頁都能收藏，不必重跑模型、不花錢。
+
     這裡只做字串替換、不重畫內容：舊日子的 digest 沒有保存，
-    要重畫得重跑一次模型。導覽是純結構、與當天內容無關，抽換是安全的。
+    要重畫得重跑一次模型。導覽與腳本都是純結構、與當天內容無關，抽換是安全的。
     """
+    js = fav_js()
     changed = 0
     for path in sorted(DOCS.glob("*.html")):
         if path.name == "index.html":
@@ -412,11 +586,15 @@ def refresh_days_nav(dates: list[str]) -> int:
         elif re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem):
             current = path.stem
         else:
-            continue  # archive.html 由 render_archive 自己重畫
+            continue  # archive.html 與 favorites.html 每次都整頁重畫
 
         old = path.read_text(encoding="utf-8")
         # 用 lambda 給替換字串，避免內容裡的反斜線被當成 re 的跳脫序列
         new = DAYS_NAV_RE.sub(lambda _: render_days(dates, current), old, count=1)
+        if FAV_SCRIPT_RE.search(new):
+            new = FAV_SCRIPT_RE.sub(lambda _: js, new, count=1)
+        else:
+            new = new.replace("</body>", js + "</body>", 1)
         if new != old:
             path.write_text(new, encoding="utf-8")
             changed += 1
@@ -465,7 +643,8 @@ def main() -> None:
         (DOCS / "feed.xml").write_text(render_feed(digest, ""), encoding="utf-8")
 
     (DOCS / "archive.html").write_text(render_archive(dates), encoding="utf-8")
-    renav = refresh_days_nav(dates)
+    (DOCS / "favorites.html").write_text(render_favorites(dates), encoding="utf-8")
+    renav = refresh_shell(dates)
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
 
@@ -473,7 +652,7 @@ def main() -> None:
     print(f"已產生 {len(digest['items'])} 則 → {DOCS / target}")
     print(f"存檔 {date_key}.html　歷史共 {len(dates)} 天")
     if renav:
-        print(f"重刷 {renav} 頁的「近 7 日」導覽")
+        print(f"重刷 {renav} 頁的導覽與收藏腳本")
 
     if args.replay:
         # 重播只是重畫版面，不算一次新的發布：不能動已發布清單，
