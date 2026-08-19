@@ -46,7 +46,7 @@ sources.yaml ──► collect.py ──► extract.py ──► translate.py �
 | `fetchlib.py` | 網址正規化、逐網域限速、時間處理 |
 | `llm.py` | 透過 Claude Code CLI 呼叫模型（不需要 API key） |
 | `translate.py` | 策展（合併跨語言重複、分組排序）與翻譯，含所有驗證 |
-| `render.py` | 產生 `docs/` 靜態網頁、存檔與 RSS |
+| `render.py` | 產生 `docs/` 靜態網頁、存檔、RSS 與收藏頁 |
 | `verify_feeds.py` | 來源健檢工具，新增來源時才需要跑 |
 | `state/seen.json` | 已發布項目，避免時間窗重疊造成重複刊登 |
 
@@ -74,6 +74,18 @@ python render.py --replay               # 重畫最後一次發布的內容，�
 要十一分鐘、約 US$0.8 的完整流程。重播不會更新已發布清單——那不算一次新的發布。
 
 試跑省成本：`python translate.py --limit 12 --target 8`
+
+## 收藏
+
+每張卡片標題右上角有 ☆，點了就收進「收藏」頁（導覽列上，會顯示筆數）。
+收藏頁依分類分組、依收藏時間由新到舊，並提供匯出／匯入 JSON。
+
+這是**全站唯一用到 JavaScript 的地方**。其餘功能（含分類篩選器）都刻意用純錨點，
+關掉 JS 一樣能用；收藏做不到不用 JS，因此採漸進增強——關掉 JS 頁面完全照舊可讀，
+只是不會出現收藏按鈕。一樣不引任何外部資源。
+
+識別碼用原文網址而不是內部 id，所以不必為了收藏去改每張卡片的 HTML，
+舊存檔頁也能靠 `refresh_shell()` 注入腳本直接支援。詳見 [`SETTINGS.md`](SETTINGS.md) 2-5。
 
 ## 自動執行
 
@@ -123,6 +135,9 @@ GitHub 的排程佇列與 Anthropic 端都是尖峰——實測 UTC 00:00 觸發
 
 ## 已知限制
 
+- **收藏不跨裝置。** 靜態站沒有後端也沒有登入，收藏只能存在瀏覽器的 localStorage。
+  換裝置、換瀏覽器、清除網站資料都會消失，唯一的退路是收藏頁的「匯出 JSON」。
+  要做到同步就得有帳號與資料庫，那會讓這個專案從靜態站變成一套服務。
 - **跨語言重複**只能靠策展階段的 LLM 判斷，程式的標題相似度比對抓不到。
 - **Reddit 全面擋機器人**（403／429），已從來源移除，社群熱度改用 Hacker News。
 - **資料中心 IP 會被部分站台擋。** GitHub Actions 上 `importai.substack.com` 與
