@@ -109,9 +109,36 @@ python render.py                          # 產生網頁
 | 版面寬度 | 1280px | `CSS` |
 | 卡片排列 | 兩欄 grid，視窗 <900px 收成一欄 | 同上 |
 | 旗標 | `--replay`（重畫最後一次發布，不花錢）、`--no-index`（只寫存檔頁，回補用） | |
+| 收藏 | 見 2-5 | |
 
-每次執行的最後會呼叫 `refresh_days_nav()`，把所有既有存檔頁的「近 7 日」
-導覽重刷成最新日期清單（只做字串替換，不重畫內容、不花錢）。
+每次執行的最後會呼叫 `refresh_shell()`，把所有既有存檔頁的「外殼」重刷成最新版：
+「近 7 日」導覽的日期清單，以及收藏腳本。只做字串替換，不重畫內容、不花錢。
+
+### 2-5 收藏（全站唯一的 JavaScript）
+
+| 項目 | 值 |
+|---|---|
+| 儲存位置 | 瀏覽器 localStorage，key `ai-digest-favs` |
+| 資料格式 | `{原文網址: {t 標題, s 來源, d 日期, g 分類, ts 收藏時間}}` |
+| 識別碼 | **原文網址**，不是內部的 id |
+| 收藏頁 | `docs/favorites.html`，內容全部由 JS 從 localStorage 畫出來 |
+| 進入點 | 每頁導覽列的「收藏 N」連結（`a.fav-link`，筆數由腳本填） |
+| 收藏按鈕 | 每張卡片標題右上角的 ☆／★ |
+| 匯出／匯入 | 收藏頁上的按鈕，JSON 檔 |
+| 舊頁支援 | `refresh_shell()` 每次 render 把腳本注入所有既有存檔頁 |
+| 程式位置 | `render.FAV_CSS`、`render._FAV_JS`、`render.fav_js()`、`render.render_favorites()` |
+
+**這是全站唯一用到 JavaScript 的地方。** 其餘功能（含分類篩選器）都刻意用純錨點，
+關掉 JS 一樣能用。收藏做不到不用 JS，所以採漸進增強：關掉 JS 頁面完全照舊可讀，
+只是不會出現收藏按鈕，既有內容一個字都不依賴腳本。一樣不引任何外部資源。
+
+**識別碼為什麼用網址**：卡片標記裡本來就有原文連結，不必為了收藏改每張卡片的 HTML，
+舊存檔頁也能靠注入腳本直接支援。同一篇文章跨兩天出現也只會是一筆收藏。
+
+**資料只存在瀏覽器裡**，不會上傳、不經過本站伺服器，所以：換裝置、換瀏覽器、
+清除網站資料都會消失，唯一的退路是「匯出 JSON」。每筆約 200 bytes，
+localStorage 上限約 5MB，等於幾千則都放得下。
+
 
 ---
 
@@ -239,6 +266,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | `docs/index.html` | 是 | 首頁（等於最新那天的存檔頁） |
 | `docs/YYYY-MM-DD.html` | 是 | 每日存檔 |
 | `docs/archive.html` | 是 | 歷史索引，每次 render 依 `docs/*.html` 重算 |
+| `docs/favorites.html` | 是 | 收藏頁外殼，內容由瀏覽器端的 localStorage 畫 |
 | `docs/feed.xml` | 是 | RSS |
 | `state/seen.json` | 是 | 已發布清單 `{"ids": {項目雜湊: 日期}}`，保留 21 天 |
 | `state/last-digest.json` | 是 | 首頁內容快照，`--replay` 用 |
@@ -263,6 +291,9 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | 只調版面 | `render.py` 的 `CSS`，然後 `python render.py --replay` | 不呼叫模型、不花錢、三秒完成 |
 | 改分組名稱 | `translate.GROUPS` 與 `render.GROUP_ORDER` **兩邊都要改** | 不一致會讓分類篩選器排序錯亂 |
 | 改執行時間 | workflow 的 `cron`（UTC） | 避開整點，理由見第一節 |
+| 改收藏的外觀 | `render.FAV_CSS` | 改完 `render.py --replay`，所有舊頁會一起更新 |
+| 改收藏的行為 | `render._FAV_JS` | 同上。改完建議用 jsdom 實測，不要只看語法 |
+| 收藏資料搬家 | 收藏頁的「匯出 JSON」→ 新裝置「匯入」 | localStorage 不跨裝置同步 |
 
 ---
 
@@ -270,6 +301,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-08-19 | 新增收藏功能：卡片 ☆ 按鈕、`favorites.html` 收藏頁、匯出／匯入，腳本注入既有存檔頁 | `219e8bc` |
 | 2026-08-19 | 選稿調整：`--top` 30→45、社群貼文熱度乘 0.5 並標示、分數下限 1.6、HN 日期標成「投稿 HN」 | `c042ebf` |
 | 2026-08-19 | 每次 render 重刷所有存檔頁的「近 7 日」導覽 | `702635f` |
 | 2026-08-19 | 回補 8/14–8/17，歷史存檔補齊為 8/10–8/19 連續十天 | `040b029` |
