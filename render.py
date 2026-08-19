@@ -383,6 +383,37 @@ def update_seen(digest: dict, date_key: str) -> int:
     return len(ids)
 
 
+DAYS_NAV_RE = re.compile(r'<nav class="days">.*?</nav>', re.S)
+
+
+def refresh_days_nav(dates: list[str]) -> int:
+    """把既有存檔頁的「近 7 日」導覽換成最新的日期清單。
+
+    每一頁的導覽是產生當下寫死的，隔天多出一天，昨天以前的頁面就過期了
+    （8/10 那頁一度只連得到 8/18 和 8/10）。archive.html 每次都重算所以不受影響，
+    但日期列本身是給人快速跳頁用的，斷掉就失去意義。
+
+    這裡只做字串替換、不重畫內容：舊日子的 digest 沒有保存，
+    要重畫得重跑一次模型。導覽是純結構、與當天內容無關，抽換是安全的。
+    """
+    changed = 0
+    for path in sorted(DOCS.glob("*.html")):
+        if path.name == "index.html":
+            current = dates[0] if dates else ""
+        elif re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.stem):
+            current = path.stem
+        else:
+            continue  # archive.html 由 render_archive 自己重畫
+
+        old = path.read_text(encoding="utf-8")
+        # 用 lambda 給替換字串，避免內容裡的反斜線被當成 re 的跳脫序列
+        new = DAYS_NAV_RE.sub(lambda _: render_days(dates, current), old, count=1)
+        if new != old:
+            path.write_text(new, encoding="utf-8")
+            changed += 1
+    return changed
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--replay", action="store_true",
@@ -425,12 +456,15 @@ def main() -> None:
         (DOCS / "feed.xml").write_text(render_feed(digest, ""), encoding="utf-8")
 
     (DOCS / "archive.html").write_text(render_archive(dates), encoding="utf-8")
+    renav = refresh_days_nav(dates)
     # GitHub Pages 預設會走 Jekyll，底線開頭的檔案會被吃掉；關掉比較保險
     (DOCS / ".nojekyll").write_text("", encoding="utf-8")
 
     target = f"{date_key}.html" if args.no_index else "index.html"
     print(f"已產生 {len(digest['items'])} 則 → {DOCS / target}")
     print(f"存檔 {date_key}.html　歷史共 {len(dates)} 天")
+    if renav:
+        print(f"重刷 {renav} 頁的「近 7 日」導覽")
 
     if args.replay:
         # 重播只是重畫版面，不算一次新的發布：不能動已發布清單，
