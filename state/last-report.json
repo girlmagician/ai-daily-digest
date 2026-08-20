@@ -1,14 +1,14 @@
 {
-  "generated_at_utc": "2026-08-19T23:40:55.624860+00:00",
+  "generated_at_utc": "2026-08-20T23:43:52.372208+00:00",
   "window_hours": 48,
   "sources_total": 60,
-  "sources_ok": 59,
-  "sources_failed": 1,
-  "raw_items": 246,
-  "contentless_dropped": 1,
-  "clustered_items": 233,
-  "already_published": 26,
-  "candidate_items": 207,
+  "sources_ok": 58,
+  "sources_failed": 2,
+  "raw_items": 210,
+  "contentless_dropped": 3,
+  "clustered_items": 199,
+  "already_published": 18,
+  "candidate_items": 181,
   "time_clamped": 0,
   "time_estimated": 0,
   "per_source": [
@@ -19,9 +19,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1141,
-      "in_window": 9,
-      "kept": 9
+      "entries": 1143,
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -30,9 +30,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1141,
-      "in_window": 9,
-      "kept": 9
+      "entries": 1143,
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "Google DeepMind Blog",
@@ -85,9 +85,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 80,
-      "in_window": 0,
-      "kept": 0
+      "entries": 81,
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Meta Newsroom (Tech)",
@@ -108,8 +108,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 0,
-      "kept": 0
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "AWS Machine Learning",
@@ -119,8 +119,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 11,
-      "kept": 11
+      "in_window": 14,
+      "kept": 12,
+      "capped": 2
     },
     {
       "name": "Hugging Face Blog",
@@ -129,9 +130,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 844,
-      "in_window": 3,
-      "kept": 3
+      "entries": 845,
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "NVIDIA Blog",
@@ -141,7 +142,7 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 0,
+      "in_window": 1,
       "kept": 0
     },
     {
@@ -152,8 +153,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "Import AI",
@@ -174,8 +175,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Interconnects",
@@ -218,8 +219,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Ahead of AI",
@@ -251,8 +252,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "MIT Tech Review AI",
@@ -285,8 +286,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 10,
-      "kept": 10
+      "in_window": 8,
+      "kept": 8
     },
     {
       "name": "Ars Technica AI",
@@ -308,7 +309,8 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 10
+      "kept": 12,
+      "capped": 1
     },
     {
       "name": "Bloomberg Technology",
@@ -319,7 +321,7 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 10
+      "kept": 8
     },
     {
       "name": "FT 人工智慧",
@@ -329,9 +331,8 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 14,
-      "kept": 12,
-      "capped": 2
+      "in_window": 10,
+      "kept": 10
     },
     {
       "name": "arXiv cs.AI",
@@ -340,10 +341,10 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 275,
-      "in_window": 275,
+      "entries": 267,
+      "in_window": 267,
       "kept": 8,
-      "capped": 267
+      "capped": 259
     },
     {
       "name": "arXiv cs.CL",
@@ -352,10 +353,10 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 134,
-      "in_window": 134,
+      "entries": 141,
+      "in_window": 141,
       "kept": 8,
-      "capped": 126
+      "capped": 133
     },
     {
       "name": "arXiv cs.LG",
@@ -364,10 +365,10 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 237,
-      "in_window": 237,
+      "entries": 233,
+      "in_window": 233,
       "kept": 8,
-      "capped": 229
+      "capped": 225
     },
     {
       "name": "llama.cpp releases",
@@ -377,8 +378,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 8,
-      "kept": 8
+      "in_window": 10,
+      "kept": 10
     },
     {
       "name": "vLLM releases",
@@ -388,8 +389,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 0,
-      "kept": 0
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Ollama releases",
@@ -399,8 +400,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "ITmedia AI+",
@@ -445,8 +446,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 12,
-      "capped": 4
+      "kept": 9
     },
     {
       "name": "ASCII.jp",
@@ -457,7 +457,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 3
+      "kept": 2
     },
     {
       "name": "Nikkei xTECH",
@@ -467,20 +467,20 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 100,
+      "in_window": 99,
       "kept": 12,
-      "capped": 17
+      "capped": 11
     },
     {
       "name": "量子位 QbitAI",
       "url": "https://www.qbitai.com/feed",
       "lang": "zh-CN",
       "cat": "media",
-      "status": "ok",
-      "error": "",
-      "entries": 10,
-      "in_window": 10,
-      "kept": 10
+      "status": "fail",
+      "error": "www.qbitai.com: ConnectionError",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "iThome",
@@ -491,7 +491,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 9
+      "kept": 8
     },
     {
       "name": "APPSO (愛範兒)",
@@ -501,8 +501,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 15,
-      "kept": 11
+      "in_window": 20,
+      "kept": 9
     },
     {
       "name": "GamesIndustry.biz",
@@ -512,8 +512,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 12,
-      "kept": 1
+      "in_window": 13,
+      "kept": 0
     },
     {
       "name": "Game Developer",
@@ -523,7 +523,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 10,
+      "in_window": 6,
       "kept": 0
     },
     {
@@ -556,8 +556,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 91,
-      "kept": 2
+      "in_window": 100,
+      "kept": 3
     },
     {
       "name": "電ファミニコゲーマー",
@@ -579,7 +579,7 @@
       "error": "",
       "entries": 30,
       "in_window": 3,
-      "kept": 3
+      "kept": 2
     },
     {
       "name": "AI and Games",
@@ -611,7 +611,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 2,
+      "in_window": 1,
       "kept": 0
     },
     {
@@ -622,8 +622,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 7,
-      "kept": 2
+      "in_window": 6,
+      "kept": 1
     },
     {
       "name": "GamesBeat",
@@ -634,7 +634,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 1
+      "kept": 2
     },
     {
       "name": "EU AI Act",
@@ -682,6 +682,17 @@
     }
   ],
   "failures": [
+    {
+      "name": "量子位 QbitAI",
+      "url": "https://www.qbitai.com/feed",
+      "lang": "zh-CN",
+      "cat": "media",
+      "status": "fail",
+      "error": "www.qbitai.com: ConnectionError",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
     {
       "name": "The Batch",
       "url": "https://www.deeplearning.ai/the-batch/",
