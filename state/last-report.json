@@ -1,15 +1,15 @@
 {
-  "generated_at_utc": "2026-08-27T03:02:56.515404+00:00",
+  "generated_at_utc": "2026-08-27T04:32:38.148560+00:00",
   "window_hours": 48,
-  "sources_total": 60,
-  "sources_ok": 59,
+  "sources_total": 62,
+  "sources_ok": 61,
   "sources_failed": 1,
-  "raw_items": 248,
+  "raw_items": 252,
   "contentless_dropped": 1,
-  "clustered_items": 230,
-  "already_published": 16,
-  "candidate_items": 214,
-  "time_clamped": 2,
+  "clustered_items": 232,
+  "already_published": 52,
+  "candidate_items": 180,
+  "time_clamped": 3,
   "time_estimated": 0,
   "per_source": [
     {
@@ -46,6 +46,17 @@
       "kept": 0
     },
     {
+      "name": "Google Models & Research",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/rss/",
+      "lang": "en",
+      "cat": "vendor",
+      "status": "ok",
+      "error": "",
+      "entries": 20,
+      "in_window": 1,
+      "kept": 1
+    },
+    {
       "name": "Google AI Blog",
       "url": "https://blog.google/technology/ai/rss/",
       "lang": "en",
@@ -55,6 +66,17 @@
       "entries": 20,
       "in_window": 1,
       "kept": 1
+    },
+    {
+      "name": "Google Developers Blog",
+      "url": "https://blog.google/technology/developers/rss/",
+      "lang": "en",
+      "cat": "vendor",
+      "status": "ok",
+      "error": "",
+      "entries": 20,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Research Blog",
@@ -308,7 +330,8 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 12
+      "kept": 12,
+      "capped": 2
     },
     {
       "name": "Bloomberg Technology",
@@ -319,7 +342,7 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 9
+      "kept": 10
     },
     {
       "name": "FT 人工智慧",
@@ -351,10 +374,10 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 332,
-      "in_window": 332,
+      "entries": 182,
+      "in_window": 182,
       "kept": 8,
-      "capped": 324
+      "capped": 174
     },
     {
       "name": "arXiv cs.LG",
@@ -363,10 +386,10 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 277,
-      "in_window": 277,
+      "entries": 308,
+      "in_window": 308,
       "kept": 8,
-      "capped": 269
+      "capped": 300
     },
     {
       "name": "llama.cpp releases",
@@ -409,9 +432,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 19,
       "kept": 12,
-      "capped": 8
+      "capped": 7
     },
     {
       "name": "Preferred Networks",
@@ -444,7 +467,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 10
+      "kept": 12
     },
     {
       "name": "ASCII.jp",
@@ -455,7 +478,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 5
+      "kept": 2
     },
     {
       "name": "Nikkei xTECH",
@@ -467,7 +490,7 @@
       "entries": 100,
       "in_window": 100,
       "kept": 12,
-      "capped": 9
+      "capped": 10
     },
     {
       "name": "量子位 QbitAI",
@@ -499,8 +522,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 16,
-      "kept": 12
+      "in_window": 15,
+      "kept": 11
     },
     {
       "name": "GamesIndustry.biz",
