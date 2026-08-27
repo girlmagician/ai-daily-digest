@@ -157,6 +157,24 @@ dropped:
   - {name: "Stanford HAI",       reason: "三個候選網址都回 200 但解析不到項目。AI Index 本質是年度報告，不是每日新聞來源"}
   - {name: "CB Insights",        reason: "feed 可用（25 則、每日更新），但內容以 Executive Interview 等推廣性文章為主，真正的市場地圖與資金資料在付費牆後，訊噪比不划算"}
 
+  # 2026-08-27 評估：另一個排程撈得到、但這條管線撈不到的東西，值不值得補
+  - {name: "The Rundown AI",
+     reason: "feed 可用且穩定（https://www.therundown.ai/feed，200／50 則／每天兩次，/articles 與 /rss 皆 404），
+              全文也抓得到（trafilatura 實測 8,887 字、looks_like_content=True）——不是接不進來，是接進來沒有用。
+              feed 摘要只有 35–59 字（主旨行＋一句 PLUS 預告），而每一則其實是一整封電子報、內含四則以上不同新聞，
+              與『一個項目＝一則新聞』的前提衝突。策展編輯本來就在剔這個形狀：8/25『電子報彙整多則研究摘要，非單一實質新聞』、
+              8/26『電子報開場閒聊為主，缺乏可獨立成立的新聞事實』、8/27『每日早報式彙整，多條短訊拼湊』。
+              且內容落後既有來源：它 8/26 的頭條 OpenAI Jalapeño 晶片，我們 8/27 已排在第 1 則，
+              來源 The Information、HN 576 分、2 家報導交叉佐證，provenance 比它的二手轉述好。
+              同理已在上面砍掉 Last Week in AI"}
+  - {name: "GitHub 星數排行（Search API）",
+     reason: "想補『新開源專案』的盲區時最直覺的做法，實測不可用。拿 2026-08-27 另一個排程給的七個 repo 當標準答案，
+              created:>近14天 + stars:>80 依星數排序取前 100 只命中 2／7，放寬到近 30 天也只有 3／7。
+              原因是新建 repo 的星數被灌水汙染：近 14 天前五名是 dsh-routing-suite 6862★、ip-as-logo-skill 4389★、
+              threeui 4213★、dsh-anchored-standard 3776★、cumora 3155★，而 ant-research/4DAnyone
+              （SIGGRAPH Asia 2026 論文、823★）擠不進前 100。訊號本身是壞的，接進來只會把雜訊灌進候選池。
+              開源釋出層維持為刻意的盲區，見 HANDOVER.md 已知限制"}
+
 # ══════════════════════════════════════════════════════════
 # 非 RSS 來源（第二階段接入）
 # ══════════════════════════════════════════════════════════
