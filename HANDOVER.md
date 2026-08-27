@@ -143,7 +143,39 @@
 - **舊存檔頁不會回溯。** 「社群貼文」與「投稿 HN」只影響之後產生的頁面
   （8/19 那頁因為 `--replay` 重畫過，已經套用）。
 
-## 五、本機操作備忘
+## 五、AI_KEYWORDS 補模型家族名（2026-08-27）
+
+起因是追查 Gemini 3.5 Transcribe 漏收時，發現 `ai_filter: true` 的來源會誤殺
+`Gemma 4 QAT models`、`Inside the Gemmaverse`、`AlphaEvolve`——**「Gemma」不在關鍵字表裡**。
+往下追發現真正的大洞不在 feed，而在 HN 補件：`merge_hn` 只有標題可判，
+只寫模型名而不寫「AI」的標題全被擋掉。
+
+實測 HN 近 14 天有 **11 則**被擋，而且**這 11 則的網址在任何一天的日報裡都找不到**：
+
+| HN 分數 | 標題 |
+|---:|---|
+| 802 | Qwen 3.8 27B is excellent, but it defaults to overthinking things |
+| 648 | Qwen3.8-Flash-Next |
+| 498 | DeepSeek-v4-flash-vision-exp |
+| 381 | Qwen3.8 27B scores 52 on Artificial Analysis |
+
+`qwen.ai` 這個網域從來沒有出現在任何一天的日報裡。
+
+補了 19 個詞（`qwen`／`deepseek`／`gemma`／`grok`／`nemotron`／`mixtral`／`codestral`／
+`midjourney`／`hunyuan`／`doubao`／`zhipu`／`modelscope` 與對應中文）。
+
+**一個容易誤判的陷阱**：主題有進日報 ≠ 那則高分貼文有進。`merge_hn` 是先用網址把
+HN 分數併到既有項目（這條路**沒有**關鍵字關卡），只有「新增」HN 項目才過 `ai_relevance`。
+所以日報裡看得到 Qwen，不代表 Qwen 的官方發布有被收錄。
+
+**`AI_PATTERN` 是無邊界的子字串比對**，加詞前一定要用陷阱字串測過。這次排除掉的與理由
+（`phi` 命中 graphics、`yi` 命中 playing、`wan` 命中 Taiwan、`kimi` 命中日文的「君」…）
+逐條寫在 `collect.py` 的註解裡，不要重蹈。
+
+**接下來要觀察的**：候選池會略為變大。實測 feed 端只多 0.8%、HN 端約每天多一則，
+成本影響可忽略，但如果哪天發現一堆不相干的東西湧進來，第一個要懷疑的是這裡新加的詞。
+
+## 六、本機操作備忘
 
 - **CLI 要用 `claude.cmd`**，不是 `claude`。PowerShell 的執行原則會擋 `.ps1`，
   不要去改 `Set-ExecutionPolicy`（公司群組原則通常也會擋）。

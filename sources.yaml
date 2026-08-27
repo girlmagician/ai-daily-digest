@@ -219,11 +219,15 @@ known_issues:
       連『最新一篇距今幾天』的新鮮度檢查也抓不到（那個 feed 顯示 1 天前更新——更新的是家飾貼文）。
       目前沒有自動偵測手段。唯一可行的是定期人工抽查：拿廠商官網最近的重大發布，
       回頭確認日報有沒有收到；或比對 blog.google/rss/ 這類總表與分類 feed 的差集"
-  - "AI_KEYWORDS 缺少多個主流模型家族名：gemma、qwen、deepseek、grok、phi、nemotron 等。
-      影響 24 個 ai_filter: true 的來源——只提模型名而不提『AI』的標題會被判 strength=0 剔除。
-      實測：Gemma 4 QAT models、Inside the Gemmaverse、AlphaEvolve 三則都會被誤殺。
-      2026-08-27 發現但未修：改關鍵字表會同時影響那 24 個來源的收錄範圍，
-      要另外評估對候選池大小與成本的衝擊，不宜順手改"
+  - "【已修 2026-08-27】AI_KEYWORDS 原本沒有模型家族名，只寫模型名而不寫『AI』的標題會被判
+      strength=0 剔除。影響兩條路：24 個 ai_filter: true 的來源，以及 merge_hn 補件
+      （HN 只有標題可判，衝擊更大）。實測 HN 近 14 天有 11 則被擋，且 11 則的網址在
+      任何一天的日報裡都找不到——含 802 分的 Qwen 3.8 27B 評測、648 分的 Qwen3.8-Flash-Next、
+      498 分的 DeepSeek-v4-flash-vision。qwen.ai 這個網域從來沒進過日報。
+      已補 19 個詞（qwen／deepseek／gemma／grok／nemotron／mixtral／codestral／midjourney／
+      hunyuan／doubao／zhipu／modelscope 與對應中文）。排除掉的歧義詞與理由寫在 collect.py 的註解裡。
+      注意 merge_hn 是先用網址把 HN 分數併到既有項目（這條路沒有關鍵字關卡），
+      只有『新增』HN 項目才過 ai_relevance——所以主題有進日報不代表那則高分貼文有進"
   - "資料中心 IP 會被部分站台擋：GitHub Actions 上 importai.substack.com 與 deeplearning.ai 回 403，本機皆正常 → Import AI 改用 jack-clark.net（collect.py 會依序嘗試 urls 候選）；The Batch 目前找不到替代路徑，會每天出現在日報的「本次未取得來源」"
   - "遊戲陀螺、iThome 的 feed 時間戳為未來時間（時區標記錯誤）→ 超過現在時間一律夾回現在，否則永遠排在最新"
   - "Reddit 對資料中心 IP 限流，GitHub Actions 上可能整批失敗 → 允許失敗並在日報標注，不可讓整個流程中斷"

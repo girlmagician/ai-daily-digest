@@ -64,6 +64,12 @@ AI_KEYWORDS = [
     "openai", "anthropic", "claude", "gemini", "deepmind", "gpt", "llama",
     "mistral", "hugging face", "inference", "fine-tun", "multimodal",
     "text-to-image", "text to image", "machine translation", "computer vision",
+    # 模型家族名（2026-08-27 補）。只寫模型名而不寫「AI」的標題原本會被判為不相關，
+    # 實測 HN 近 14 天有 11 則因此被擋在門外，且全部沒有從其他管道進來——
+    # 包含 802 分的 Qwen 3.8 27B 評測、648 分的 Qwen3.8-Flash-Next、
+    # 498 分的 DeepSeek-v4-flash-vision。qwen.ai 這個網域從來沒出現在任何一天的日報裡。
+    "qwen", "deepseek", "gemma", "grok", "nemotron", "mixtral", "codestral",
+    "midjourney", "hunyuan", "doubao", "zhipu", "modelscope",
     # 日文
     "人工知能", "機械学習", "深層学習", "生成ai", "大規模言語モデル", "ディープラーニング",
     "ニューラル", "チャットボット", "画像生成", "自動生成",
@@ -71,11 +77,23 @@ AI_KEYWORDS = [
     "人工智慧", "人工智能", "機器學習", "机器学习", "深度學習", "深度学习",
     "大模型", "大語言模型", "大语言模型", "生成式", "生成式ai", "智慧體", "智能体",
     "神經網路", "神经网络", "多模態", "多模态", "微調", "微调",
+    "通義千問", "通义千问", "文心一言", "豆包", "混元", "智譜", "智谱",
 ]
 # 刻意排除的歧義詞（實測踩過）：
 #   推理     中文＝inference，但日文＝推理／懸疑（「推理ADV」是推理冒險遊戲）
 #   エージェント 日文遊戲裡＝特務角色；AI 語境會寫「AIエージェント」，靠 AI_WORD 就能命中
 #   agent    英文＝密探；AI 語境保留 agentic
+# 2026-08-27 補模型家族名時，逐一用陷阱字串測過而排除的（AI_PATTERN 是無邊界子字串比對）：
+#   phi      命中 graphics／philosophy／sophisticated
+#   yi       命中 playing／saying／buying，幾乎所有 -ying 結尾的字
+#   wan      命中 Taiwan／want／swan
+#   kimi     命中日文羅馬拼音的「君」（Kimi no Na wa），而來源含日文遊戲媒體
+#   glm      命中 generalized linear model，統計文章會誤觸
+#   ernie    命中 Bernie。中文的「文心一言」已涵蓋同一個模型
+#   falcon   命中 Falcon 9
+#   sora     命中 Kingdom Hearts 的 Sora，且日文常用字
+#   whisper／flux／moonshot／veo／imagen 皆為常用字或過短
+#   星火／盤古  命中「星火計畫」「盤古開天」等一般中文用語
 AI_PATTERN = re.compile("|".join(re.escape(k) for k in AI_KEYWORDS), re.IGNORECASE)
 # 單獨的 AI：前後不能是英文字母（排除 Sail / Air / Cairo），
 # 但允許緊貼中日文字（生成AI、AI技術、AI活用 都要命中）
