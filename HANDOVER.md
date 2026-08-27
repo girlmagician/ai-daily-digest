@@ -72,6 +72,24 @@
 - **FT 人工智慧的摘要會很短。** 文章在付費牆後抓不到全文，只能用 74 字的 feed 導言。
   它的價值在「有沒有報導這件事」的訊號，權重壓到 1.1。加上分數下限 1.6 之後，
   它要有 HN 分數或跨來源佐證才上得了稿——這是刻意的。
+- **廠商 feed 可能「還活著但內容搬走了」——這類失敗沒有任何自動偵測。**
+  2026-08-27 抓到實例：Google 把模型發布搬到 `/innovation-and-ai/models-and-research/`，
+  我們訂的 `/technology/ai/` 仍回 200、仍每天更新，只是內容剩下消費性行銷貼文
+  （「用 Google Search 升級家飾」）。結果是 Gemini 3.5 Transcribe 完全沒進日報，
+  而 8/13 的 Gemini 3.7 Flash 只是碰巧被 HN 967 分撈回來——同一類公告，
+  Transcribe 只有 HN 15 分（門檻 20），差五分就消失。
+
+  更糟的是那三個 Google 來源都設 `pinned: true`（官方公告當日一律收錄、豁免分數下限），
+  但 pinned 只在項目**進入候選池之後**才生效。沒進池子，安全網等於被拆掉而且沒有訊號。
+
+  已修（見 `sources.yaml` 的註解與 `known_issues`）：新增 `Google Models & Research`
+  與 `Google Developers Blog`、把 `Google AI Blog` 從 2.0/pinned 降到 1.2/不 pinned。
+  實測改完之後 Transcribe 以 2.383 分進保障名額，家飾貼文以 1.323 分被自動剔除。
+
+  **這個教訓對每一個廠商 feed 都成立**，不是 Google 專屬。新鮮度檢查抓不到它
+  （那個 feed 顯示「1 天前更新」）。唯一可行的是定期人工抽查：拿廠商官網最近的重大發布，
+  回頭確認日報有沒有收到。Microsoft Source AI 已查過，是單純發文頻率低，不是搬家。
+
 - **開源釋出層是刻意的盲區，不是漏抓。** 這條管線覆蓋的是「關於 AI 的新聞」——媒體報導、廠商公告、
   論文、融資。它幾乎不覆蓋「今天 GitHub 上放出了什麼」。`sources.yaml` 裡跟 GitHub 有關的只有
   llama.cpp／vLLM／Ollama 三個 `releases.atom`，那是追蹤既有專案的新版本，不是發現新專案。

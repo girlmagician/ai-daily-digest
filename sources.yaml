@@ -14,7 +14,29 @@ sources:
   - {name: "OpenAI News",          lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://openai.com/news/rss.xml"]}
   - {name: "OpenAI Blog (legacy)", lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://openai.com/blog/rss.xml"]}
   - {name: "Google DeepMind Blog", lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/technology/google-deepmind/rss/"]}
-  - {name: "Google AI Blog",       lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/technology/ai/rss/"]}
+  # 2026-08-27：Google 把模型發布搬到 /innovation-and-ai/models-and-research/，
+  # 舊的 /technology/ai/ 仍回 200 且持續更新，但只剩消費性行銷貼文——feed 沒壞、
+  # 內容搬走了，所以「未取得的來源」與 verify_feeds.py 都抓不到這種失敗。
+  # 實測漏掉 9 則，其中 Gemini 3.5 Transcribe（8/26）完全沒進日報；
+  # Gemini 3.7 Flash（8/13）只是碰巧被 HN 967 分撈回來，而 Transcribe 只有 15 分（門檻 20）。
+  # 注意 urls 是「依序嘗試、第一個通過就採用」的故障切換，舊網址還活著時
+  # 把新網址塞進同一個 urls 陣列不會生效，必須另立來源。
+  - {name: "Google Models & Research", lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/innovation-and-ai/models-and-research/rss/"]}
+  # 降級（原 weight 2.0 / pinned true）：這個 feed 現在實質是消費性行銷貼文
+  # （「用 Google Search 升級家飾」「用 Sheets canvas 呈現試算表」），策展一直在剔。
+  # pinned 會取得保障名額並跳過 1.6 分數下限，等於強迫這些貼文上稿，因此取消。
+  # 保留來源但降到 1.2：加滿新鮮度 0.5 剛好構得到下限，夠新才進得來。
+  # 真正的官方公告改由上面的 Models & Research 與 DeepMind 兩個 pinned 來源負責。
+  - {name: "Google AI Blog",       lang: en, cat: vendor, weight: 1.2, pinned: false, ai_filter: false, urls: ["https://blog.google/technology/ai/rss/"]}
+  # 補上把 Google AI Blog 降到 1.2 之後留下的缺口：開發者導向的模型與 API 公告
+  # （Gemini API Managed Agents、Gemini Robotics ER 2、DiffusionGemma、Interactions API）
+  # 只在這個 feed 裡，而且 HN 撈不到（Managed Agents 兩則各只有 1–2 分）。
+  # 20 則裡有 13 則是其他四個 Google 來源都沒有的。
+  # 不設 pinned：它混了教學與社群內容（vibe coding 課程、Google Play 更新），
+  # pinned 會強迫那些上稿。weight 1.5 加新鮮度足以過 1.6 下限，夠新就進得來。
+  # ai_filter 必須是 false：實測 ai_filter: true 會誤殺——「Gemma」不在 AI_KEYWORDS 裡，
+  # 導致 Gemma 4 QAT、Gemmaverse、AlphaEvolve 全被判 strength=0 剔除。
+  - {name: "Google Developers Blog", lang: en, cat: vendor, weight: 1.5, pinned: false, ai_filter: false, urls: ["https://blog.google/technology/developers/rss/"]}
   - {name: "Google Research Blog", lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://research.google/blog/rss/"]}
   - {name: "Microsoft Source AI",  lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://news.microsoft.com/source/topics/ai/feed/"]}
   - {name: "Mistral AI News",      lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://mistral.ai/rss.xml"]}
@@ -190,6 +212,18 @@ api_sources:
 # 收集器必須處理的已知資料品質問題（實測發現）
 # ══════════════════════════════════════════════════════════
 known_issues:
+  - "【最難發現的一類失敗】feed 還活著、還在更新，但重要內容被搬到別的分類去了。
+      2026-08-27 實例：Google 把模型發布搬到 blog.google/innovation-and-ai/models-and-research/，
+      我們訂的 /technology/ai/ 仍回 200、仍每天更新，只是內容變成消費性行銷貼文。
+      這種失敗不會出現在日報的『未取得的來源』，verify_feeds.py 會通過，
+      連『最新一篇距今幾天』的新鮮度檢查也抓不到（那個 feed 顯示 1 天前更新——更新的是家飾貼文）。
+      目前沒有自動偵測手段。唯一可行的是定期人工抽查：拿廠商官網最近的重大發布，
+      回頭確認日報有沒有收到；或比對 blog.google/rss/ 這類總表與分類 feed 的差集"
+  - "AI_KEYWORDS 缺少多個主流模型家族名：gemma、qwen、deepseek、grok、phi、nemotron 等。
+      影響 24 個 ai_filter: true 的來源——只提模型名而不提『AI』的標題會被判 strength=0 剔除。
+      實測：Gemma 4 QAT models、Inside the Gemmaverse、AlphaEvolve 三則都會被誤殺。
+      2026-08-27 發現但未修：改關鍵字表會同時影響那 24 個來源的收錄範圍，
+      要另外評估對候選池大小與成本的衝擊，不宜順手改"
   - "資料中心 IP 會被部分站台擋：GitHub Actions 上 importai.substack.com 與 deeplearning.ai 回 403，本機皆正常 → Import AI 改用 jack-clark.net（collect.py 會依序嘗試 urls 候選）；The Batch 目前找不到替代路徑，會每天出現在日報的「本次未取得來源」"
   - "遊戲陀螺、iThome 的 feed 時間戳為未來時間（時區標記錯誤）→ 超過現在時間一律夾回現在，否則永遠排在最新"
   - "Reddit 對資料中心 IP 限流，GitHub Actions 上可能整批失敗 → 允許失敗並在日報標注，不可讓整個流程中斷"
