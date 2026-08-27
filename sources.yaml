@@ -84,6 +84,11 @@ sources:
   - {name: "FT 人工智慧",           lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.ft.com/artificial-intelligence?format=rss"]}
 
   # ══ 論文 ════════════════════════════════════════════
+  # arXiv 只在美東時間週日到週四晚上 announce，週五、週六晚上沒有。
+  # feed 每天 04:00 UTC 更新、排程在 23:23 UTC，所以台北時間週日與週一那兩份日報
+  # 一定拿到空 feed，頁尾必定出現三行「解析不到項目」。這是正常的，不用查。
+  # 2026-08-23（日）、08-24（一）實際發生過，其餘八天都正常。
+  # 週二到週六才出現才要查。
   - {name: "arXiv cs.AI",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.AI"]}
   - {name: "arXiv cs.CL",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.CL"]}
   - {name: "arXiv cs.LG",          lang: en, cat: paper, weight: 0.8, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.LG"]}
@@ -232,4 +237,6 @@ known_issues:
   - "遊戲陀螺、iThome 的 feed 時間戳為未來時間（時區標記錯誤）→ 超過現在時間一律夾回現在，否則永遠排在最新"
   - "Reddit 對資料中心 IP 限流，GitHub Actions 上可能整批失敗 → 允許失敗並在日報標注，不可讓整個流程中斷"
   - "Meta Newsroom 是綜合科技分類，非 AI 專屬 → 依 ai_filter 過濾"
-  - "arXiv RSS 只有當日更新，若要回補需改用 arXiv API"
+  - "arXiv RSS 只有當日更新，若要回補需改用 arXiv API。
+      另外它每週會固定空兩天（台北時間週日、週一），見上方 arXiv 來源的註解——
+      那兩天頁尾出現三行『解析不到項目』是正常的"
