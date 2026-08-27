@@ -1,0 +1,164 @@
+name: 日報看門狗
+
+# 為什麼需要這個檔案：
+# GitHub 的 schedule 是 best-effort，尖峰時段會「靜默跳過」——不是失敗，是
+# 那次執行根本沒有被建立出來。2026-08-26 23:23 UTC 那一次就是這樣消失的，
+# 因此也不會有失敗通知信（沒有失敗的執行，就沒有信）。
+# 這支工作流程負責在早上補一刀：發現今天沒產出就自動重跑，重跑還是沒有才通知。
+
+on:
+  schedule:
+    # 台北 09:17 / 11:17 / 13:17。三個時段都是各自獨立的 cron 排程，
+    # 其中一個被 GitHub 跳過，另外兩個仍會補上——這就是為什麼要排三次而不是一次。
+    # 每一次都是「看現況決定要做什麼」，不是「第一次重跑、第二次通知」的固定腳本，
+    # 所以任何一次被跳過，流程都會自己接上（見下方 decide 的判斷順序）。
+    # 間隔兩小時：daily.yml 的 timeout 是 75 分鐘，要留得下一次完整重跑的時間。
+    - cron: "17 1 * * *"
+    - cron: "17 3 * * *"
+    - cron: "17 5 * * *"
+  workflow_dispatch:        # 手動檢查用
+
+permissions:
+  contents: read            # 讀 docs/ 判斷今天有沒有產出
+  actions: write            # 觸發 daily.yml 重跑
+  issues: write             # 重跑仍失敗時開 issue 通知
+
+concurrency:
+  group: digest-watchdog
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 檢查今天有沒有產出，決定要重跑還是通知
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, urllib.error, urllib.request
+          from datetime import datetime, timedelta, timezone
+
+          TPE = timezone(timedelta(hours=8))
+          today = datetime.now(TPE).strftime("%Y-%m-%d")
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GITHUB_TOKEN"]
+          server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+          WORKFLOW = "daily.yml"
+          BRANCH = "main"
+
+          def api(path, method="GET", body=None):
+              """回傳 (status, payload)。404/410 不當例外，呼叫端自己判斷。"""
+              req = urllib.request.Request(
+                  f"https://api.github.com/repos/{repo}{path}",
+                  method=method,
+                  data=json.dumps(body).encode() if body is not None else None,
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Accept": "application/vnd.github+json",
+                      "X-GitHub-Api-Version": "2022-11-28",
+                      "Content-Type": "application/json",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req) as r:
+                      raw = r.read()
+                      return r.status, (json.loads(raw) if raw else None)
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read().decode("utf-8", "replace")
+
+          def tpe_date(iso):
+              return datetime.fromisoformat(
+                  iso.replace("Z", "+00:00")).astimezone(TPE).strftime("%Y-%m-%d")
+
+          # ── 1. 今天的存檔頁在不在？──────────────────────────────
+          # render.py 一定會寫出 docs/<台北日期>.html，這是最直接的「有沒有更新」訊號。
+          # 用 API 查 main 的最新狀態，不用 checkout：看門狗要能在幾秒內給出答案。
+          status, _ = api(f"/contents/docs/{today}.html?ref={BRANCH}")
+          if status == 200:
+              print(f"✓ docs/{today}.html 已存在，今天有正常更新")
+              sys.exit(0)
+          if status != 404:
+              print(f"查詢 docs/{today}.html 得到非預期的 {status}，保守起見不動作")
+              sys.exit(0)
+
+          print(f"✗ docs/{today}.html 不存在，今天沒有產出")
+
+          # ── 2. 是不是正在跑？──────────────────────────────────
+          # 排程慢了、或前一個時段剛觸發的重跑還沒結束，都不該重複觸發或誤報。
+          status, data = api(f"/actions/workflows/{WORKFLOW}/runs?per_page=30")
+          if status != 200:
+              print(f"讀取執行紀錄失敗（{status}），不動作")
+              sys.exit(0)
+          runs = data.get("workflow_runs", [])
+
+          LIVE = {"queued", "in_progress", "waiting", "requested", "pending"}
+          live = [r for r in runs if r["status"] in LIVE]
+          if live:
+              print(f"daily.yml 正在執行中（#{live[0]['run_number']}），等它跑完，交給下一個時段判斷")
+              sys.exit(0)
+
+          # ── 3. 今天已經補觸發過了嗎？──────────────────────────
+          # 沒有 → 這是第一刀，重跑。
+          # 有   → 重跑過了而且沒跑出東西，該通知人了。
+          # 判斷依據是「今天有沒有 workflow_dispatch 的執行」而不是「這是第幾個時段」，
+          # 所以任何一個時段被 GitHub 跳過，剩下的時段都會自己接上正確的動作。
+          retries = [r for r in runs
+                     if r["event"] == "workflow_dispatch"
+                     and tpe_date(r["created_at"]) == today]
+
+          if not retries:
+              status, resp = api(f"/actions/workflows/{WORKFLOW}/dispatches",
+                                 method="POST", body={"ref": BRANCH})
+              if status == 204:
+                  # collect.py 的時間窗是 48 小時、state/seen.json 會擋掉已發布過的項目，
+                  # 所以補跑既不會漏掉新聞、也不會重複刊登。
+                  print("已觸發 daily.yml 重跑，結果交給下一個時段確認")
+                  sys.exit(0)
+              print(f"觸發重跑失敗（{status}）：{resp}")
+              sys.exit(1)
+
+          # ── 4. 重跑過仍然沒有產出 → 通知 ─────────────────────
+          last = retries[0]
+          detail = (f"重跑 [#{last['run_number']}]({last['html_url']}) "
+                    f"的結果是 `{last['conclusion']}`")
+          title = f"日報未更新：{today}"
+
+          # 同一天不重複開 issue：第三個時段跑到這裡時應該安靜退場，只留一張單。
+          status, issues = api("/issues?state=open&per_page=100")
+          if status == 200 and any(i["title"] == title for i in issues):
+              print(f"已經開過「{title}」，不重複通知")
+              sys.exit(1)
+
+          body = "\n".join([
+              f"`docs/{today}.html` 在 `{BRANCH}` 上不存在，且自動重跑沒有補回來。",
+              "",
+              f"- {detail}",
+              f"- 執行紀錄：{server}/{repo}/actions/workflows/{WORKFLOW}",
+              f"- 網站：https://girlmagician.github.io/ai-daily-digest/（副標的「產生於」會停在前一天）",
+              "",
+              "常見原因與處理：",
+              "",
+              "| 現象 | 原因 | 處理 |",
+              "|---|---|---|",
+              "| 重跑那筆是 `failure` | 策展呼叫收到 529，或訂閱額度用盡 | 看該次執行的 log 與 `out/` 報告 |",
+              "| 完全沒有重跑那筆 | 連看門狗的觸發都被擋掉 | 檢查 Actions 是否被停用、`CLAUDE_CODE_OAUTH_TOKEN` 是否過期 |",
+              "| 重跑成功但沒有新檔 | 收集不到任何新項目 | 看 log 的收集則數，多半是來源端的問題 |",
+              "",
+              f"手動補跑：{server}/{repo}/actions/workflows/{WORKFLOW} → Run workflow。",
+              "",
+              "處理完把這張單關掉即可，看門狗每天只會開一張。",
+          ])
+          status, resp = api("/issues", method="POST",
+                             body={"title": title, "body": body})
+          if status == 201:
+              print(f"已開 issue 通知：{resp['html_url']}")
+          else:
+              # issue 被停用之類的情況：通知管道少一條，但下面的 exit 1 仍會讓
+              # 這次執行標記為失敗，GitHub 的失敗通知信是第二條獨立的管道。
+              print(f"開 issue 失敗（{status}）：{resp}")
+
+          sys.exit(1)   # 讓這次執行標記為失敗，觸發 GitHub 的失敗通知信
+          PY
