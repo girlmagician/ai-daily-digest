@@ -1,14 +1,14 @@
 {
-  "generated_at_utc": "2026-08-29T04:11:14.974821+00:00",
+  "generated_at_utc": "2026-08-30T01:18:09.117463+00:00",
   "window_hours": 48,
   "sources_total": 62,
   "sources_ok": 58,
   "sources_failed": 4,
-  "raw_items": 217,
-  "contentless_dropped": 3,
-  "clustered_items": 204,
-  "already_published": 80,
-  "candidate_items": 124,
+  "raw_items": 138,
+  "contentless_dropped": 0,
+  "clustered_items": 129,
+  "already_published": 52,
+  "candidate_items": 77,
   "time_clamped": 0,
   "time_estimated": 0,
   "per_source": [
@@ -20,8 +20,8 @@
       "status": "ok",
       "error": "",
       "entries": 1157,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -31,8 +31,8 @@
       "status": "ok",
       "error": "",
       "entries": 1157,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Google DeepMind Blog",
@@ -53,8 +53,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google AI Blog",
@@ -64,8 +64,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Developers Blog",
@@ -75,8 +75,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Research Blog",
@@ -86,8 +86,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Microsoft Source AI",
@@ -119,8 +119,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Microsoft Research",
@@ -141,8 +141,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 7,
-      "kept": 7
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Hugging Face Blog",
@@ -152,8 +152,8 @@
       "status": "ok",
       "error": "",
       "entries": 852,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "NVIDIA Blog",
@@ -163,7 +163,7 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 2,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -196,8 +196,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Interconnects",
@@ -218,8 +218,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Ben's Bites",
@@ -229,8 +229,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "ChinaTalk",
@@ -262,8 +262,8 @@
       "status": "ok",
       "error": "",
       "entries": 15,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Exponential View",
@@ -295,9 +295,8 @@
       "status": "ok",
       "error": "",
       "entries": 19,
-      "in_window": 15,
-      "kept": 12,
-      "capped": 3
+      "in_window": 8,
+      "kept": 8
     },
     {
       "name": "The Verge AI",
@@ -307,8 +306,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 8,
-      "kept": 8
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "Ars Technica AI",
@@ -318,8 +317,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 9,
-      "kept": 9
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "The Information",
@@ -329,9 +328,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
-      "kept": 12,
-      "capped": 3
+      "in_window": 12,
+      "kept": 8
     },
     {
       "name": "Bloomberg Technology",
@@ -340,9 +338,9 @@
       "cat": "media",
       "status": "ok",
       "error": "",
-      "entries": 20,
-      "in_window": 19,
-      "kept": 7
+      "entries": 5,
+      "in_window": 5,
+      "kept": 1
     },
     {
       "name": "FT 人工智慧",
@@ -352,8 +350,8 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 9,
-      "kept": 9
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "arXiv cs.AI",
@@ -408,8 +406,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Ollama releases",
@@ -419,8 +417,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "ITmedia AI+",
@@ -430,9 +428,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 19,
-      "kept": 12,
-      "capped": 7
+      "in_window": 8,
+      "kept": 8
     },
     {
       "name": "Preferred Networks",
@@ -465,8 +462,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 12,
-      "capped": 2
+      "kept": 12
     },
     {
       "name": "ASCII.jp",
@@ -477,7 +473,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 1
+      "kept": 2
     },
     {
       "name": "Nikkei xTECH",
@@ -487,9 +483,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 38,
-      "kept": 12,
-      "capped": 5
+      "in_window": 3,
+      "kept": 2
     },
     {
       "name": "量子位 QbitAI",
@@ -510,9 +505,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 24,
-      "kept": 12,
-      "capped": 1
+      "in_window": 18,
+      "kept": 10
     },
     {
       "name": "APPSO (愛範兒)",
@@ -522,8 +516,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 12,
-      "kept": 9
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "GamesIndustry.biz",
@@ -533,8 +527,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 14,
-      "kept": 2
+      "in_window": 5,
+      "kept": 0
     },
     {
       "name": "Game Developer",
@@ -544,7 +538,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 9,
+      "in_window": 4,
       "kept": 0
     },
     {
@@ -566,7 +560,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -577,7 +571,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 100,
+      "in_window": 94,
       "kept": 1
     },
     {
@@ -599,7 +593,7 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 4,
+      "in_window": 2,
       "kept": 0
     },
     {
@@ -643,7 +637,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 3,
+      "in_window": 2,
       "kept": 0
     },
     {
@@ -654,8 +648,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 9,
-      "kept": 4
+      "in_window": 5,
+      "kept": 1
     },
     {
       "name": "EU AI Act",
