@@ -48,6 +48,9 @@ DIGEST = OUT / "digest.json"
 # （一則不合格就整批重跑），也容易讓模型後面幾則草率帶過
 BATCH_SIZE = 5
 URL_IN_TEXT = re.compile(r"https?://|www\.", re.IGNORECASE)
+# 繁簡錯誤的辨識標記：translate_batch 靠它把「只是字形不合」跟
+# 「內容不可信」分開處理，不要改字面
+SIMPLIFIED_TAG = "譯文出現簡體字"
 
 # 摘要目標放在「讀完就懂，不必點進原文」。這個字數只有在 extract.py 抓到
 # 原文全文時才撐得起來——沒有原文卻要求長摘要，等於逼模型編造。
@@ -57,6 +60,62 @@ URL_IN_TEXT = re.compile(r"https?://|www\.", re.IGNORECASE)
 # 不是用來計較那幾個字。
 TITLE_ASK, TITLE_MAX = 45, 75
 SUMMARY_ASK, SUMMARY_MAX = 400, 850
+
+# ── 繁簡檢查 ────────────────────────────────────────────────
+# 2026-08-29 實測：第 2 批五則全部回簡體，同一天其他四批完全正常。
+# 提示詞早就寫著「台灣繁體中文」，但程式端只驗長度與 id，字形無人把關。
+# 那批的用語其實是台灣的（「代理程式」「軟體」而非「程序」「软件」），
+# 模型照著指示翻了，只是字形輸出成簡體——所以這是輸出品質的隨機失誤，
+# 不是提示詞沒講清楚，也不是簡中來源的原文直接放行（五則裡四則來自英文來源）。
+#
+# 只列「簡體專用」的字：兩邊寫法相同的字（黑、鼓、霉、台、里…）不能列進來，
+# 否則「黑客松」「擊鼓傳花」會被誤判。
+SIMPLIFIED_ONLY = set(
+    "这说时长问门车马见贝页风飞东专业丛丝严个丰临为举义乐习乡书买乱争云亚产亲亿仅从仓仪"
+    "们价众优会传伤伦伪体佣侠侦侧侨债倾偿储儿兑兰关兴养兽冈军农冲决冻净减凤凭击刘则刚创"
+    "剂剑剧劝办务动势勋区医华协单卖卢卫厂厅历厉压厌参双发变叠号叹员响哑哗唤团园围国图圆"
+    "圣场坏坚坛坝坞坟坠垄垒垦执扩扫扬扰抚抛抠抢护报担拟拢拣拥拦拧拨择挂挚挟挠挡挣挤挥损"
+    "捡换据掳掷掸摄摆摇撑敌敛数斋斗断无旧旷显晋晒晓晕晖暂术朴机杀杂权条来杨极构枢枣标栈"
+    "栋栏树样档桥桦梦检楼欢欧歼残殴毁毕毡气氢汇汉汤沟沥沦沧沪泞泪泼泽洁洒浅浆浇浊测济浏"
+    "浑浓涂涛涝涡涣涤润涧涨涩渊渐渔渗湾湿溃溅滚滞满滤滥滨滩潜灭灯灵灾炉点炼烂烛烟烦烧热"
+    "爱爷牵状独狭狮猎猪献玑环现玛琐璃电画畅疗疟疮疯痪皱盏盐监盖盗盘睁瞒矫矿码砖础确碍礼"
+    "祸离种积称稳穷窃窍窜窝窥竖竞笃笋笔笼筑筛签简篮类粪粮紧纠红约级纪纫纬纯纱纲纳纵纷纸"
+    "纹纺线练组绅细织终绍经绑绒结绕绘给绚络绝绞统绣继绩续绯绳维绵综绿缀缄缅缆缉缓缔编缘"
+    "缚缝缠缩缴罗罚罢羁翘耸耻聂聋职联聪肃肠肤肮肾肿胀胁胆胜胶脏脐脑脓脸腊腾舰艰艳艺节芜"
+    "苇苏苹茎荐荡荣药莱莲获莹莺萝萤营萧萨蒋蓝蔼虏虑虫虽虾蚁蚂蚕蛮衅衔补衬袄袜袭装褛观规"
+    "觅视览觉誉计订认讥讨让训议讯记讲讳许讹论讼讽设访诀证评诅识诈诉诊词译试诗诚话诞询该"
+    "详诫误说诵请诸读课谁调谅谈谊谋谍谎谐谓谚谜谢谣谨谬谭谱谴贝贞负贡财责贤败账货质贩贪"
+    "贫贬购贮贯贱贴贵贷贸费贺贼贾贿资赁赂赃赅赈赊赋赌赎赏赐赔赖赘赚赛赞赠赡赢赣赵赶趋跃"
+    "践跷踊踪蹑躯车轨轩转轮软轰轴轻载轿较辅辆辈辉辐辑输辖辗辙辞辩边辽达迁过迈运还这进远"
+    "违连迟适选逊递逻遗邓邮邹郑酝酱释鉴针钉钓钙钝钟钢钥钦钩钮钱钻铁铃铅铜铝铭银铸铺链销"
+    "锁锅锋锐错锡锦键锯镇镜长门闪闭闯闲间闷闹闻阀阁阅队阳阴阵阶际陆陈险随隐难雏雾靓静韦"
+    "韧韩页顶顷项顺须顽顾顿颁预领颈频颖题颜额风飞饥饭饮饰饱饲饶饼馆马驭驯驰驱驳驴驶驻驼"
+    "驾骂验骑骗骚骤髅鱼鲁鲜鸟鸡鸣鸥鸦鸭鸿鹅鹏鹤鹰鹿麦黄齐齿龄龙龟"
+)
+CJK = re.compile(r"[一-鿿]")
+
+# 門檻要留很寬的餘裕，因為批次連續三次驗證失敗會 sys.exit 中止整份日報——
+# 為了幾個字殺掉一整天的日報不成比例。
+# 22 天 553 則的實測分布：真正出問題的六則是 65～87 個簡體字（佔比 23～29%），
+# 次高的只有 4 個（多為專有名詞，如「騰訊」「藍馳」寫成簡體），中間是巨大空隙。
+# 訂在 8 個字落在空隙正中央；佔比條款是為了接住「整段簡體但篇幅很短」的情況。
+SIMPLIFIED_MIN_CHARS = 8
+SIMPLIFIED_MIN_RATIO = 0.15
+
+
+def simplified_hits(text: str) -> tuple[int, float]:
+    """回傳 (簡體專用字數, 佔全部中日韓漢字的比例)。"""
+    if not text:
+        return 0, 0.0
+    cjk = len(CJK.findall(text))
+    n = sum(1 for c in text if c in SIMPLIFIED_ONLY)
+    return n, (n / cjk if cjk else 0.0)
+
+
+def looks_simplified(text: str) -> tuple[bool, int]:
+    n, ratio = simplified_hits(text)
+    hit = n >= SIMPLIFIED_MIN_CHARS or (n >= 3 and ratio >= SIMPLIFIED_MIN_RATIO)
+    return hit, n
 
 # 送進模型的原文長度上限。extract.py 存的是 6000 字，但實測餵滿 6000 字時，
 # 模型摘要會跟著失控（出現 939～1060 字的輸出而被退回重譯，成本多三成）。
@@ -177,6 +236,11 @@ TRANSLATE_SYSTEM = f"""你是專業的科技新聞譯者，把 AI 情報翻譯�
 5. 專有名詞、公司名、模型名保留英文原文（例如 GPT-5、Claude、Qwen、Gemini），
    不要音譯。
 6. 我給幾則就回幾則，id 原封不動照抄，不得新增、不得遺漏、不得修改 id。
+7. **全篇必須是繁體字。** 一個簡體字都不行——這→不是「这」，說→不是「说」，
+   時→不是「时」，發→不是「发」，機→不是「机」，實測→不是「实测」。
+   原文是簡體中文時特別容易照抄字形，務必逐字轉成繁體。
+   專有名詞同樣要轉（騰訊、藍馳、華為），不要保留簡體寫法。
+   程式會逐則檢查，含簡體字的整批會被退回重做。
 
 **摘要的目標：讀者看完你的摘要就能掌握整則新聞，不必點進原文。**
 我提供的多半是文章全文，請據此寫出完整的重點說明，包含：
@@ -260,7 +324,26 @@ def translate_batch(batch: list[dict], model: str) -> dict:
         if errors:
             raise LLMError("；".join(errors))
 
-    return llm.ask_json(TRANSLATE_SYSTEM, user, model, TRANSLATE_CONTRACT, validate=validate)
+    try:
+        return llm.ask_json(TRANSLATE_SYSTEM, user, model, TRANSLATE_CONTRACT, validate=validate)
+    except LLMError as e:
+        # 繁簡是字形問題，內容本身可信——不值得為它中止整份日報。
+        # 三次都沒改過來時，只要「剩下的錯誤全是繁簡」就放行並記警告；
+        # 只要還混著腦補、假網址、漏譯這類真正不可信的錯誤，一律照舊中止。
+        partial = getattr(e, "partial", None)
+        if not partial:
+            raise
+        try:
+            _shape_translate(partial["data"])
+        except LLMError:
+            raise e from None
+        rest = [x for x in verify(partial["data"]["items"], batch) if SIMPLIFIED_TAG not in x]
+        if rest:
+            raise
+        print(f"  警告：繁簡檢查重試 {partial['attempts']} 次仍未通過，"
+              f"接受此輸出（內容驗證均通過，僅字形不合）")
+        partial["degraded"] = "simplified"
+        return partial
 
 
 # ────────────────────────────────────────────────────────────
@@ -303,6 +386,13 @@ def verify(translated: list[dict], batch: list[dict]) -> list[str]:
                 f"{t['id']}：摘要 {len(t['summary_zh'])} 字，超過 {SUMMARY_MAX} 字上限。"
                 f"你把整篇文章翻完了，不是在摘要。請只保留最重要的事實，"
                 f"壓到 {SUMMARY_ASK} 字左右"
+            )
+        bad, n = looks_simplified(t["title_zh"] + t["summary_zh"])
+        if bad:
+            errors.append(
+                f"{t['id']}：{SIMPLIFIED_TAG}——譯文含 {n} 個簡體字。"
+                f"請整則改用台灣繁體中文重寫（例如 这→這、说→說、时→時、"
+                f"发→發、机→機、软体→軟體、实测→實測）。用語已經正確，只要改字形"
             )
     return errors
 
@@ -371,6 +461,7 @@ def main() -> None:
     items = [by_id[s["id"]] for s in selected if s["id"] in by_id]
     results: dict[str, dict] = {}
 
+    degraded_batches = []
     for start in range(0, len(items), BATCH_SIZE):
         batch = items[start : start + BATCH_SIZE]
         print(f"翻譯 {start + 1}-{start + len(batch)}／{len(items)}（{args.translate_model}）…")
@@ -379,6 +470,14 @@ def main() -> None:
             res = translate_batch(batch, args.translate_model)
         except LLMError as e:
             sys.exit(f"翻譯驗證連續失敗，中止以免產出不可信內容：{e}")
+        if res.get("degraded"):
+            # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
+            # 而繁簡問題正是這樣拖了十天才被使用者發現的。
+            degraded_batches.append({
+                "batch": f"{start + 1}-{start + len(batch)}",
+                "reason": res["degraded"],
+                "ids": [i["id"] for i in batch],
+            })
         account(res)
         for t in res["data"]["items"]:
             results[t["id"]] = t
@@ -392,6 +491,7 @@ def main() -> None:
         "dropped": dropped,
         "usage": usage_total,
         "cost_usd": round(cost_total, 4),
+        "degraded_batches": degraded_batches,
     }
     for s in selected:
         src = by_id.get(s["id"])
@@ -425,7 +525,10 @@ def main() -> None:
 
     print(f"\n完成 {len(digest['items'])} 則 → {DIGEST}")
     print(
-        f"Token：輸入 {usage_total['input']:,}、輸出 {usage_total['output']:,}"
+        (f"⚠ 有 {len(degraded_batches)} 批降級放行："
+         + "、".join(d["batch"] + f"（{d['reason']}）" for d in degraded_batches)
+         + "\n" if degraded_batches else "")
+        + f"Token：輸入 {usage_total['input']:,}、輸出 {usage_total['output']:,}"
         f"（快取寫入 {usage_total['cache_write']:,}／讀取 {usage_total['cache_read']:,}）"
         f"　CLI 回報成本 US${cost_total:.4f}"
     )

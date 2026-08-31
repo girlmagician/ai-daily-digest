@@ -257,6 +257,7 @@ def ask_json(
             usage_total[k] += res["usage"][k]
 
         content_tries += 1
+        data = None
         try:
             data = extract_json(res["text"])
             if validate:
@@ -274,7 +275,19 @@ def ask_json(
             last = str(e)
             print(f"  第 {content_tries} 次輸出不合格：{last[:200]}")
             if content_tries >= attempts:
-                raise LLMError(f"連續 {attempts} 次無法取得合法輸出：{last}") from e
+                err = LLMError(f"連續 {attempts} 次無法取得合法輸出：{last}")
+                # 把最後一次的輸出附在例外上，讓呼叫端有機會分辨
+                # 「內容不可信」與「只是格式／字形不合」——後者不值得中止整份日報。
+                # data 為 None 代表連 JSON 都解不出來，那種情況沒有東西可放行。
+                if data is not None:
+                    err.partial = {
+                        "data": data,
+                        "cost": cost_total,
+                        "usage": usage_total,
+                        "attempts": content_tries,
+                        "waits": waits,
+                    }
+                raise err from e
             prompt = (
                 f"{user}\n\n"
                 f"（上一次你的輸出有問題：{last[:300]}。"
