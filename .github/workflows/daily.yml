@@ -75,6 +75,17 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: python translate.py --target 30
 
+      - name: 覆蓋率稽核（不阻斷）
+        # 抓「feed 還活著但重要內容搬到別的分類」這一類無聲失敗——
+        # 日報的「未取得的來源」、verify_feeds.py、新鮮度檢查全都抓不到它，
+        # Google 那次就是這樣讓 Gemini 3.5 Transcribe 整則消失的。
+        # continue-on-error：這是諮詢性訊號不是門檻，永遠不該擋下當天的日報。
+        # 結果寫進 out/，隨執行報告一起上傳為 artifact（保留 14 天）。
+        continue-on-error: true
+        run: |
+          mkdir -p out
+          python audit_coverage.py --days 7 | tee out/coverage_audit.txt || true
+
       - name: 產生網頁
         run: python render.py
 

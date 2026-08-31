@@ -33,6 +33,7 @@ from pathlib import Path
 import feedparser
 import yaml
 
+import hfpapers
 import hn
 import scrape
 from fetchlib import (entry_time, is_social, item_id, normalize_url, polite_get,
@@ -106,6 +107,11 @@ SIMILARITY_THRESHOLD = 0.78  # 標題相似度達此值視為同一則新聞
 # 並讓後續 LLM 排序成本暴增。
 PER_SOURCE_CAP = 12
 PAPER_SOURCE_CAP = 8
+# 論文在收集階段幾乎不截斷：真正的排名交給 select()，那時 HN 熱度與跨分類
+# 重複次數都已經算進 score。實測全部 668 篇進 cluster() 要 21 秒（CI 逾時 75 分鐘，
+# 綽綽有餘），而且 668 篇會聚成 502 群——166 篇是跨分類重複，那正是原本
+# 拿不到的訊號。留一個很寬的上限只是防 arXiv 某天異常暴衝。
+PAPER_SOURCE_CAP_RAW = 600
 
 
 # ────────────────────────────────────────────────────────────
@@ -289,9 +295,25 @@ def fetch_source(src: dict, cutoff: datetime, cap: int | None = None) -> dict:
             "fetched_at_utc": fetched_at.isoformat(),
         })
 
-    # 每個來源設上限，取最新的幾則（arXiv 單日數百篇會淹沒整池）
+    # 每個來源設上限。排序鍵的選擇很要緊——2026-08-31 查出原本純用 published_utc
+    # 由新到舊排序，對 arXiv 完全失效：當天 302 篇 cs.AI 的時間戳一模一樣
+    # （都是 04:00:00，同一次 announce），排序等於沒作用，實際效果是取 feed 的
+    # 前 8 筆，也就是隨機挑。綜合型來源（ai_filter）也一樣吃虧：4Gamer 一天
+    # 被砍掉 99 則、Nikkei xTECH 砍掉 46 則，全是按新舊而不是按相關性。
+    #
+    # 現在：綜合型來源先看 AI 相關強度再看新舊；論文改為不在這裡截斷，
+    # 留到 merge_hn 併入熱度、score() 算完分數之後再由 select() 排名，
+    # 否則「訊號還沒套用就先砍掉九成」——一篇 300 分的論文若排在 feed 第 150 筆，
+    # 在 HN 分數有機會貼上去之前就已經不存在了。
     limit = cap or (PAPER_SOURCE_CAP if src["cat"] == "paper" else PER_SOURCE_CAP)
+    if src["cat"] == "paper" and cap is None:
+        limit = PAPER_SOURCE_CAP_RAW
     items.sort(key=lambda i: i["published_utc"], reverse=True)
+    if src.get("ai_filter"):
+        # 兩段式排序：Python 的 sort 是穩定的，所以先排新舊、再排相關強度，
+        # 同強度的項目就會保留「新的在前」。寫成單一 tuple 鍵會出錯——
+        # published_utc 是字串，沒辦法在遞增排序裡表達「由新到舊」。
+        items.sort(key=lambda i: -i["ai_strength"])
     if len(items) > limit:
         report["capped"] = len(items) - limit
         items = items[:limit]
@@ -351,6 +373,57 @@ def merge_hn(items: list[dict], stories: list[dict], cutoff: datetime) -> dict:
             "hn_points": story["points"],
             "hn_comments": story["comments"],
             "hn_url": story["hn_url"],
+        })
+
+    return {"matched": matched, "added": added}
+
+
+# ────────────────────────────────────────────────────────────
+# Hugging Face Daily Papers：論文的重要性訊號
+# ────────────────────────────────────────────────────────────
+def merge_hf_papers(items: list[dict], papers: list[dict], cutoff: datetime) -> dict:
+    """把 HF 投票數併入既有論文，並補進不在我們分類 feed 裡的論文。
+
+    為什麼非有不可：同一次 arXiv announce 的數百篇論文時間戳與權重都相同，
+    沒有外部訊號就排不出名次。原本規劃用 HN，但實測 48 小時內 HN 上的
+    arXiv 投稿只有 1 則且對不上當天 feed——HN 討論論文是發表數天後的事。
+    """
+    index = hfpapers.index_by_url(papers)
+    matched = 0
+    for item in items:
+        rec = index.get(item["url"])
+        if rec:
+            item["hf_upvotes"] = rec["upvotes"]
+            item["hf_url"] = rec["hf_url"]
+            matched += 1
+
+    known = {i["url"] for i in items}
+    added = []
+    for rec in papers:
+        if rec["url"] in known:
+            continue
+        # 我們只訂 cs.AI／cs.CL／cs.LG，HF 會收到 cs.CV、cs.RO 等分類的重要論文。
+        # 這些補進來的正好是原本完全看不到的那一塊。
+        added.append({
+            "ai_strength": ai_relevance(rec["title"], rec["summary"])[1],
+            "id": item_id(rec["url"]),
+            "source": "Hugging Face Papers",
+            "lang": "en",
+            "cat": "paper",
+            "weight": 1.0,
+            "ai_filter": False,
+            "pinned": False,
+            "title_original": rec["title"],
+            "summary_original": rec["summary"],
+            "url": rec["url"],
+            "url_raw": rec["url"],
+            "social": False,
+            "published_utc": rec["published_utc"],
+            "time_clamped": False,
+            "time_estimated": False,
+            "fetched_at_utc": datetime.now(timezone.utc).isoformat(),
+            "hf_upvotes": rec["upvotes"],
+            "hf_url": rec["hf_url"],
         })
 
     return {"matched": matched, "added": added}
@@ -450,7 +523,14 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
         "recency_bonus": round(recency, 2),
         "estimated_time_penalty": penalty,
     }
-    item["score"] = round(effective_weight + cross + hn_bonus + recency + penalty, 3)
+    # HF 投票數的量級跟 HN 分數差很多（個位數到數十 vs 數十到數百），
+    # 所以用自己的曲線：10 票 → 0.63、30 票 → 1.09，上限 1.4。
+    upvotes = item.get("hf_upvotes", 0)
+    hf_bonus = min(1.4, (upvotes / 25) ** 0.5) if upvotes else 0.0
+    item["score_breakdown"]["hf_bonus"] = round(hf_bonus, 2)
+    item["score_breakdown"]["hf_upvotes"] = upvotes
+    item["score"] = round(
+        effective_weight + cross + hn_bonus + hf_bonus + recency + penalty, 3)
     return item
 
 
@@ -463,8 +543,18 @@ def select(
     論文的排序訊號很弱（沒有點閱、沒有跨來源提及），塞進主排名只會排擠新聞。
     等 Hacker News 接進來後，論文改成「必須有外部提及才收錄」。
     """
+    # 「必須有外部提及才收錄」——這是本函式 docstring 從一開始就寫著的規劃，
+    # 但一直沒有實作，而且 candidates.json 的 papers 這個鍵根本沒有人讀
+    # （translate.py 只讀 official + ranked）。結果是 arXiv 每天抓數百篇、
+    # 一篇都沒有上過稿：2026-08-31 回頭查 13 天 356 則，來源是 arXiv 的有 0 則。
+    #
+    # 沒有外部訊號的論文無法排名：同一天所有論文的權重相同、時間戳也相同，
+    # 硬排出來的前五名就是隨機五篇。寧可當天沒有論文，也不要放五篇隨機的。
+    # 有 HN 討論的論文才收——那是唯一拿得到的當日重要性訊號。
+    paper_pool = [i for i in items if i["cat"] == "paper"]
     papers = sorted(
-        (i for i in items if i["cat"] == "paper"),
+        (i for i in paper_pool
+         if i.get("hn_points", 0) > 0 or i.get("hf_upvotes", 0) > 0),
         key=lambda i: (-i["score"], i["published_utc"]),
     )[:max_papers]
     news = [i for i in items if i["cat"] != "paper"]
@@ -509,6 +599,13 @@ def select(
         "official": pinned_selected,
         "ranked": ranked,
         "papers": papers,
+        # 觀測用：論文池有多少、其中有外部訊號的有多少。
+        # 「池子很大但有訊號的是 0」正是 2026-08-31 之前的長期狀態，
+        # 這兩個數字讓它下次一眼就看得出來。
+        "papers_pool_size": len(paper_pool),
+        "papers_with_signal": sum(
+            1 for i in paper_pool
+            if i.get("hn_points", 0) > 0 or i.get("hf_upvotes", 0) > 0),
         "overflow_pinned": pinned[max_pinned:],
         "below_floor": below_floor,
         "source_distribution": dict(sorted(per_source.items(), key=lambda kv: -kv[1])),
@@ -523,6 +620,8 @@ def main() -> None:
     ap.add_argument("--top", type=int, default=30, help="目標則數，預設 30")
     ap.add_argument("--max-pinned", type=int, default=12, help="官方公告最多佔幾則")
     ap.add_argument("--max-papers", type=int, default=5, help="論文區最多幾則")
+    ap.add_argument("--no-hf-papers", action="store_true",
+                    help="跳過 Hugging Face Daily Papers（除錯用）")
     ap.add_argument("--max-per-source", type=int, default=3, help="單一來源在名單裡最多佔幾席")
     ap.add_argument("--min-score", type=float, default=MIN_SCORE,
                     help=f"一般新聞的分數下限，預設 {MIN_SCORE}（官方公告與論文不受限）；0 表示不設限")
@@ -565,6 +664,23 @@ def main() -> None:
         merged = merge_hn(raw_items, stories, cutoff)
         hn_info.update(matched=merged["matched"], added=merged["added"])
         raw_items.extend(merged["added"])
+
+    # Hugging Face Daily Papers：論文的當日重要性訊號。
+    # 位置一定要在 cluster()／score() 之前，跟 merge_hn 同一段——
+    # 訊號沒有先貼上去，後面的排名就無從談起。
+    hf_info = {"matched": 0, "added": [], "papers": 0, "error": ""}
+    if not args.no_hf_papers:
+        hf_list, hf_err = hfpapers.fetch_papers(cutoff)
+        hf_info["papers"], hf_info["error"] = len(hf_list), hf_err
+        if hf_err:
+            reports.append({
+                "name": "Hugging Face Papers", "url": hfpapers.API, "lang": "en",
+                "cat": "paper", "status": "fail", "error": hf_err,
+                "entries": len(hf_list), "in_window": 0, "kept": 0,
+            })
+        merged_hf = merge_hf_papers(raw_items, hf_list, cutoff)
+        hf_info.update(matched=merged_hf["matched"], added=merged_hf["added"])
+        raw_items.extend(merged_hf["added"])
 
     contentless = [i for i in raw_items
                    if is_contentless(i["title_original"], i.get("summary_original", ""))]
@@ -615,6 +731,14 @@ def main() -> None:
                 f"（{hn.MIN_POINTS} 分以上）→ 對上既有項目 {hn_info['matched']} 則"
                 f"、補入新項目 {len(hn_info['added'])} 則"
             )
+
+    if not args.no_hf_papers:
+        if hf_info["error"]:
+            print(f"HF Daily Papers 抓取失敗：{hf_info['error']}"
+                  f"（論文排不出名次，當天論文區會是空的）")
+        else:
+            print(f"HF Daily Papers：{hf_info['papers']} 篇 → 對上既有項目 "
+                  f"{hf_info['matched']} 篇、補入新項目 {len(hf_info['added'])} 篇")
 
     clamped = sum(1 for i in raw_items if i["time_clamped"])
     estimated = sum(1 for i in raw_items if i["time_estimated"])
@@ -689,6 +813,14 @@ def main() -> None:
                 "clustered_items": len(clustered),
                 "already_published": repeats,
                 "candidate_items": len(scored),
+                # 論文管線的觀測值。「池子很大但有訊號的是 0」正是 2026-08-31
+                # 之前的長期狀態（13 天 356 則，來源是 arXiv 的 0 則），
+                # 這幾個數字進版控的 state/last-report.json，讓它下次一眼看得出來。
+                "papers_pool_size": selection["papers_pool_size"],
+                "papers_with_signal": selection["papers_with_signal"],
+                "papers_selected": len(selection["papers"]),
+                "hf_papers": {k: (len(v) if isinstance(v, list) else v)
+                              for k, v in hf_info.items()},
                 "time_clamped": clamped,
                 "time_estimated": estimated,
                 "per_source": reports,

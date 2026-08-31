@@ -84,14 +84,17 @@ sources:
   - {name: "FT 人工智慧",           lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.ft.com/artificial-intelligence?format=rss"]}
 
   # ══ 論文 ════════════════════════════════════════════
+  # 2026-08-31 實測：export.arxiv.org 的 cs.AI 連續三次回不出項目，rss.arxiv.org
+  # 三個分類都是 3/3。改成優先用 rss.arxiv.org，export 留作備援（urls 依序嘗試）。
+  # 這跟下面的週末空 feed 是兩回事：週末是 arXiv 沒有 announce，兩個端點都會空。
   # arXiv 只在美東時間週日到週四晚上 announce，週五、週六晚上沒有。
   # feed 每天 04:00 UTC 更新、排程在 23:23 UTC，所以台北時間週日與週一那兩份日報
   # 一定拿到空 feed，頁尾必定出現三行「解析不到項目」。這是正常的，不用查。
   # 2026-08-23（日）、08-24（一）實際發生過，其餘八天都正常。
   # 週二到週六才出現才要查。
-  - {name: "arXiv cs.AI",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.AI"]}
-  - {name: "arXiv cs.CL",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.CL"]}
-  - {name: "arXiv cs.LG",          lang: en, cat: paper, weight: 0.8, pinned: false, ai_filter: false, urls: ["http://export.arxiv.org/rss/cs.LG"]}
+  - {name: "arXiv cs.AI",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["https://rss.arxiv.org/rss/cs.AI", "http://export.arxiv.org/rss/cs.AI"]}
+  - {name: "arXiv cs.CL",          lang: en, cat: paper, weight: 0.9, pinned: false, ai_filter: false, urls: ["https://rss.arxiv.org/rss/cs.CL", "http://export.arxiv.org/rss/cs.CL"]}
+  - {name: "arXiv cs.LG",          lang: en, cat: paper, weight: 0.8, pinned: false, ai_filter: false, urls: ["https://rss.arxiv.org/rss/cs.LG", "http://export.arxiv.org/rss/cs.LG"]}
 
   # ══ 工程／版本發布 ════════════════════════════════════
   - {name: "llama.cpp releases",   lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/ggml-org/llama.cpp/releases.atom"]}
@@ -210,13 +213,27 @@ api_sources:
   - {name: "GDELT DOC 2.0",         kind: api, priority: high, note: "多語言全球新聞補網，覆蓋 no_feed 的長尾"}
   - {name: "Gmail API",             kind: api, priority: high, note: "訂閱電子報。唯讀權限 + 指定標籤，refresh token 存 GitHub Secrets"}
   - {name: "arXiv API",             kind: api, priority: mid,  note: "比 RSS 穩定，可指定日期範圍"}
-  - {name: "Hugging Face Trending", kind: api, priority: low,  note: "模型熱度指標"}
+  - {name: "HF Daily Papers",       kind: api, priority: high, note: "已接入（hfpapers.py）。論文唯一可用的『當日』重要性訊號：官方 API、免認證、帶投票數。HN 不能用——實測 48 小時內 HN 上的 arXiv 投稿只有 1 則且對不上當天 feed，HN 討論論文是發表數天後的事"}
+  - {name: "Hugging Face Trending", kind: api, priority: low,  note: "模型熱度指標。與已接入的 HF Daily Papers 是不同的 API，這個是模型不是論文"}
   - {name: "Reddit OAuth",          kind: api, priority: low,  note: "選配。若要在 GitHub Actions 上穩定拿 Reddit 資料才需要申請"}
 
 # ══════════════════════════════════════════════════════════
 # 收集器必須處理的已知資料品質問題（實測發現）
 # ══════════════════════════════════════════════════════════
 known_issues:
+  - "【已修 2026-08-31】arXiv 的三個 RSS 來源從專案一開始就沒有產出過任何一則日報。
+      collect.py 的 select() 把論文寫進 candidates.json 的 papers 鍵，但 translate.py
+      只讀 official + ranked——那個鍵沒有任何地方讀取。回查 13 天 356 則，來源是 arXiv 的 0 則。
+      而且原本也挑不出重點：截斷用 published_utc 排序，但同一次 announce 的數百篇時間戳
+      完全相同（實測 302 篇 cs.AI 全是 04:00:00），等於取 feed 前 8 筆。
+      現已改為：收集階段幾乎不截斷（PAPER_SOURCE_CAP_RAW=600）、
+      select() 實作原本就規劃好的『必須有 HN 提及才收錄』、translate.py 的 pool 加上 papers。
+      副作用是 cluster() 要多跑約 20 秒，可接受"
+  - "【已修 2026-08-31】PER_SOURCE_CAP 的截斷只看新舊不看相關性：Nikkei xTECH 一天窗內 58 則
+      只留 12 則、4Gamer 砍掉 99 則，而 ai_strength 算好了卻沒用。ai_filter 的來源已改成
+      先排相關強度再排新舊"
+  - "覆蓋率稽核（audit_coverage.py）只對『有提供總表 feed』的站台有效。沒有總表的站台
+      ——多數個人部落格與新聞網站——這支程式幫不上忙。它縮小盲區，不消除盲區"
   - "【最難發現的一類失敗】feed 還活著、還在更新，但重要內容被搬到別的分類去了。
       2026-08-27 實例：Google 把模型發布搬到 blog.google/innovation-and-ai/models-and-research/，
       我們訂的 /technology/ai/ 仍回 200、仍每天更新，只是內容變成消費性行銷貼文。

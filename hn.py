@@ -18,7 +18,17 @@ from datetime import datetime, timezone
 from fetchlib import normalize_url, polite_get
 
 API = "https://hn.algolia.com/api/v1/search_by_date"
-MIN_POINTS = 20
+# 2026-08-31 由 20 降到 10。原本的 20 分擋掉太多真東西：實測近 14 天落在
+# 10–19 分且通過 AI 相關性判定的有 151 則（平均每天 10.8 則），其中就包含
+# 使用者回報漏收的「Gemini 3.5 Transcribe」（18 分）。
+#
+# 成本幾乎不變：實測單次多接住 13 則，但候選池有 --top 45 的上限，
+# 送進模型的量不會跟著長；extract.py 多抓幾篇是純 HTTP，不花模型錢。
+# 雜訊由 1.6 分數下限與策展階段擋（10 分的項目 hn_bonus 只有 0.16，
+# 要靠新鮮度或跨來源佐證才過得了下限）。
+#
+# 如果哪天發現論壇閒聊變多，這裡是第一個要回頭看的數字。
+MIN_POINTS = 10
 PAGE_SIZE = 200
 MAX_PAGES = 8
 

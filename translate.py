@@ -413,7 +413,11 @@ def main() -> None:
         sys.exit(f"找不到 {CANDIDATES}，請先執行 python collect.py")
 
     data = json.loads(CANDIDATES.read_text(encoding="utf-8"))
-    pool = data["official"] + data["ranked"]
+    # papers 一定要一起讀進來。它從專案一開始就被 collect.py 寫進 candidates.json，
+    # 卻沒有任何地方讀取——arXiv 抓了 13 天、一篇都沒上過稿。
+    # collect.py 已經改成「只有被 HN 討論過的論文才會進這個清單」，
+    # 所以這裡放行的都是有外部訊號的，不是隨機五篇。
+    pool = data["official"] + data["ranked"] + data.get("papers", [])
     by_id = {i["id"]: i for i in data["all_scored"]}
     if args.limit:
         pool = pool[: args.limit]
