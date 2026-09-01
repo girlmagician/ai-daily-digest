@@ -199,6 +199,11 @@ def curate(pool: list[dict], target: int, model: str) -> dict:
         signals = []
         if i.get("hn_points"):
             signals.append(f"HN {i['hn_points']}分/{i.get('hn_comments', 0)}留言")
+        # HF 投票一定要傳下去。2026-09-01 首次上線時漏了這個欄位，結果選進來的
+        # 五篇論文在策展階段全被剔除，理由清一色是「無社群或媒體關注訊號」——
+        # 它們正是因為有 HF 投票才被選進來的，只是策展編輯看不到。
+        if i.get("hf_upvotes"):
+            signals.append(f"HF Daily Papers {i['hf_upvotes']}票")
         if i["cross_source_count"] > 1:
             signals.append(f"{i['cross_source_count']}家報導")
         if i["pinned"]:
@@ -415,8 +420,9 @@ def main() -> None:
     data = json.loads(CANDIDATES.read_text(encoding="utf-8"))
     # papers 一定要一起讀進來。它從專案一開始就被 collect.py 寫進 candidates.json，
     # 卻沒有任何地方讀取——arXiv 抓了 13 天、一篇都沒上過稿。
-    # collect.py 已經改成「只有被 HN 討論過的論文才會進這個清單」，
-    # 所以這裡放行的都是有外部訊號的，不是隨機五篇。
+    # collect.py 已經改成「只有被 HN 討論或 HF Daily Papers 收錄的論文才會進這個
+    # 清單」，所以這裡放行的都是有外部訊號的，不是隨機五篇。
+    # 對應的訊號要在 curate() 的 signals 裡標出來，否則策展編輯會當成沒訊號而剔除。
     pool = data["official"] + data["ranked"] + data.get("papers", [])
     by_id = {i["id"]: i for i in data["all_scored"]}
     if args.limit:
