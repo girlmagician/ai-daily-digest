@@ -1,14 +1,14 @@
 {
-  "generated_at_utc": "2026-09-13T06:06:52.001902+00:00",
+  "generated_at_utc": "2026-09-14T01:11:26.868038+00:00",
   "window_hours": 48,
   "sources_total": 62,
   "sources_ok": 56,
   "sources_failed": 6,
-  "raw_items": 175,
+  "raw_items": 156,
   "contentless_dropped": 1,
-  "clustered_items": 159,
-  "already_published": 27,
-  "candidate_items": 132,
+  "clustered_items": 144,
+  "already_published": 35,
+  "candidate_items": 109,
   "papers_pool_size": 0,
   "papers_with_signal": 0,
   "papers_selected": 0,
@@ -18,7 +18,7 @@
     "papers": 0,
     "error": ""
   },
-  "time_clamped": 2,
+  "time_clamped": 3,
   "time_estimated": 0,
   "per_source": [
     {
@@ -29,8 +29,8 @@
       "status": "ok",
       "error": "",
       "entries": 1192,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -40,8 +40,8 @@
       "status": "ok",
       "error": "",
       "entries": 1192,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Google DeepMind Blog",
@@ -150,8 +150,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Hugging Face Blog",
@@ -183,8 +183,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 10,
-      "kept": 10
+      "in_window": 5,
+      "kept": 5
     },
     {
       "name": "Import AI",
@@ -216,8 +216,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "TLDR AI",
@@ -238,8 +238,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "ChinaTalk",
@@ -249,7 +249,7 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -282,8 +282,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 0,
-      "kept": 0
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "MIT Tech Review AI",
@@ -293,8 +293,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "TechCrunch AI",
@@ -304,8 +304,8 @@
       "status": "ok",
       "error": "",
       "entries": 19,
-      "in_window": 10,
-      "kept": 10
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "The Verge AI",
@@ -315,8 +315,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 8,
-      "kept": 8
+      "in_window": 6,
+      "kept": 6
     },
     {
       "name": "Ars Technica AI",
@@ -326,8 +326,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "The Information",
@@ -337,8 +337,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 11,
-      "kept": 5
+      "in_window": 10,
+      "kept": 6
     },
     {
       "name": "Bloomberg Technology",
@@ -347,9 +347,9 @@
       "cat": "media",
       "status": "ok",
       "error": "",
-      "entries": 11,
-      "in_window": 11,
-      "kept": 5
+      "entries": 18,
+      "in_window": 18,
+      "kept": 12
     },
     {
       "name": "FT 人工智慧",
@@ -414,8 +414,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Ollama releases",
@@ -436,8 +436,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 4,
-      "kept": 4
+      "in_window": 7,
+      "kept": 7
     },
     {
       "name": "Preferred Networks",
@@ -445,7 +445,7 @@
       "lang": "ja",
       "cat": "eng",
       "status": "fail",
-      "error": "tech.preferred.jp: ReadTimeout",
+      "error": "tech.preferred.jp: HTTP 404",
       "entries": 0,
       "in_window": 0,
       "kept": 0
@@ -469,8 +469,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 22,
-      "kept": 5
+      "in_window": 20,
+      "kept": 3
     },
     {
       "name": "ASCII.jp",
@@ -481,7 +481,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 2
+      "kept": 6
     },
     {
       "name": "Nikkei xTECH",
@@ -491,8 +491,9 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
-      "kept": 0
+      "in_window": 32,
+      "kept": 12,
+      "capped": 6
     },
     {
       "name": "量子位 QbitAI",
@@ -513,8 +514,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 12,
-      "kept": 6
+      "in_window": 5,
+      "kept": 3
     },
     {
       "name": "APPSO (愛範兒)",
@@ -524,8 +525,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 8,
-      "kept": 6
+      "in_window": 4,
+      "kept": 3
     },
     {
       "name": "GamesIndustry.biz",
@@ -535,8 +536,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 7,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Game Developer",
@@ -546,7 +547,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 2,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -579,7 +580,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 49,
+      "in_window": 24,
       "kept": 0
     },
     {
@@ -590,7 +591,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 50,
+      "in_window": 44,
       "kept": 0
     },
     {
@@ -601,8 +602,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 4,
-      "kept": 3
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "AI and Games",
@@ -645,7 +646,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -744,7 +745,7 @@
       "lang": "ja",
       "cat": "eng",
       "status": "fail",
-      "error": "tech.preferred.jp: ReadTimeout",
+      "error": "tech.preferred.jp: HTTP 404",
       "entries": 0,
       "in_window": 0,
       "kept": 0
