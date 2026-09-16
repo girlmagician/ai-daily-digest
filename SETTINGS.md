@@ -249,12 +249,54 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | 項目 | 值 |
 |---|---|
 | API | `https://hn.algolia.com/api/v1/search_by_date`（免認證） |
-| `MIN_POINTS` | 20（分數太低代表社群沒反應） |
+| `MIN_POINTS` | 10（2026-08-31 由 20 降下來，理由見 `hn.py` 註解） |
 | `PAGE_SIZE` / `MAX_PAGES` | 200 / 8 |
 | 補入的項目權重 | 1.3、`cat: forum`、`ai_filter: true`（標題本身要命中 AI 關鍵字） |
 
 **重要**：HN 補進來的項目，`published_utc` 是**投稿到 HN 的時間**，不是原文發表日期
-（Algolia API 拿不到原文日期）。頁面上會顯示成「08/16 投稿 HN」以免誤讀。
+（Algolia API 拿不到原文日期）。**這代表 48 小時時間窗對這條路徑完全沒有作用**——
+今天有人把 2019 年的舊文投上 HN，它在系統眼中就是「幾小時前的新聞」。
+2026-09-14 那期的第 12 則（GPT-2 不釋出公告，2019 年）與第 14 則
+（This American Life 舊節目逐字稿）都是這樣進來的；回頭稽核 36 期 987 則，
+其中 264 則（27%）走這條路徑。
+
+2026-09-16 加了四道防線，依攔截順序：
+
+| # | 防線 | 位置 | 擋得掉什麼 |
+|---|---|---|---|
+| 1 | 標題年份標記 | `collect.OLD_TITLE_YEAR` + `merge_hn()` | HN 版主重貼舊文時標的 `(2019)`、`(2021)`。只擋早於今年的年份 |
+| 2 | 真實發表日期 | `extract.is_stale()`（`STALE_DAYS = 14`） | **主力**。抓原文網頁時順手用 `trafilatura` 的 metadata 取發表日期，比投稿時間早 14 天以上就剔除。沒有年份標記的舊文靠這道擋 |
+| 3 | 策展看得到日期 | `translate._curate_date()` + `CURATE_SYSTEM` 第 2.5 點 | 灰色地帶（差幾天到兩週）。候選行寫「原文發表於 X，Y 才被投稿到 HN」，抓不到日期就寫「可能是舊文重貼」，user 訊息開頭給今天日期 |
+| 4 | 呈現層標示 | `render.render_item()` + 頁首 note | 擋不掉的也不會誤導：卡片顯示「原文 2026-07-27・09/16 投稿 HN」 |
+
+第 2 道刻意拿 **`published_utc`（投稿時間）當基準，不是「今天」**——
+`backfill.py` 回補歷史日期時，整批項目本來就比今天舊好幾週，
+用今天當基準會把回補的每一則都判成舊文。
+
+第 2 道只對 `source == "Hacker News"` 的項目做剔除。別的來源日期來自 feed，
+本來就可信，metadata 抓到舊日期多半是網站自己標錯，不該因此丟掉稿子。
+
+實測（2026-09-16）：GPT-2 公告抓到 `2019-02-14`、This American Life 逐字稿
+`2026-08-29`、MIT Technology Review `2026-08-18`、The Next Web
+`2026-07-27`（這則就在 9/16 當期，51 天前的文章）——四則全部命中，
+同期正常的新文章（`mnoukhov.github.io`、`404media.co`）都沒有誤殺。
+
+**觀測點**：`run_report.json` 的 `hn.stale_titles` 是第 1 道擋下的數量；
+第 2 道的剔除由 `extract.py` 在執行時印出（`剔除 HN 舊文重貼（N 則…）`）。
+**這兩個數字長期都是 0 就代表過濾失效了，要回頭查。**
+
+### HN 的席次上限（`collect.HN_SHARE`）
+
+`--max-per-source 3` 對 HN 形同虛設：`select()` 名額沒填滿時會整批回補被壓下的
+項目，HN 候選最多所以永遠排在回補隊伍最前面——2026-09-13 那期 29 則裡有 20 則
+來自 HN，整份日報變成 HN 摘要。
+
+2026-09-16 起，回補階段給 HN 一個獨立上限 `round(target × HN_SHARE)`，
+`HN_SHARE = 0.34` → target 30 時是 10 席（正常日子的水準）。
+其他來源照舊不限，它們背後有自己的編輯把關。
+
+副作用：HN 獨大的日子則數會變少。這符合既有原則——
+「來源薄的日子本來就該看起來比較薄」，不要拿雜項硬湊。
 
 ### 抓取禮貌（`fetchlib.py`）
 
@@ -313,6 +355,9 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | 某個來源太常出現 | 調低該來源 `weight`，或調低 `--max-per-source` | |
 | 想加新來源 | `sources.yaml` 的 `sources`，先確認不在 `dropped` 裡 | 用 `verify_feeds.py` 先驗 |
 | 社群貼文太多／太少 | `collect.SOCIAL_HN_DISCOUNT` | 壓到 0.11 以下會誤殺 X 上的官方宣布 |
+| HN 佔比太高／太低 | `collect.HN_SHARE`（預設 0.34） | 調低會讓 HN 多的日子則數變少，不會自動補其他來源 |
+| 舊文剔除太嚴／太鬆 | `extract.STALE_DAYS`（預設 14） | 只影響 HN 來源。調到 7 以下會開始誤殺「發表後幾天才被投上 HN」的正常文章 |
+| 除錯時想保留舊文 | `python extract.py --keep-stale` | 只給人工檢查用，正常執行與 CI 不要開 |
 | 論文太多／太少 | `collect.py --max-papers` | 論文豁免分數下限 |
 | 只調版面 | `render.py` 的 `CSS`，然後 `python render.py --replay` | 不呼叫模型、不花錢、三秒完成 |
 | 改分組名稱 | `translate.GROUPS` 與 `render.GROUP_ORDER` **兩邊都要改** | 不一致會讓分類篩選器排序錯亂 |
@@ -327,6 +372,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-09-16 | 擋 HN 舊文重貼（四道防線）：標題年份標記、`extract.py` 取真實發表日期後剔除、策展候選行補上日期與「剔除舊聞」規則、卡片標示原文日期；並補上 HN 席次上限 `HN_SHARE` | |
 | 2026-08-19 | 新增收藏功能：卡片 ☆ 按鈕、`favorites.html` 收藏頁、匯出／匯入，腳本注入既有存檔頁 | `219e8bc` |
 | 2026-08-19 | 選稿調整：`--top` 30→45、社群貼文熱度乘 0.5 並標示、分數下限 1.6、HN 日期標成「投稿 HN」 | `c042ebf` |
 | 2026-08-19 | 每次 render 重刷所有存檔頁的「近 7 日」導覽 | `702635f` |

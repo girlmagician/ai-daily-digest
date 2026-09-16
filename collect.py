@@ -151,6 +151,19 @@ SOCIAL_HN_DISCOUNT = 0.5
 # 官方公告與論文不受此限（見 select()）
 MIN_SCORE = 1.6
 
+# Hacker News 在最終名單裡的佔比上限（見 select() 的回補段）。
+# 0.34 × 30 則 = 10 席，是實測正常日子的水準（2026-09-14 那期就是 10 席）。
+HN_SHARE = 0.34
+
+# HN 版主重貼舊文時，慣例是在標題結尾補上原文年份，例如
+# 「Due to concerns about malicious applications, GPT2 will not be released (2019)」。
+# 這是收集階段唯一拿得到的舊文訊號——HN 補進來的項目時間欄位是「投稿到 HN
+# 的時間」，Algolia API 給不了原文發表日期，所以時間窗對這條路徑完全沒有作用
+# （詳見 merge_hn）。2026-09-14 那期的第 12 則就是這樣進來的 2019 年舊文。
+#
+# 只擋「早於今年」的年份：標成今年的多半是幾個月前的文章，那由策展階段判斷。
+OLD_TITLE_YEAR = re.compile(r"[（(]((?:19|20)\d{2})[)）]\s*$")
+
 
 def is_contentless(title: str, summary: str) -> bool:
     """沒有內文，而且標題本身不帶資訊。"""
@@ -342,12 +355,19 @@ def merge_hn(items: list[dict], stories: list[dict], cutoff: datetime) -> dict:
 
     known = {i["url"] for i in items}
     added = []
+    stale = []
     for story in stories:
         if story["url"] in known:
             continue
         # HN 標題是英文，要求標題本身命中 AI 關鍵字（摘要不可得）
         relevant, strength = ai_relevance(story["title"], "")
         if not relevant:
+            continue
+        # 標題帶往年年份 = 版主標記的舊文重貼。下方的時間窗過濾擋不掉它，
+        # 因為這裡的 published 是投稿到 HN 的時間，舊文重貼一樣算「剛剛」
+        year = OLD_TITLE_YEAR.search(story["title"])
+        if year and int(year.group(1)) < cutoff.year:
+            stale.append(f'{story["title"][:60]}（{year.group(1)}）')
             continue
         published = datetime.fromisoformat(story["created_at_utc"].replace("Z", "+00:00"))
         if published < cutoff:
@@ -375,7 +395,7 @@ def merge_hn(items: list[dict], stories: list[dict], cutoff: datetime) -> dict:
             "hn_url": story["hn_url"],
         })
 
-    return {"matched": matched, "added": added}
+    return {"matched": matched, "added": added, "stale": stale}
 
 
 # ────────────────────────────────────────────────────────────
@@ -589,11 +609,22 @@ def select(
             continue
         ranked.append(item)
         per_source[item["source"]] += 1
-    # 名額沒填滿才回頭補被壓下的項目（寧可同來源多篇，也不要湊不到 30 則）
+    # 名額沒填滿才回頭補被壓下的項目（寧可同來源多篇，也不要湊不到 30 則）。
+    #
+    # 但這道回補等於讓 --max-per-source 對候選最多的來源失效：Hacker News 一家
+    # 常年是候選池最大宗，永遠排在回補隊伍最前面，2026-09-13 那期 29 則裡就有
+    # 20 則來自它。HN 又是雜項與舊文重貼最多的來源（時間欄位是投稿時間，
+    # 不是原文發表日期），整期被它佔滿會讓日報變成 HN 摘要，所以回補階段給它
+    # 一個獨立上限。其他來源照舊不限——它們背後有自己的編輯把關。
+    hn_cap = max(max_per_source, round(target * HN_SHARE))
     for item in deferred:
         if len(ranked) >= slots:
             break
+        if item["source"] == "Hacker News" and per_source["Hacker News"] >= hn_cap:
+            continue
         ranked.append(item)
+        # 原本這裡漏了計數，導致 source_distribution 少算回補進來的席次
+        per_source[item["source"]] += 1
 
     return {
         "official": pinned_selected,
@@ -651,7 +682,7 @@ def main() -> None:
     raw_items = [i for r in results for i in r["items"]]
 
     # Hacker News：熱度訊號 + 補上沒有 RSS 的長尾來源
-    hn_info = {"matched": 0, "added": [], "stories": 0, "error": ""}
+    hn_info = {"matched": 0, "added": [], "stories": 0, "stale": [], "error": ""}
     if not args.no_hn:
         stories, err = hn.fetch_stories(cutoff)
         hn_info["stories"], hn_info["error"] = len(stories), err
@@ -662,7 +693,8 @@ def main() -> None:
                 "in_window": 0, "kept": 0,
             })
         merged = merge_hn(raw_items, stories, cutoff)
-        hn_info.update(matched=merged["matched"], added=merged["added"])
+        hn_info.update(matched=merged["matched"], added=merged["added"],
+                       stale=merged["stale"])
         raw_items.extend(merged["added"])
 
     # Hugging Face Daily Papers：論文的當日重要性訊號。
@@ -731,6 +763,11 @@ def main() -> None:
                 f"（{hn.MIN_POINTS} 分以上）→ 對上既有項目 {hn_info['matched']} 則"
                 f"、補入新項目 {len(hn_info['added'])} 則"
             )
+            # 舊文重貼是這條路徑特有的失誤，數量要看得見才知道過濾有沒有在做事
+            if hn_info["stale"]:
+                print(f"  標題帶往年年份而剔除 {len(hn_info['stale'])} 則（舊文重貼）：")
+                for title in hn_info["stale"][:5]:
+                    print(f"    {title}")
 
     if not args.no_hf_papers:
         if hf_info["error"]:
@@ -821,6 +858,12 @@ def main() -> None:
                 "papers_selected": len(selection["papers"]),
                 "hf_papers": {k: (len(v) if isinstance(v, list) else v)
                               for k, v in hf_info.items()},
+                # HN 是舊文混入的唯一路徑（時間欄位是投稿時間，不是原文發表日期）。
+                # stale_titles 是被標題年份擋下的數量，用來判斷這道過濾有沒有在做事
+                "hn": {"stories": hn_info["stories"], "matched": hn_info["matched"],
+                       "added": len(hn_info["added"]),
+                       "stale_titles": len(hn_info["stale"]),
+                       "error": hn_info["error"]},
                 "time_clamped": clamped,
                 "time_estimated": estimated,
                 "per_source": reports,

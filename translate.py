@@ -30,7 +30,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import llm
@@ -123,6 +123,8 @@ def looks_simplified(text: str) -> tuple[bool, int]:
 # 輸入 token 與重試次數。長篇評論會被截斷，這是刻意的取捨。
 INPUT_CHARS = 4000
 
+TPE = timezone(timedelta(hours=8))
+
 GROUPS = ["模型與產品發布", "產業與資本", "研究與論文", "遊戲與娛樂", "政策與法規", "工程與工具", "其他"]
 KINDS = ["譯", "摘", "僅標題"]
 
@@ -143,6 +145,12 @@ CURATE_SYSTEM = f"""你是 AI 情報日報的策展編輯。輸入是一份已�
    程式的去重抓不到，必須由你判斷。合併時以資訊最完整的那則為主，其餘列為 duplicate。
 2. **剔除無實質內容者**：純引言、單純的連結轉貼、與 AI 無關的項目、
    內容重複的週報彙整。理由要具體。
+2.5 **剔除舊聞**：每則候選都附了日期。標著「投稿 HN」的那些，日期是**有人把連結
+   貼上 Hacker News 的時間**，不是原文發表日期——原文可能是好幾年前的舊文被重貼，
+   這是本日報最常見的失誤來源。只要標題或摘要顯示內容不是最近幾天發生的事，
+   就剔除：提到的產品、版本、事件明顯早於現在；文字本身是經典文章重讀、歷史回顧、
+   舊節目或舊演講的逐字稿存檔；或內文出現與日期欄位對不上的年份。
+   判斷不了就看內容講的事情有沒有時效性——這是唯一該動用你既有知識的地方。
 3. **分組與排序**：分到這些組別之一 {GROUPS}，並依重要性排序（rank 從 1 開始，不得重複）。
    「其他」是最後手段，只給真的無法歸類的項目——同一份日報裡「其他」超過三則
    就代表你分類太懶。評論、觀點文章歸到它談論的主題所屬組別。
@@ -150,6 +158,7 @@ CURATE_SYSTEM = f"""你是 AI 情報日報的策展編輯。輸入是一份已�
 排序依據**只能**是輸入提供的訊號：Hacker News 分數、報導家數、來源類型（官方公告優先）、
 以及標題本身的資訊量。不要依據你對這些事件的既有知識判斷重要性——
 你的訓練資料可能過時，而這份清單是今天的實況。
+（這一條只管**重要性**。判斷一則是不是舊聞時，該用你的知識就用，見第 2.5 點。）
 
 判斷「熱門」時請注意：Hacker News 分數高代表英文技術社群關注度高；
 報導家數多代表跨媒體擴散。兩者都缺但來自官方公告的項目仍應保留。
@@ -193,6 +202,31 @@ def _shape_curate(data: dict) -> None:
             raise LLMError("dropped 項目缺少 id")
 
 
+def _curate_date(item: dict) -> str:
+    """策展用的日期標示。
+
+    HN 補進來的項目一定要標成「投稿 HN」而不是發表日期：那個時間戳是有人把連結
+    貼上 HN 的時間，原文可能早好幾年（2026-09-14 那期就混進了 2019 年的 GPT-2
+    公告）。收集階段只擋得掉標題帶年份標記的那種，其餘只能靠策展編輯看內容判斷，
+    所以這裡要把「這個日期不可信」直接寫在候選行上。
+    """
+    raw = item.get("published_utc") or ""
+    try:
+        tpe = datetime.fromisoformat(raw.replace("Z", "+00:00")).astimezone(TPE)
+    except ValueError:
+        return "日期不明"
+    stamp = tpe.strftime("%Y-%m-%d %H:%M")
+    if item.get("source") != "Hacker News":
+        return stamp
+    # extract.py 從原文網頁抓到真實發表日期時就用它——那是唯一可信的依據。
+    # 明顯的舊文重貼已經在 extract.py 剔除過，這裡剩下的是灰色地帶
+    # （差幾天到兩週），要讓策展編輯自己看內容判斷
+    written = item.get("article_date") or ""
+    if written:
+        return f"原文發表於 {written}，{stamp} 才被投稿到 HN"
+    return f"{stamp} 投稿 HN（原文發表日期不明，可能是舊文重貼）"
+
+
 def curate(pool: list[dict], target: int, model: str) -> dict:
     lines = []
     for i in pool:
@@ -212,11 +246,13 @@ def curate(pool: list[dict], target: int, model: str) -> dict:
         lines.append(
             f"id={i['id']} | {i['source']}({i['lang']}/{i['cat']}) | "
             f"{'、'.join(signals) or '無額外訊號'}\n"
+            f"  日期：{_curate_date(i)}\n"
             f"  標題：{i['title_original']}\n"
             f"  摘要：{summary or '（無摘要）'}"
         )
 
     user = (
+        f"今天是 {datetime.now(TPE):%Y-%m-%d}（台北時間）。"
         f"候選項目共 {len(pool)} 則，請選出最多 {target} 則。\n\n"
         + "\n\n".join(lines)
     )
@@ -523,6 +559,9 @@ def main() -> None:
             "published_utc": src["published_utc"],
             "hn_points": src.get("hn_points", 0),
             "hn_url": src.get("hn_url", ""),
+            # extract.py 從原文網頁抓到的真實發表日期（抓不到就是空字串）。
+            # HN 項目的 published_utc 是投稿時間，這個欄位才是原文多舊的依據
+            "article_date": src.get("article_date", ""),
             "cross_source_count": src["cross_source_count"],
             "also_reported_by": src.get("also_reported_by", []),
             "merged_ids": s["duplicate_ids"],

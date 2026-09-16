@@ -18,10 +18,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import date, datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import trafilatura
+from trafilatura.metadata import extract_metadata
 
 from fetchlib import looks_like_content, polite_get
 
@@ -34,11 +36,39 @@ CANDIDATES = ROOT / "out" / "candidates.json"
 MAX_CHARS = 6000        # 超過這個長度對摘要沒有幫助，只是燒 token
 MIN_GAIN = 200          # 抓到的內文至少要比 feed 摘要多這麼多字才值得換掉
 
+# HN 補進來的項目，`published_utc` 是投稿到 HN 的時間，不是原文發表日期，
+# 所以 collect.py 的時間窗對那條路徑完全沒有作用（詳見 SETTINGS.md 的 HN 段）。
+# 這一層本來就會把原文 HTML 抓回來，順手用 trafilatura 的 metadata 取真正的
+# 發表日期，是唯一能拿到事實的地方——標題沒有 (2019) 這種標記時也擋得住。
+#
+# 只對 HN 來源做剔除：別的來源日期來自 feed，本來就可信，就算 metadata 抓到
+# 舊日期也多半是網站自己的 meta 標錯，不該因此丟掉稿子。
+# 14 天是刻意放寬的：抓的是「明顯是舊文」，一週內的時間差留給策展階段判斷。
+STALE_DAYS = 14
+
+
+def is_stale(item: dict, article_date: str) -> bool:
+    """原文發表日期比「被投稿到 HN 的時間」早太多 = 舊文重貼。
+
+    刻意拿 `published_utc`（投稿時間）當基準而不是「今天」：
+    `backfill.py` 回補歷史日期時，整批項目本來就比今天舊好幾週，
+    用今天當基準會把回補的每一則都判成舊文。
+    """
+    if item.get("source") != "Hacker News" or not article_date:
+        return False
+    try:
+        published = datetime.fromisoformat(
+            item["published_utc"].replace("Z", "+00:00")).date()
+        written = date.fromisoformat(article_date[:10])
+    except (KeyError, ValueError):
+        return False
+    return written < published - timedelta(days=STALE_DAYS)
+
 
 def extract_one(item: dict) -> dict:
-    """回傳 {"id":…, "text":…, "error":…}。任何失敗都只記錄。"""
+    """回傳 {"id":…, "text":…, "date":…, "error":…}。任何失敗都只記錄。"""
     url = item.get("url_raw") or item.get("url") or ""
-    out = {"id": item["id"], "text": "", "error": ""}
+    out = {"id": item["id"], "text": "", "date": "", "error": ""}
     if not url:
         out["error"] = "無網址"
         return out
@@ -48,6 +78,13 @@ def extract_one(item: dict) -> dict:
         if resp.status_code != 200:
             out["error"] = f"HTTP {resp.status_code}"
             return out
+        # 日期先取。付費牆頁面抽不到內文卻常常抽得到 meta 日期，
+        # 而且日期失敗絕不能連帶讓內文也拿不到，所以自己包一層
+        try:
+            meta = extract_metadata(resp.text)
+            out["date"] = (meta.date or "") if meta else ""
+        except Exception:
+            out["date"] = ""
         text = trafilatura.extract(
             resp.text,
             favor_precision=True,      # 寧可少抓一段，也不要把導覽列當內文
@@ -73,6 +110,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workers", type=int, default=6)
     ap.add_argument("--include-papers", action="store_true", help="連論文也抓正文（預設不抓）")
+    ap.add_argument("--keep-stale", action="store_true",
+                    help="不剔除 HN 舊文重貼（除錯用；正常執行不要開）")
     args = ap.parse_args()
 
     if not CANDIDATES.exists():
@@ -114,9 +153,32 @@ def main() -> None:
             if res["error"]:
                 failed.append((target["source"], target["title_original"][:40], res["error"]))
 
+        # 真實發表日期一律帶著走：策展階段的候選行會顯示它，
+        # 這是模型判斷舊聞時唯一可信的依據（HN 項目的 published_utc 是投稿時間）
+        for c in copies:
+            c["article_date"] = res["date"]
+
+    # HN 舊文重貼的最後一道防線。標題沒有 (2019) 這種標記時，
+    # collect.py 攔不到，只有抓回原文才知道它有多舊
+    stale = []
+    if not args.keep_stale:
+        for target, res in zip(targets, results):
+            if is_stale(target, res["date"]):
+                stale.append((res["id"], res["date"], target["title_original"][:50]))
+        drop = {i for i, _, _ in stale}
+        for key in ("official", "ranked", "papers"):
+            if key in data:
+                data[key] = [i for i in data[key] if i["id"] not in drop]
+
     CANDIDATES.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"  取得原文 {upgraded} 則、沿用 feed 摘要 {kept} 則")
+    dated = sum(1 for r in results if r["date"])
+    print(f"  取得原文發表日期 {dated} 則（其餘網站未提供，交由策展階段判斷）")
+    if stale:
+        print(f"\n剔除 HN 舊文重貼（{len(stale)} 則，原文比投稿時間早 {STALE_DAYS} 天以上）：")
+        for _, day, title in stale:
+            print(f"  {day}  {title}")
     if failed:
         print(f"\n抓不到原文（{len(failed)} 則，沿用 feed 摘要，不影響流程）：")
         for source, title, error in failed[:15]:

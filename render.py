@@ -330,8 +330,15 @@ def render_item(it: dict, n: int) -> str:
     if published:
         if it.get("source") == "Hacker News":
             # 這些是 hn.py 從 Algolia 補進來的，時間欄位只有「投稿到 HN 的時間」，
-            # 原文可能早好幾天就發表了。標成投稿時間，不要讓人誤讀成發布日期
-            meta.append(f'<span>{published} 投稿 HN</span>')
+            # 原文可能早好幾天、甚至好幾年就發表了（2026-09-14 那期混進過 2019 年的
+            # GPT-2 公告）。光標「投稿 HN」讀者仍會當成發布日期，所以把「原文日期不明」
+            # 寫明——頁首的「取材自過去 N 小時」對這條路徑本來就不成立
+            written = (it.get("article_date") or "")[:10]
+            if written:
+                # extract.py 抓到了真實發表日期。直接寫出來，讀者不必猜
+                meta.append(f'<span>原文 {esc(written)}・{published} 投稿 HN</span>')
+            else:
+                meta.append(f'<span>{published} 投稿 HN・原文日期不明</span>')
         else:
             mark = "（時間存疑）" if it.get("time_clamped") else ""
             meta.append(f'<span>{published}{mark}</span>')
@@ -407,7 +414,9 @@ def render_digest(digest: dict, report: dict, date_key: str, date_label: str,
     note = ('<p class="note">所有內容由程式自動收集、機器翻譯，'
             '每則都附上原始連結與原文標題供查證。'
             '譯文只改寫來源提供的文字，不補充任何外部資訊；'
-            '來源未提供摘要者標為「僅標題」。</p>')
+            '來源未提供摘要者標為「僅標題」。'
+            '標示「投稿 HN」者，時間是連結被貼上 Hacker News 的時間，'
+            '原文發表日期可能更早。</p>')
 
     body = [head, render_groups(counts), note]
 
