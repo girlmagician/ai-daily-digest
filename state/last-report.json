@@ -1,31 +1,31 @@
 {
-  "generated_at_utc": "2026-09-18T01:18:38.463966+00:00",
+  "generated_at_utc": "2026-09-19T01:14:28.469714+00:00",
   "window_hours": 48,
   "sources_total": 62,
   "sources_ok": 59,
   "sources_failed": 3,
-  "raw_items": 1074,
-  "contentless_dropped": 1,
-  "clustered_items": 878,
-  "already_published": 20,
-  "candidate_items": 858,
+  "raw_items": 1059,
+  "contentless_dropped": 3,
+  "clustered_items": 868,
+  "already_published": 24,
+  "candidate_items": 844,
   "papers_pool_size": 630,
-  "papers_with_signal": 24,
+  "papers_with_signal": 23,
   "papers_selected": 5,
   "hf_papers": {
-    "matched": 24,
-    "added": 9,
-    "papers": 23,
+    "matched": 22,
+    "added": 8,
+    "papers": 24,
     "error": ""
   },
   "hn": {
-    "stories": 236,
-    "matched": 11,
-    "added": 57,
-    "stale_titles": 1,
+    "stories": 221,
+    "matched": 4,
+    "added": 55,
+    "stale_titles": 2,
     "error": ""
   },
-  "time_clamped": 3,
+  "time_clamped": 0,
   "time_estimated": 0,
   "per_source": [
     {
@@ -35,9 +35,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1208,
-      "in_window": 7,
-      "kept": 7
+      "entries": 1209,
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -46,9 +46,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1208,
-      "in_window": 7,
-      "kept": 7
+      "entries": 1209,
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Google DeepMind Blog",
@@ -80,8 +80,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Google Developers Blog",
@@ -102,8 +102,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Microsoft Source AI",
@@ -124,8 +124,8 @@
       "status": "ok",
       "error": "",
       "entries": 87,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Meta Newsroom (Tech)",
@@ -135,8 +135,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Microsoft Research",
@@ -157,8 +157,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 11,
-      "kept": 11
+      "in_window": 13,
+      "kept": 12,
+      "capped": 1
     },
     {
       "name": "Hugging Face Blog",
@@ -179,8 +180,8 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 4,
-      "kept": 3
+      "in_window": 1,
+      "kept": 0
     },
     {
       "name": "Simon Willison",
@@ -212,8 +213,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Interconnects",
@@ -257,7 +258,7 @@
       "error": "",
       "entries": 20,
       "in_window": 1,
-      "kept": 0
+      "kept": 1
     },
     {
       "name": "Ahead of AI",
@@ -334,8 +335,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 6,
-      "kept": 6
+      "in_window": 9,
+      "kept": 9
     },
     {
       "name": "The Information",
@@ -347,7 +348,7 @@
       "entries": 20,
       "in_window": 20,
       "kept": 12,
-      "capped": 3
+      "capped": 4
     },
     {
       "name": "Bloomberg Technology",
@@ -358,8 +359,7 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 12,
-      "capped": 3
+      "kept": 12
     },
     {
       "name": "FT 人工智慧",
@@ -380,9 +380,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 304,
-      "in_window": 304,
-      "kept": 304
+      "entries": 329,
+      "in_window": 329,
+      "kept": 329
     },
     {
       "name": "arXiv cs.CL",
@@ -391,9 +391,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 171,
-      "in_window": 171,
-      "kept": 171
+      "entries": 164,
+      "in_window": 164,
+      "kept": 164
     },
     {
       "name": "arXiv cs.LG",
@@ -402,9 +402,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 325,
-      "in_window": 325,
-      "kept": 325
+      "entries": 304,
+      "in_window": 304,
+      "kept": 304
     },
     {
       "name": "llama.cpp releases",
@@ -436,8 +436,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 4,
-      "kept": 4
+      "in_window": 5,
+      "kept": 5
     },
     {
       "name": "ITmedia AI+",
@@ -482,8 +482,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 12,
-      "capped": 2
+      "kept": 12
     },
     {
       "name": "ASCII.jp",
@@ -494,7 +493,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 5
+      "kept": 3
     },
     {
       "name": "Nikkei xTECH",
@@ -504,9 +503,9 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 94,
+      "in_window": 58,
       "kept": 12,
-      "capped": 14
+      "capped": 3
     },
     {
       "name": "量子位 QbitAI",
@@ -527,8 +526,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 30,
-      "kept": 10
+      "in_window": 29,
+      "kept": 12
     },
     {
       "name": "APPSO (愛範兒)",
@@ -538,8 +537,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 17,
-      "kept": 12
+      "in_window": 14,
+      "kept": 11
     },
     {
       "name": "GamesIndustry.biz",
@@ -549,8 +548,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 12,
-      "kept": 0
+      "in_window": 13,
+      "kept": 1
     },
     {
       "name": "Game Developer",
@@ -561,7 +560,7 @@
       "error": "",
       "entries": 50,
       "in_window": 20,
-      "kept": 0
+      "kept": 1
     },
     {
       "name": "Unity Blog",
@@ -594,7 +593,7 @@
       "error": "",
       "entries": 100,
       "in_window": 100,
-      "kept": 1
+      "kept": 3
     },
     {
       "name": "電ファミニコゲーマー",
@@ -615,7 +614,7 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 4,
+      "in_window": 3,
       "kept": 0
     },
     {
@@ -626,8 +625,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Naavik",
@@ -648,7 +647,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -659,7 +658,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 6,
+      "in_window": 5,
       "kept": 1
     },
     {
@@ -692,7 +691,7 @@
       "status": "ok",
       "error": "",
       "entries": 40,
-      "in_window": 0,
+      "in_window": 1,
       "kept": 0
     },
     {
