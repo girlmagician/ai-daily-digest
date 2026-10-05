@@ -387,6 +387,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | HN 佔比太高／太低 | `collect.HN_SHARE`（預設 0.34） | 調低會讓 HN 多的日子則數變少，不會自動補其他來源 |
 | 舊文剔除太嚴／太鬆 | `extract.STALE_DAYS`（預設 14） | 只影響 HN 來源。調到 7 以下會開始誤殺「發表後幾天才被投上 HN」的正常文章 |
 | 除錯時想保留舊文 | `python extract.py --keep-stale` | 只給人工檢查用，正常執行與 CI 不要開 |
+| 超大網頁的解析上限 | `fetchlib.MAX_HTML_BYTES`（預設 5 MB） | `extract.py` 與 `scrape.py` 共用。防 libxml2 在原生層 abort（見 HANDOVER 第三節）。多數文章頁 < 1 MB，調低會開始誤殺正常的長文頁 |
 | 論文太多／太少 | `collect.py --max-papers` | 論文豁免分數下限 |
 | 只調版面 | `render.py` 的 `CSS`，然後 `python render.py --replay` | 不呼叫模型、不花錢、三秒完成 |
 | 改分組名稱 | `translate.GROUPS` 與 `render.GROUP_ORDER` **兩邊都要改** | 不一致會讓分類篩選器排序錯亂 |
@@ -401,6 +402,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-10-05 | 補抓原文被 SIGABRT 帶走時不再擋下日報：`daily.yml` 該步加 `continue-on-error`、新增 `fetchlib.MAX_HTML_BYTES`（5 MB）、`extract.py` 解析前印出 URL 當線索 | `3cf521d` |
 | 2026-09-30 | 策展加兩條剔除規則：2.6 看不懂的「僅標題」項目（明文壓過 HN 分數）、2.7 AI 只是背景的社會新聞；候選行的「（無摘要）」改成寫明後果 | |
 | 2026-09-16 | 擋 HN 舊文重貼（四道防線）：標題年份標記、`extract.py` 取真實發表日期後剔除、策展候選行補上日期與「剔除舊聞」規則、卡片標示原文日期；並補上 HN 席次上限 `HN_SHARE` | |
 | 2026-08-19 | 新增收藏功能：卡片 ☆ 按鈕、`favorites.html` 收藏頁、匯出／匯入，腳本注入既有存檔頁 | `219e8bc` |
