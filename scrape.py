@@ -23,7 +23,9 @@ from urllib.parse import urljoin
 
 import trafilatura
 
-from fetchlib import item_id, looks_like_content, normalize_url, polite_get, strip_html
+from fetchlib import (
+    item_id, looks_like_content, normalize_url, polite_get, strip_html, too_large,
+)
 
 MAX_LINKS = 15          # 索引頁最多追幾條連結，避免一次打太多請求
 MAX_CHARS = 6000
@@ -58,6 +60,9 @@ def _article(url: str) -> dict | None:
     try:
         resp = polite_get(url, timeout=30)
         if resp.status_code != 200:
+            return None
+        # 跟 extract.py 同一道防線：超大頁面不交給 libxml2（見 fetchlib.MAX_HTML_BYTES）
+        if too_large(resp):
             return None
         meta = trafilatura.extract_metadata(resp.text)
         text = trafilatura.extract(

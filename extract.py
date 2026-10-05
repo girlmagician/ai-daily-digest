@@ -25,7 +25,7 @@ from pathlib import Path
 import trafilatura
 from trafilatura.metadata import extract_metadata
 
-from fetchlib import looks_like_content, polite_get
+from fetchlib import looks_like_content, polite_get, too_large
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -78,6 +78,13 @@ def extract_one(item: dict) -> dict:
         if resp.status_code != 200:
             out["error"] = f"HTTP {resp.status_code}"
             return out
+        if too_large(resp):
+            out["error"] = f"網頁過大（{len(resp.content) // 1024} KB），不送進解析器"
+            return out
+        # libxml2 在原生層 abort 時不會留下 traceback（2026-10-05 就是這樣失敗的），
+        # 日誌最後幾行的「解析中」是唯一能指認是哪幾頁出事的線索。
+        # 六條執行緒並行，所以要看的是尾端那幾行而不是最後一行。
+        print(f"  解析中 {url[:100]}", flush=True)
         # 日期先取。付費牆頁面抽不到內文卻常常抽得到 meta 日期，
         # 而且日期失敗絕不能連帶讓內文也拿不到，所以自己包一層
         try:

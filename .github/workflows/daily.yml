@@ -68,6 +68,17 @@ jobs:
 
       - name: 補抓原文全文
         # RSS 多半只給導言。沒有這步，摘要就只能靠模型腦補
+        #
+        # continue-on-error：這一步的設計本來就是「抓不到就沿用 feed 摘要，
+        # 絕不中斷流程」，但那個保證只對 Python 例外有效。2026-10-05 這支程式
+        # 被 SIGABRT 帶走（exit 134，libxml2 在原生層 abort），except 攔不到，
+        # 整份日報因此沒出。這裡補上流程層的同一個保證。
+        #
+        # 失敗也不會留下壞資料：candidates.json 是跑到最後才覆寫，中途死掉的話
+        # 檔案還是 collect.py 那份完整版；translate.py 與 render.py 讀
+        # article_date / text_source 都用 .get() 帶預設值，所以日報照出，
+        # 只是摘要退回 feed 導言。
+        continue-on-error: true
         run: python extract.py
 
       - name: 策展與翻譯

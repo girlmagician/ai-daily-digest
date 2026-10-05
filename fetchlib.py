@@ -29,6 +29,27 @@ HEADERS = {
 }
 DEFAULT_TIMEOUT = 20
 
+# 單頁 HTML 交給解析器之前的大小上限。
+#
+# 由來：2026-10-05 的 CI，extract.py 被 SIGABRT 帶走（exit code 134），日誌裡
+# 沒有任何 traceback。那是 C 層的 abort，不是 Python 例外——extract_one 整圈
+# `except Exception` 一個都攔不到，整個行程直接消失，當天日報沒出。
+#
+# 解析在 trafilatura → lxml → libxml2。libxml2 建出來的樹是原文的十幾倍大，
+# 畸形或超大的頁面都可能讓它在原生層 abort。Python 這端沒有任何辦法攔，
+# 唯一能做的是別把這種頁面交給它。
+#
+# 5 MB 對文章頁非常寬鬆（多數在 1 MB 以內），只擋明顯不正常的頁面。
+# 注意這只是機率上的減災：我們並不知道 10/05 那天是哪一頁、也不知道它是不是
+# 因為太大才爆的。真正保證日報照出的是 daily.yml 那一步的 continue-on-error。
+MAX_HTML_BYTES = 5 * 1024 * 1024
+
+
+def too_large(resp: requests.Response) -> bool:
+    """回應大到不該交給 HTML 解析器。見 MAX_HTML_BYTES。"""
+    return len(resp.content) > MAX_HTML_BYTES
+
+
 # 每個網域的最小請求間隔（秒）
 DOMAIN_INTERVAL = defaultdict(
     lambda: 0.4,
