@@ -1,16 +1,16 @@
 {
-  "generated_at_utc": "2026-10-06T01:15:51.612424+00:00",
+  "generated_at_utc": "2026-10-06T01:28:19.314337+00:00",
   "window_hours": 48,
   "sources_total": 62,
-  "sources_ok": 59,
-  "sources_failed": 3,
+  "sources_ok": 58,
+  "sources_failed": 4,
   "raw_items": 1286,
-  "contentless_dropped": 1,
+  "contentless_dropped": 2,
   "clustered_items": 1042,
-  "already_published": 22,
-  "candidate_items": 1020,
-  "papers_pool_size": 847,
-  "papers_with_signal": 60,
+  "already_published": 55,
+  "candidate_items": 987,
+  "papers_pool_size": 842,
+  "papers_with_signal": 55,
   "papers_selected": 5,
   "hf_papers": {
     "matched": 27,
@@ -19,7 +19,7 @@
     "error": ""
   },
   "hn": {
-    "stories": 174,
+    "stories": 176,
     "matched": 3,
     "added": 35,
     "stale_titles": 0,
@@ -434,8 +434,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 4,
-      "kept": 4
+      "in_window": 5,
+      "kept": 5
     },
     {
       "name": "ITmedia AI+",
@@ -611,9 +611,9 @@
       "url": "https://www.youxituoluo.com/feed",
       "lang": "zh-CN",
       "cat": "game",
-      "status": "ok",
-      "error": "",
-      "entries": 30,
+      "status": "fail",
+      "error": "www.youxituoluo.com: ConnectTimeout",
+      "entries": 0,
       "in_window": 0,
       "kept": 0
     },
@@ -725,6 +725,17 @@
       "cat": "eng",
       "status": "fail",
       "error": "tech.preferred.jp: HTTP 404",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "遊戲陀螺",
+      "url": "https://www.youxituoluo.com/feed",
+      "lang": "zh-CN",
+      "cat": "game",
+      "status": "fail",
+      "error": "www.youxituoluo.com: ConnectTimeout",
       "entries": 0,
       "in_window": 0,
       "kept": 0
