@@ -1,27 +1,34 @@
 name: 每日 AI 情報
 
 on:
+  # 三個時段，不是三次執行：下面的 guard job 會讓「今天已經發過」的那幾次
+  # 在幾秒內結束，所以正常情況每天仍然只有一次完整執行。
+  #
+  # 為什麼要排三次（2026-10-06 定案）：GitHub 的排程佇列延遲既大又不穩定，
+  # 單一時段無論設在哪裡都賭不贏。實測的延遲分布：
+  #   daily.yml  cron 23:23 UTC → +2h20m～+3h20m（8 次取樣）
+  #   daily.yml  cron 20:47 UTC → +4h40m（1 次取樣，10/06）
+  #   watchdog   cron 01/03/05:17 UTC → +5h07m～+7h12m（9 次取樣）
+  # 也就是 +2.3～+7.2 小時。沒有任何固定提前量能涵蓋這個範圍，
+  # 所以改成「多撒幾次、誰先跑到誰出稿、其餘自動跳過」。
+  #
+  # 落地時間估算（延遲 2.3～4.7 小時 + 執行約 10 分）：
+  #   18:07 UTC（台北 02:07）→ 台北 04:37～06:57　✓ 一定在 08:30 前
+  #   19:37 UTC（台北 03:37）→ 台北 06:07～08:27　✓ 一定在 08:30 前
+  #   21:07 UTC（台北 05:07）→ 台北 07:37～09:57　△ 最壞會超時，當最後的保險
+  #
+  # 仍然避開整點：整點是全球最熱門的 cron 時間，佇列延遲更久；
+  # Anthropic 端同樣是尖峰（實測 UTC 00:00 觸發時策展呼叫收到 529 Overloaded）。
+  #
+  # 代價：正常情況日報會在台北 05:00～07:00 之間發布，比以前早。
+  # 當天 05:00 之後的新聞要等隔天——不會漏，collect.py 的時間窗是 48 小時。
+  #
+  # 對 arXiv 沒有影響：feed 每天 04:00 UTC 更新，這三個時段的實際執行都落在
+  # 同一個 feed 版本區間內，台北週日／週一拿到空 arXiv 的情況不變。
   schedule:
-    # UTC 20:47 = 台北 04:47。刻意避開整點：
-    #   1. 整點是全球最熱門的 cron 時間，GitHub 的排程佇列會延遲更久
-    #   2. Anthropic 端同樣是尖峰，實測 UTC 00:00 觸發時策展呼叫收到 529 Overloaded
-    #
-    # 2026-10-05：從 23:23 提前 2 小時 36 分。原本設台北 07:23 開跑、約 07:50
-    # 發布，但 GitHub 的排程佇列從 8/30 起就在遲到，9/29 之後更穩定在
-    # +2h20m～+3h20m（近 8 次取樣，平均 +2h50m），實際發布落在台北
-    # 10:11～10:52，早就趕不上使用者要的 08:30。
-    #
-    # 04:47 的算法：最壞 = 佇列 3h20m + 執行 16 分 = 3h36m，04:47 + 3h36m
-    # = 08:23，仍在 08:30 之前；典型約 07:47 發布。往後再晚 13 分鐘就不行了
-    # （05:00 開跑的最壞情況是 08:36），所以這個時間沒有往後調的空間。
-    #
-    # 代價：GitHub 若哪天恢復準時，日報會在台北 05:00 前後發布。
-    # 這也不是保證——8/27–8/29 曾出現 +3～+7 小時的離群值，那種日子沒有任何
-    # cron 設定救得了，由看門狗（台北 09:17/11:17/13:17）接手補跑。
-    #
-    # 對 arXiv 沒有影響：feed 每天 04:00 UTC 更新，調整前後的實際執行時間
-    # （02:0x UTC 次日 → 23:2x UTC 當日）落在同一個 feed 版本區間內。
-    - cron: "47 20 * * *"
+    - cron: "7 18 * * *"
+    - cron: "37 19 * * *"
+    - cron: "7 21 * * *"
   workflow_dispatch:        # 也可以手動觸發，用來補跑或測試
 
 permissions:
@@ -32,7 +39,70 @@ concurrency:
   cancel-in-progress: false # 寧可排隊也不要中斷寫到一半的執行
 
 jobs:
+  # 今天已經發過就不要再跑。
+  #
+  # 由來（2026-10-06）：當天手動補跑出稿後，遲到 4.7 小時的排程才開始跑，
+  # 而 state/seen.json 這時已經記下第一批 30 則，於是第二次撿了名次 31-60，
+  # 產出 30 則完全不重疊的內容，把第一批整個覆寫掉——線上剩下比較弱的那批，
+  # 當天還花了兩倍成本。看門狗有這個判斷，daily.yml 自己沒有，這裡補上。
+  #
+  # 查的是 main 的現況而不是 checkout 的內容：排隊中的那次 checkout 到的是
+  # 觸發當下的 SHA，不會有前一次剛推上去的檔案。
+  #
+  # 只擋排程。手動觸發一律照跑，那是人明確要求的，包括「線上這版壞了要重出」。
+  guard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: 檢查今天是否已經發過
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, urllib.error, urllib.request
+          from datetime import datetime, timedelta, timezone
+
+          TPE = timezone(timedelta(hours=8))
+          today = datetime.now(TPE).strftime("%Y-%m-%d")
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GITHUB_TOKEN"]
+
+          def out(skip, why):
+              print(why)
+              with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                  f.write("skip=%s\n" % ("true" if skip else "false"))
+              sys.exit(0)
+
+          if os.environ.get("EVENT_NAME") != "schedule":
+              out(False, "手動觸發，不做跳過判斷，照跑")
+
+          req = urllib.request.Request(
+              "https://api.github.com/repos/%s/contents/docs/%s.html?ref=main" % (repo, today),
+              headers={"Authorization": "Bearer %s" % token,
+                       "Accept": "application/vnd.github+json",
+                       "X-GitHub-Api-Version": "2022-11-28"})
+          try:
+              with urllib.request.urlopen(req) as r:
+                  status = r.status
+          except urllib.error.HTTPError as e:
+              status = e.code
+
+          if status == 200:
+              out(True, "docs/%s.html 已存在，今天發過了，跳過這次排程" % today)
+          if status == 404:
+              out(False, "docs/%s.html 不存在，今天還沒發，開始執行" % today)
+          # 查不出來時選擇照跑：沒出日報的代價大於偶爾重跑一次的代價，
+          # 而且真的重跑了，推送那步沒有變更就會自己跳過。
+          out(False, "查詢得到非預期的 %d，保守起見照跑" % status)
+          PY
+
   build:
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
     runs-on: ubuntu-latest
     # 放寬到 75 分：遇到 529 時每次呼叫最多會退避等待約 7.5 分鐘，
     # 七次呼叫全都撞上的話原本的 45 分鐘會被 timeout 砍掉
