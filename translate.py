@@ -526,14 +526,57 @@ def main() -> None:
     results: dict[str, dict] = {}
 
     degraded_batches = []
+    failed_items = []
+
+    def record_ok(res: dict, label: str, batch: list[dict]) -> None:
+        if res.get("degraded"):
+            # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
+            # 而繁簡問題正是這樣拖了十天才被使用者發現的。
+            degraded_batches.append({
+                "batch": label,
+                "reason": res["degraded"],
+                "ids": [i["id"] for i in batch],
+            })
+        account(res)
+        for t in res["data"]["items"]:
+            results[t["id"]] = t
+
     for start in range(0, len(items), BATCH_SIZE):
         batch = items[start : start + BATCH_SIZE]
-        print(f"翻譯 {start + 1}-{start + len(batch)}／{len(items)}（{args.translate_model}）…")
+        label = f"{start + 1}-{start + len(batch)}"
+        print(f"翻譯 {label}／{len(items)}（{args.translate_model}）…")
         try:
             # ask_json 內含結構＋語意驗證與重試，通過才會回來
             res = translate_batch(batch, args.translate_model)
         except LLMError as e:
-            sys.exit(f"翻譯驗證連續失敗，中止以免產出不可信內容：{e}")
+            # 整批失敗時逐則重試，把問題隔離到單一則，不要賠掉整份日報。
+            #
+            # 由來：2026-10-13 的日報沒出來。策展成功（48 則選 30），但翻譯第
+            # 1-5 批被模型的安全分類器擋下——錯誤訊息是 Sonnet 的 safeguards
+            # flagged this message，而且官方訊息自己就寫「can sometimes flag
+            # legitimate cybersecurity work」。那天前五則裡有資安新聞，誤判。
+            # 一則誤判害整天開天窗，手動重跑也一樣（當天連跑四次全掛）。
+            #
+            # 原本這裡直接 sys.exit，理由是「不要產出不可信內容」。那個原則沒變，
+            # 只是把範圍縮到該縮的地方：單則翻不出來就捨棄單則，不是整份放棄。
+            # 捨棄而不是放原文，因為放未翻譯的原文同樣違反那個原則。
+            print(f"  整批失敗，改為逐則重試：{str(e)[:160]}")
+            for item in batch:
+                try:
+                    one = translate_batch([item], args.translate_model)
+                except LLMError as e_one:
+                    print(f"  ✗ 捨棄 {item['id']}：{item['title_original'][:50]}")
+                    print(f"      {str(e_one)[:200]}")
+                    failed_items.append({
+                        "id": item["id"],
+                        "title_original": item["title_original"],
+                        "source": item["source"],
+                        "url": item.get("url", ""),
+                        "error": str(e_one)[:300],
+                    })
+                    continue
+                record_ok(one, f"{label} 內的單則", [item])
+            continue
         if res.get("degraded"):
             # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
             # 而繁簡問題正是這樣拖了十天才被使用者發現的。
@@ -546,6 +589,14 @@ def main() -> None:
         for t in res["data"]["items"]:
             results[t["id"]] = t
 
+    # 逐則重試之後仍然一則都沒譯出來，就沒有日報可言了，該中止還是要中止。
+    if not results:
+        sys.exit("翻譯全數失敗，沒有可發布的內容，中止")
+    if failed_items:
+        print(f"\n⚠ 捨棄 {len(failed_items)} 則翻不出來的項目，其餘 {len(results)} 則照常發布：")
+        for f in failed_items:
+            print(f"  {f['source']}　{f['title_original'][:50]}")
+
     # ── 組合輸出：網址與時間由程式 join，模型碰不到 ──
     digest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -556,6 +607,7 @@ def main() -> None:
         "usage": usage_total,
         "cost_usd": round(cost_total, 4),
         "degraded_batches": degraded_batches,
+        "failed_items": failed_items,
     }
     for s in selected:
         src = by_id.get(s["id"])

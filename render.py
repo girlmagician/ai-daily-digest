@@ -450,6 +450,18 @@ def render_footer(digest: dict, report: dict) -> str:
             parts.append(f'<li>{esc(d.get("reason", ""))}</li>')
         parts.append("</ul>")
 
+    # 翻不出來而捨棄的項目。選進來了卻沒出現在頁面上，不揭露就等於無聲消失——
+    # 跟「本次未取得的來源」同樣的理由：寧可讓讀者知道少了什麼。
+    failed = digest.get("failed_items", [])
+    if failed:
+        parts.append(f"<h3>翻譯失敗而捨棄 {len(failed)} 則</h3><ul>")
+        for f in failed[:12]:
+            title = esc(f.get("title_original", ""))
+            url = f.get("url", "")
+            label = f'<a href="{esc(url)}">{title}</a>' if url else title
+            parts.append(f'<li>{esc(f.get("source", ""))}— {label}</li>')
+        parts.append("</ul>")
+
     if report:
         parts.append(
             f'<h3>本次執行</h3><p>來源 {report.get("sources_ok", 0)}／'
