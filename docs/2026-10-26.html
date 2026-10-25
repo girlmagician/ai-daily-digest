@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 情報日報｜2026年10月26日</title>
+<meta name="description" content="每日自動彙整海外 AI 情報，翻譯成繁體中文並附上原始連結">
+<meta property="og:title" content="AI 情報日報｜2026年10月26日">
+<meta property="og:description" content="每日自動彙整海外 AI 情報，翻譯成繁體中文並附上原始連結">
+<meta property="og:type" content="website">
+<link rel="alternate" type="application/rss+xml" title="AI 情報日報" href="feed.xml">
+<style>
+:root{--bg:#fbfbfa;--card:#fff;--fg:#1a1a18;--dim:#6b6b66;--line:#e6e5e0;
+--accent:#8a5a2b;--accent-bg:#f3ece3;--hot:#c0442e;--barbg:#fbfbfaf2}
+@media(prefers-color-scheme:dark){:root{--bg:#16161a;--card:#1e1e23;--fg:#e8e8e4;
+--dim:#9a9a94;--line:#31313a;--accent:#d9a066;--accent-bg:#2a2620;--hot:#e0705a;
+--barbg:#16161af2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font-family:-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+line-height:1.75;font-size:16px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 18px 64px}
+header{border-bottom:2px solid var(--line);padding-bottom:14px}
+h1{font-size:1.6rem;margin:0 0 4px}
+h1 a{color:inherit;text-decoration:none}
+.sub{color:var(--dim);font-size:.85rem;margin:0}
+
+/* 近 7 日快速切換 */
+.days{margin:12px 0 0;font-size:.85rem;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.days .lbl{color:var(--dim);margin-right:2px}
+.days a{color:var(--accent);text-decoration:none;border:1px solid var(--line);
+border-radius:6px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.days a:hover{background:var(--accent-bg)}
+.days .now{background:var(--accent);color:var(--bg);border-color:var(--accent);
+padding:2px 9px;border-radius:6px;font-variant-numeric:tabular-nums}
+.days .more{border-style:dashed}
+
+/* 分類篩選器：捲動時固定在頂端 */
+.groups{position:sticky;top:0;z-index:10;background:var(--barbg);
+backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+margin:0 -18px 4px;padding:9px 18px;display:flex;flex-wrap:wrap;gap:7px;
+align-items:center;font-size:.85rem}
+.groups a{color:var(--fg);text-decoration:none;border:1px solid var(--line);
+border-radius:999px;padding:3px 12px;white-space:nowrap}
+.groups a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.groups a b{color:var(--dim);font-weight:400;margin-left:5px;font-size:.78rem}
+.groups a:hover b{color:var(--accent)}
+.groups .top{margin-left:auto;border-style:dashed;color:var(--dim)}
+
+/* 錨點跳轉時標題不要被固定列遮住 */
+h2{font-size:1.05rem;margin:34px 0 4px;padding-top:12px;border-top:1px solid var(--line);
+color:var(--accent);letter-spacing:.02em;scroll-margin-top:56px}
+/* 兩欄卡片。用 grid 而不是 CSS columns：grid 是先左後右（1,2／3,4），
+   閱讀順序與排名一致；columns 會變成整列往下（1,2,3 在左欄），排名就讀不出來了。
+   align-items:start 讓卡片保持自然高度，不被同列的長卡片拉長。
+   卡片本身就把行寬限制在約 38 個中文字，所以文字不需要再另外設 max-width。 */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start;
+margin:12px 0}
+article{background:var(--card);border:1px solid var(--line);border-radius:10px;
+padding:14px 18px;margin:0}
+.t{font-size:1.06rem;font-weight:600;margin:0 0 6px;line-height:1.5}
+.t a{color:var(--fg);text-decoration:none}
+.t a:hover{color:var(--accent);text-decoration:underline}
+.n{color:var(--dim);font-variant-numeric:tabular-nums;margin-right:6px;font-weight:400}
+.s{margin:6px 0 10px;font-size:.95rem}
+.orig{color:var(--dim);font-size:.82rem;margin:6px 0;
+overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px}
+.meta{font-size:.78rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:.72rem}
+.hot{color:var(--hot);font-weight:600;text-decoration:none}
+.meta a{color:var(--dim)}
+.src{color:var(--dim);text-decoration:none;overflow-wrap:anywhere}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);
+font-size:.8rem;color:var(--dim)}
+footer h3{font-size:.85rem;margin:18px 0 6px;color:var(--fg)}
+footer ul{margin:4px 0;padding-left:20px}
+.note{background:var(--accent-bg);border-radius:8px;padding:10px 14px;
+font-size:.82rem;margin:14px 0;max-width:68em}
+ul.arc{list-style:none;padding:0}
+ul.arc li{padding:8px 0;border-bottom:1px solid var(--line)}
+ul.arc a{color:var(--accent);text-decoration:none;font-weight:600}
+/* 視窗不夠寬時收成一欄：兩欄各 450px 以下，卡片會擠得難讀 */
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .groups{margin:0 -14px 4px;padding:8px 14px;gap:5px;font-size:.8rem}
+  .wrap{padding:18px 14px 56px}
+}
+</style>
+</head>
+<body><div class="wrap"><header><h1><a href="index.html">AI 情報日報</a></h1><p class="sub">2026年10月26日　共 14 則　取材自過去 48 小時　產生於 2026/10/26 04:49（台北時間）</p><nav class="days"><span class="lbl">近 7 日</span><span class="now">10/26</span><a href="2026-10-25.html">10/25</a><a href="2026-10-24.html">10/24</a><a href="2026-10-23.html">10/23</a><a href="2026-10-22.html">10/22</a><a href="2026-10-21.html">10/21</a><a href="2026-10-20.html">10/20</a><a class="more" href="archive.html">更早（共 78 天）</a><a class="more fav-link" href="favorites.html">收藏</a><a class="more" href="feed.xml">RSS</a></nav></header><nav class="groups"><a href="#g0">模型與產品發布<b>3</b></a><a href="#g1">產業與資本<b>4</b></a><a href="#g2">研究與論文<b>2</b></a><a href="#g3">工程與工具<b>3</b></a><a href="#g4">其他<b>2</b></a><a class="top" href="#">回到頂端</a></nav><p class="note">所有內容由程式自動收集、機器翻譯，每則都附上原始連結與原文標題供查證。譯文只改寫來源提供的文字，不補充任何外部資訊；來源未提供摘要者標為「僅標題」。標示「投稿 HN」者，時間是連結被貼上 Hacker News 的時間，原文發表日期可能更早。</p><h2 id="g0">模型與產品發布</h2><div class="grid"><article><p class="t"><span class="n">1.</span><a href="https://www.bloomberg.com/news/articles/2026-10-25/ray-ban-meta-audio-ai-glasses-cost-more-while-ditching-a-key-feature-review" target="_blank" rel="noopener">Ray-Ban Meta Audio AI眼鏡漲價卻少了關鍵功能：評測</a></p><p class="s">Meta上月發表的Ray-Ban Meta Audio眼鏡售價349美元起，定位頗為特殊：價格比部分入門款更高，功能卻與多數機型相近，包括播放音樂、撥打電話、透過Meta AI語音助理回答問題，以及口述文字與語音訊息。使用者還能連結行事曆掌握一天行程、設定提醒，並取得附近地點等相關建議。</p><p class="orig">原文：Ray-Ban Meta Audio AI Glasses Cost More While Ditching a Key Feature: Review</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/articles/2026-10-25/ray-ban-meta-audio-ai-glasses-cost-more-while-ditching-a-key-feature-review" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>10/25 20:00</span></p></article><article><p class="t"><span class="n">2.</span><a href="https://www.interconnects.ai/p/podcast-kimi-k31-pro-the-new-cyber" target="_blank" rel="noopener">播客：Kimi K3.1 Pro、資安新現實與Muse碎碎念</a></p><p class="s">Interconnects播客主持人Nathan Lambert與Florian Brand討論近期AI圈大小事，包括Kimi K3.1 Pro發布後評價不一的原因，其在基準測試中表現優異卻引發行銷爭議，傳出可能涉及未揭露的付費推廣。兩人也探討開放權重模型的資安風險是否被先前低估、網路資安專家與AI專家對近期事件看法為何如此不同，以及Anthropic暫停招募初階員工等話題。節目尾聲聊到較輕鬆的主題，包括Florian對Muse的著迷，以及業界仍持續招募初階技術人才的現象。</p><p class="orig">原文：Podcast: Kimi K3.1 Pro, the new cyber reality, and Muse musings</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.interconnects.ai/p/podcast-kimi-k31-pro-the-new-cyber" target="_blank" rel="noopener">Interconnects｜interconnects.ai</a><span>10/25 19:49</span></p></article><article><p class="t"><span class="n">3.</span><a href="https://techcrunch.com/2026/10/25/the-hottest-ai-wearables-and-gadgets-you-should-know-about/" target="_blank" rel="noopener">盤點近期熱門AI穿戴裝置與隨身小工具</a></p><p class="s">文章彙整市面上幾款熱門AI穿戴裝置，包括可別在衣物上錄音並產生提醒與摘要的Bee（售價49.99美元起，Amazon收購後再推出74.99美元的Bee Frontier與99.99美元的Bee Eclipse新機種）；主打情感陪伴、售價129美元並因紐約地鐵廣告引發監控疑慮的項鍊Friend，近期推出內建喇叭的Friend 2.0；以及前身為Rewind、售價99美元、鎖定會議與對話逐字稿整理的Limitless。文章也提到Meta九月發表、尚未出貨、內建虛擬角色Jolly的Muse Charm，以及由前Meta Reality Labs員工創立、主打個人成長而非生產力的Nirva穿戴裝置。整體而言，這些產品多以吊墜或手環形式持續錄音，透過AI整理成筆記、摘要或情感陪伴內容，顯示AI穿戴裝置市場正快速擴張，OpenAI也在開發類似的隨身裝置。</p><p class="orig">原文：The hottest AI wearables and gadgets you should know about</p><p class="meta"><span class="tag">英</span><a class="src" href="https://techcrunch.com/2026/10/25/the-hottest-ai-wearables-and-gadgets-you-should-know-about/" target="_blank" rel="noopener">TechCrunch AI｜techcrunch.com</a><span>10/25 22:10</span></p></article></div><h2 id="g1">產業與資本</h2><div class="grid"><article><p class="t"><span class="n">4.</span><a href="https://techcrunch.com/2026/10/25/ai-delivers-zero-financial-payoff-to-most-companies-according-to-apollo-economist/" target="_blank" rel="noopener">Apollo 首席經濟學家稱 AI 對多數企業「零財務回報」</a></p><p class="s">私募巨頭 Apollo Global Management 首席經濟學家 Torsten Slok 在報告中指出，若排除 Alphabet、Amazon、Apple、Meta、Microsoft、Nvidia、Tesla 七家科技巨頭後的「S&amp;P 493」企業，獲利率與每位員工營收幾乎持平，並未看到 AI 帶來生產力提升的證據。他表示儘管投入龐大且熱度高漲，AI 對美國科技業以外的企業「財務回報幾乎為零」，並質疑企業能否把日益便宜的智慧轉化為營收與獲利成長。Slok 認為 AI 或許是很好的計算工具，但企業經營主要仰賴判斷力，AI 無法理解當責、信任、文化、潛規則、倫理取捨與公平性，而這些才是左右聲譽風險、進而驅動營收與獲利的關鍵。文中也提到近期研究同樣發現 AI 目前尚未帶來顯著的生產力提升。</p><p class="orig">原文：AI delivers ‘zero financial payoff’ to most companies, Apollo economist says</p><p class="meta"><span class="tag">英</span><a class="src" href="https://techcrunch.com/2026/10/25/ai-delivers-zero-financial-payoff-to-most-companies-according-to-apollo-economist/" target="_blank" rel="noopener">TechCrunch AI｜techcrunch.com</a><span>10/26 00:57</span></p></article><article><p class="t"><span class="n">5.</span><a href="https://www.bloomberg.com/news/articles/2026-10-25/ai-spending-fears-threaten-to-swamp-big-tech-s-strong-earnings" target="_blank" rel="noopener">AI 支出疑慮恐蓋過大型科技公司亮眼財報</a></p><p class="s">本週全球三家規模最大、最具影響力的科技公司預計將公布財報，市場預期它們將展現健康的成長表現。</p><p class="orig">原文：AI Spending Fears Threaten to Swamp Big Tech’s Strong Earnings</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/articles/2026-10-25/ai-spending-fears-threaten-to-swamp-big-tech-s-strong-earnings" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>10/25 21:00</span></p></article><article><p class="t"><span class="n">6.</span><a href="https://www.bloomberg.com/news/videos/2026-10-25/can-mistral-challenge-big-tech-by-doing-ai-differently-video" target="_blank" rel="noopener">歐洲押注Mistral能否以不同模式挑戰科技巨頭</a></p><p class="s">歐洲在打造最大型AI模型的競賽中落後美國，受限於較小的資本市場與分散的商業環境。總部位於法國的Mistral押注以不同方式競爭，透過開放原始碼模型，為企業提供更低成本、更多資料掌控權，以及更高的技術自主性。</p><p class="orig">原文：Can Mistral Challenge Big Tech by Doing AI Differently?</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/videos/2026-10-25/can-mistral-challenge-big-tech-by-doing-ai-differently-video" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>10/25 20:04</span></p></article><article><p class="t"><span class="n">7.</span><a href="https://www.bloomberg.com/news/articles/2026-10-25/jpmorgan-s-private-bank-using-ai-to-make-advisers-more-efficient" target="_blank" rel="noopener">摩根大通私人銀行用AI提升顧問效率</a></p><p class="s">摩根大通私人銀行正利用人工智慧協助客戶開戶、進行投資研究等工作，目標是提升旗下財富管理顧問的生產力。這項訊息由該行歐洲、中東暨非洲區主管Pablo Garnica透露。</p><p class="orig">原文：JPMorgan’s Private Bank Using AI to Make Advisers More Efficient</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/articles/2026-10-25/jpmorgan-s-private-bank-using-ai-to-make-advisers-more-efficient" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>10/25 19:48</span></p></article></div><h2 id="g2">研究與論文</h2><div class="grid"><article><p class="t"><span class="n">8.</span><a href="https://lynchlab.net/llm-skin-cancer" target="_blank" rel="noopener">十年前的 CNN 模型在皮膚癌診斷上勝過前沿 LLM</a></p><p class="s">作者以 2026 年 10 月的 GPT-6 Astra 與 Claude Fable 5.1 兩款頂尖模型，對比一個以 2015 年 Google 發表的 Inception v3 為基礎、微調約二十分鐘的 CNN 模型，測試對象是公開資料集 MILK10k 中 200 個經切片病理確診的皮膚病灶，涵蓋黑色素瘤、基底細胞癌、鱗狀細胞癌、日光性角化症等需處理病灶，以及痣與脂漏性角化症等可安全出院的病灶。結果 CNN 正確診斷率達 62%（125/200），兩款 LLM 分別只有 42% 左右（84、85 例）；若允許第二猜測，CNN 達 173/200，LLM 則為 134 與 138。在最關鍵的黑色素瘤判讀上，CNN 答對 13/30，優於兩款 LLM 的 8 與 11；兩款 LLM 各自有偏好誤判答案，例如其中一款將 75 個病灶都判成基底細胞癌。作者提醒樣本數不大、每個 LLM 案例只跑一次，結果可能因執行而有差異。</p><p class="orig">原文：A 10-year-old CNN outperforms frontier LLMs for skin cancer diagnosis</p><p class="meta"><span class="tag">英</span><a class="src" href="https://lynchlab.net/llm-skin-cancer" target="_blank" rel="noopener">Hacker News｜lynchlab.net</a><span>原文 2026-10-25・10/26 01:15 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50233779" target="_blank" rel="noopener">HN 276分</a></p></article><article><p class="t"><span class="n">9.</span><a href="https://actu.epfl.ch/news/neural-chip-decodes-interactions-between-brain-r-2" target="_blank" rel="noopener">神經晶片解碼腦區之間的互動模式</a></p><p class="s">瑞士洛桑聯邦理工學院（EPFL）團隊開發出可植入神經晶片LogSync，能即時追蹤不同腦區之間的通訊，辨識認知與情緒狀態。現行深度腦刺激（DBS）系統多為「開迴路」，依預設參數刺激；即使是閉迴路系統，也多僅依賴單一腦區訊號，難以處理精神疾病中跨腦區網路異常的問題。LogSync記錄腦波強度與各腦區訊號的同步性，並以機器學習演算法判讀這些網路層級生物標記以觸發刺激。團隊以過去精神科實驗的人腦紀錄（認知任務與觀看影片時的情緒喚起）及明尼蘇達大學的大鼠實驗驗證成效，晶片功耗低於200微瓦。此研究獲美國國家心理衛生研究院650萬瑞士法郎經費支持，發表於《IEEE Journal of Solid-State Circuits》，初期鎖定情緒與焦慮症等精神疾病治療，未來也可能應用於更廣泛的神經科技領域。</p><p class="orig">原文：Neural chip decodes interactions between brain regions</p><p class="meta"><span class="tag">英</span><a class="src" href="https://actu.epfl.ch/news/neural-chip-decodes-interactions-between-brain-r-2" target="_blank" rel="noopener">Hacker News｜actu.epfl.ch</a><span>原文 2026-10-23・10/24 23:57 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50222525" target="_blank" rel="noopener">HN 134分</a></p></article></div><h2 id="g3">工程與工具</h2><div class="grid"><article><p class="t"><span class="n">10.</span><a href="https://www.cerebras.ai/blog/how-we-deploy-trillion-parameter-frontier-models-on-cerebras" target="_blank" rel="noopener">Cerebras 揭露如何在晶圓級晶片部署兆參數 AI 模型</a></p><p class="s">Cerebras 說明如何將超大型前沿模型拆分到多片 WSE-3T 晶圓上執行，以每秒 1000 至 2000 多個詞元的速度運行多兆參數模型。文章以開源模型 Kimi K3（約 3 兆參數、69 層線性注意力與 24 層密集層）為例：單片 WSE-3T 晶圓有 44GB 晶片內記憶體，採 4 位元權重量化與 8 位元 KV 快取後，每層模型約需 16GB。由於密集層需額外空間存放 KV 快取，每片晶圓只放一層密集層，線性注意力層則可兩層共用一片晶圓，最終共需 59 片晶圓（35 片給線性層、24 片給密集層）。晶圓之間採管線方式執行，權重固定不動，只有中間運算結果透過乙太網路 RDMA 在晶圓間傳遞，每一跳約需 2 微秒。</p><p class="orig">原文：Cerebras Deploys Trillion-Parameter AI Models</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.cerebras.ai/blog/how-we-deploy-trillion-parameter-frontier-models-on-cerebras" target="_blank" rel="noopener">Hacker News｜cerebras.ai</a><span>原文 2026-10-22・10/25 09:33 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50227356" target="_blank" rel="noopener">HN 338分</a></p></article><article><p class="t"><span class="n">11.</span><a href="https://deallocatedobjects.com/posts/making-my-blog-readable-by-ai-agents" target="_blank" rel="noopener">部落格作者改造網站讓AI代理程式更易讀取</a></p><p class="s">一位部落格作者發現近期造訪網站的多是Claude、ChatGPT、Perplexity等AI代理程式，於是花一個晚上調整網站以利這些代理程式讀取。他讓每篇文章都能以純markdown格式呈現，並透過HTTP內容協商依Accept標頭自動回傳markdown或HTML，同時加上Vary標頭與canonical連結避免被誤判為重複內容。他在網站根目錄新增llms.txt說明如何取得markdown、如何引用文章，並提供收錄全站內容的llms-full.txt；robots.txt也明確列出允許GPTBot、ClaudeBot、PerplexityBot等爬蟲存取。此外他更新Atom與JSON Feed、補齊meta描述與Open Graph標籤及JSON-LD結構化資料，並加入IndexNow機制，在發文時主動通知Bing等搜尋引擎建立索引。作者表示這些改動多半只是調整檔案與設定，耗時不長，建議其他部落格可從llms.txt與markdown版文章做起。</p><p class="orig">原文：Making My Blog Readable by AI Agents</p><p class="meta"><span class="tag">英</span><a class="src" href="https://deallocatedobjects.com/posts/making-my-blog-readable-by-ai-agents" target="_blank" rel="noopener">Hacker News｜deallocatedobjects.com</a><span>原文 2026-10-24・10/25 05:21 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50225443" target="_blank" rel="noopener">HN 33分</a></p></article><article><p class="t"><span class="n">12.</span><a href="https://github.com/socrates6969/jukebox-os" target="_blank" rel="noopener">Jukebox-OS：為AI代理程式打造的決定性時間回溯重播與ACID沙盒</a></p><p class="s">Jukebox-OS是由Marius Carlsson設計、以Rust撰寫並附Python綁定的系統層執行環境，為AI代理程式工作流程帶來資料庫等級的ACID交易語意與「決定性黑膠回放」能力。它會把每次LLM提示詞、token串流、MCP工具呼叫與檔案系統變更，記錄成可驗證的「磁帶」(.jbx)檔案，讓開發者能對代理程式的多步驟任務執行BEGIN、COMMIT、ROLLBACK，並在毫秒等級時間內重播任一步驟。作者指出，LangGraph、AutoGen、CrewAI、OpenAI Agents SDK等現有框架多半只保存對話紀錄，卻把資料庫寫入與檔案異動視為「射後不理」，一旦代理程式在多步驟任務後段才出現幻覺，光靠對話紀錄無法復原先前已變更的資料。Jukebox-OS支援寫時複製沙盒、依金額或重複行為自動中止的「斷路器」，也能從指定步驟分叉並替換模型或系統提示詞以重新比對結果。專案原始碼公開於GitHub，並提供pip安裝方式。</p><p class="orig">原文：Jukebox-OS: Deterministic time-travel replay and ACID tool sandbox for AI agents</p><p class="meta"><span class="tag">英</span><a class="src" href="https://github.com/socrates6969/jukebox-os" target="_blank" rel="noopener">Hacker News｜github.com</a><span>原文 2026-10-25・10/26 00:29 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50233325" target="_blank" rel="noopener">HN 10分</a></p></article></div><h2 id="g4">其他</h2><div class="grid"><article><p class="t"><span class="n">13.</span><a href="https://www.dailycal.org/news/campus/academics/ai-use-leads-uc-berkeley-math-professor-to-see-no-point-in-grading-homework/article_bdf1eae2-c08b-491f-b9f1-81a7cea177de.html" target="_blank" rel="noopener">柏克萊數學教授因 AI 普及認為批改作業「毫無意義」</a></p><p class="s">加州大學柏克萊分校教授、費爾茲獎得主 Richard Borcherds 表示，由於發現大量學生利用 AI 穩定拿到高分，他認為再花錢請助教批改作業對錯已無意義，因此不再為作業評分，目前改採只要繳交就算完成的方式，他坦言這不是好制度，但暫無替代方案。這番話是在 OpenAI 宣布其 AI 代理程式據稱解開數學難題納維爾－史托克斯存在性與光滑性問題後，於週二的訪談中提出的。Borcherds 說若 AI 持續以目前速度進步，幾年內人類數學家能做的事 AI 都能做得更好，他也不確定該如何建議學生是否投入數學領域，甚至問過 ChatGPT 同一個問題，而 ChatGPT 也說自己不知道未來會如何。柏克萊校方要求教師在課程大綱中說明 AI 使用規範，但具體政策由各課程自行決定；校方也測試過 Turnitin、Rumi 等 AI 偵測工具，但認定其準確度仍不足以全校採用。</p><p class="orig">原文：AI use leads UC Berkeley math professor to see &#x27;no point&#x27; in grading homework</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.dailycal.org/news/campus/academics/ai-use-leads-uc-berkeley-math-professor-to-see-no-point-in-grading-homework/article_bdf1eae2-c08b-491f-b9f1-81a7cea177de.html" target="_blank" rel="noopener">Hacker News｜dailycal.org</a><span>原文 2026-10-23・10/26 00:28 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50233304" target="_blank" rel="noopener">HN 137分</a></p></article><article><p class="t"><span class="n">14.</span><a href="https://www.techspot.com/news/114171-nikon-photography-contest-winner-loses-title-after-scientists.html" target="_blank" rel="noopener">Nikon攝影獎得主因作品疑似AI造假遭取消資格</a></p><p class="s">Nikon第16屆Small World in Motion影片競賽的得獎者、中國清華大學的徐寧博士，原以一段拍攝罕見呼吸道疾病「原發性纖毛運動障礙」患童纖毛擺動的影片奪冠，但遭科學界質疑影片為AI生成而遭取消資格。多名研究者指出影片中細胞結構異常、大小不一，部分特徵憑空出現又消失；德州大學西南醫學中心博士生Ian Donovan更發現原始影像帶有AI生成浮水印。徐寧坦承在後製過程使用AI來辨識與視覺化超解析光學影像中的結構，但否認用AI生成影片本身或纖毛動作，並堅稱未違反競賽規則。Nikon調查後認定他確實違規，正式取消其獎項，改由越南的Nguyen Nam Nhat以線蟲與單細胞生物的影片遞補奪冠。Nikon表示將重新檢討未來競賽的規則與審核流程。</p><p class="orig">原文：Nikon photography contest winner loses title after scientists spot signs of AI</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.techspot.com/news/114171-nikon-photography-contest-winner-loses-title-after-scientists.html" target="_blank" rel="noopener">Hacker News｜techspot.com</a><span>原文 2026-10-12・10/25 17:51 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50229827" target="_blank" rel="noopener">HN 124分</a></p></article></div><footer><h3>本次未取得的來源</h3><ul><li>arXiv cs.AI— rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目</li><li>arXiv cs.CL— rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目</li><li>arXiv cs.LG— rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目</li><li>Preferred Networks— tech.preferred.jp: ReadTimeout</li><li>GamesBeat— venturebeat.com: HTTP 429</li><li>The Batch— 索引頁 HTTP 403</li></ul><h3>策展時剔除 6 則</h3><ul><li>與 b23877b88e691b4d 同一則 Apollo 首席經濟學家「AI 對非科技業零回報」報導，合併保留資訊較完整者</li><li>與 554d6031e8ec4572 同屬 AI 投資與大型科技股財報市場觀察，內容重疊，合併</li><li>僅標題且抓不到內文，「A Mathematician Reads the AI Future」看不出具體事件或主張，讀者無從理解；發表日期不明疑為舊文重貼</li><li>僅標題且抓不到內文，單一 subreddit 版規變動，缺乏可供理解的脈絡，且原文日期不明</li><li>僅標題且抓不到內文，Show HN 純產品名式宣傳語，無實質資訊，HN 僅 15 分</li><li>社群貼文式的未來想像隨筆，無事實性新聞內容，純個人臆想</li></ul><h3>本次執行</h3><p>來源 56／62 成功，原始 97 則，去重後 89 則，策展後 14 則。</p><p>策展：claude-opus-5　翻譯：claude-sonnet-5</p><p>本頁由程式自動產生。譯文可能有誤，請以原始連結內容為準。</p></footer></div><script id="fav">(function(){
+var KEY='ai-digest-favs';
+document.head.insertAdjacentHTML('beforeend','<style>'+"\nbutton.fav{float:right;margin:1px 0 4px 10px;border:1px solid var(--line);\nbackground:var(--card);color:var(--dim);cursor:pointer;font-size:15px;line-height:1;\npadding:3px 8px;border-radius:6px;font-family:inherit}\nbutton.fav:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}\nbutton.fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}\n.fav-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}\n.fav-bar button,.fav-bar label{border:1px solid var(--line);background:var(--card);\ncolor:var(--fg);border-radius:6px;padding:3px 12px;cursor:pointer;font-size:.85rem;\nfont-family:inherit;line-height:1.7}\n.fav-bar button:hover,.fav-bar label:hover{border-color:var(--accent);\ncolor:var(--accent);background:var(--accent-bg)}\n.fav-bar input[type=file]{display:none}\n.fav-bar .danger:hover{border-color:var(--hot);color:var(--hot);background:transparent}\n"+'<\/style>');
+
+function load(){try{var v=JSON.parse(localStorage.getItem(KEY));
+return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return {};}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true;}
+catch(e){alert('收藏沒有存成功：瀏覽器儲存空間已滿，或這個瀏覽器停用了本機儲存（無痕模式常見）。');
+return false;}}
+function count(){return Object.keys(load()).length;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function badge(){var n=count(),ls=document.querySelectorAll('a.fav-link');
+for(var i=0;i<ls.length;i++){ls[i].textContent=n?'收藏 '+n:'收藏';}}
+
+function metaText(art,re){var ns=art.querySelectorAll('.meta span');
+for(var i=0;i<ns.length;i++){var t=ns[i].textContent.trim();if(re.test(t))return t;}
+return '';}
+
+function snap(art,a){var src=art.querySelector('.meta .src');
+var grid=art.parentElement,h2=grid?grid.previousElementSibling:null;
+return {t:a.textContent.trim(),s:src?src.textContent.trim():'',
+d:metaText(art,/^[0-9]{2}\/[0-9]{2}/),
+g:(h2&&h2.tagName==='H2')?h2.textContent.trim():'',
+ts:new Date().toISOString()};}
+
+function decorate(){var arts=document.querySelectorAll('article');
+for(var i=0;i<arts.length;i++){(function(art){
+var t=art.querySelector('p.t'),a=t?t.querySelector('a'):null;
+if(!a||art.querySelector('button.fav'))return;
+var url=a.href,b=document.createElement('button');b.type='button';
+function paint(){var on=!!load()[url];b.textContent=on?'★':'☆';
+b.className='fav'+(on?' on':'');b.title=on?'取消收藏':'收藏';
+b.setAttribute('aria-pressed',on?'true':'false');}
+b.addEventListener('click',function(){var d=load();
+if(d[url]){delete d[url];}else{d[url]=snap(art,a);}
+if(save(d)){paint();badge();}});
+paint();t.insertBefore(b,t.firstChild);})(arts[i]);}}
+
+function renderList(){var box=document.getElementById('fav-list');if(!box)return;
+var d=load(),urls=Object.keys(d),sub=document.getElementById('fav-count');
+if(sub){sub.textContent=urls.length?('共 '+urls.length+' 則　依收藏時間由新到舊'):'還沒有收藏';}
+if(!urls.length){box.innerHTML='<p class="note">還沒有收藏。到任何一天的日報頁面，'
++'點卡片右上角的 ☆ 就會收進來。<\/p>';return;}
+urls.sort(function(x,y){return String(d[y].ts||'').localeCompare(String(d[x].ts||''));});
+var groups={},order=[];
+for(var i=0;i<urls.length;i++){var g=d[urls[i]].g||'其他';
+if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(urls[i]);}
+order.sort(function(x,y){var a=["模型與產品發布", "遊戲與娛樂", "產業與資本", "研究與論文", "工程與工具", "政策與法規", "其他"].indexOf(x),b=["模型與產品發布", "遊戲與娛樂", "產業與資本", "研究與論文", "工程與工具", "政策與法規", "其他"].indexOf(y);
+return (a<0?999:a)-(b<0?999:b);});
+var h='';
+for(var j=0;j<order.length;j++){var g=order[j],list=groups[g];
+h+='<h2>'+esc(g)+'<\/h2><div class="grid">';
+for(var k=0;k<list.length;k++){var u=list[k],it=d[u];
+h+='<article><p class="t"><button type="button" class="fav on" data-url="'+esc(u)
++'" title="移除收藏">★<\/button><a href="'+esc(u)+'" target="_blank" rel="noopener">'
++esc(it.t)+'<\/a><\/p><p class="meta">'
++(it.s?'<span>'+esc(it.s)+'<\/span>':'')
++(it.d?'<span>'+esc(it.d)+'<\/span>':'')
++'<span>收藏於 '+esc(String(it.ts||'').slice(0,10))+'<\/span><\/p><\/article>';}
+h+='<\/div>';}
+box.innerHTML=h;
+var bs=box.querySelectorAll('button.fav');
+for(var m=0;m<bs.length;m++){bs[m].addEventListener('click',function(){
+var d2=load();delete d2[this.getAttribute('data-url')];
+if(save(d2)){renderList();badge();}});}}
+
+function exportFavs(){var blob=new Blob([JSON.stringify(load(),null,2)],
+{type:'application/json'}),a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='ai-digest-favs-'+new Date().toISOString().slice(0,10)+'.json';
+document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(a.href);a.parentNode.removeChild(a);},0);}
+
+function importFavs(f){var r=new FileReader();
+r.onload=function(){var inc;
+try{inc=JSON.parse(r.result);}catch(e){alert('這個檔案不是有效的 JSON。');return;}
+if(!inc||typeof inc!=='object'||Array.isArray(inc)){alert('這個檔案不是收藏備份。');return;}
+var d=load(),n=0;
+for(var k in inc){if(Object.prototype.hasOwnProperty.call(inc,k)&&!d[k]
+&&inc[k]&&typeof inc[k]==='object'){d[k]=inc[k];n++;}}
+if(save(d)){renderList();badge();alert('匯入完成，新增 '+n+' 筆（重複的保留原本的）。');}};
+r.readAsText(f);}
+
+function wire(){var e=document.getElementById('fav-export');
+if(e)e.addEventListener('click',exportFavs);
+var i=document.getElementById('fav-import');
+if(i)i.addEventListener('change',function(){
+if(this.files&&this.files[0])importFavs(this.files[0]);this.value='';});
+var c=document.getElementById('fav-clear');
+if(c)c.addEventListener('click',function(){var n=count();if(!n)return;
+if(confirm('確定要清除全部 '+n+' 筆收藏？這個動作沒辦法復原，建議先匯出備份。')){
+if(save({})){renderList();badge();}}});}
+
+function init(){decorate();renderList();wire();badge();}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();</script></body>
+</html>
