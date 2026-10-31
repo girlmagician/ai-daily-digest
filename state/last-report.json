@@ -1,28 +1,28 @@
 {
-  "generated_at_utc": "2026-10-30T22:14:02.974037+00:00",
+  "generated_at_utc": "2026-10-31T21:27:04.509988+00:00",
   "window_hours": 48,
   "sources_total": 62,
-  "sources_ok": 59,
-  "sources_failed": 3,
-  "raw_items": 1787,
-  "contentless_dropped": 0,
-  "clustered_items": 1434,
-  "already_published": 22,
-  "candidate_items": 1412,
-  "papers_pool_size": 1175,
-  "papers_with_signal": 53,
+  "sources_ok": 56,
+  "sources_failed": 6,
+  "raw_items": 824,
+  "contentless_dropped": 2,
+  "clustered_items": 813,
+  "already_published": 30,
+  "candidate_items": 783,
+  "papers_pool_size": 622,
+  "papers_with_signal": 34,
   "papers_selected": 5,
   "hf_papers": {
-    "matched": 20,
-    "added": 37,
-    "papers": 54,
+    "matched": 12,
+    "added": 27,
+    "papers": 39,
     "error": ""
   },
   "hn": {
-    "stories": 258,
-    "matched": 1,
-    "added": 60,
-    "stale_titles": 0,
+    "stories": 234,
+    "matched": 5,
+    "added": 47,
+    "stale_titles": 1,
     "error": ""
   },
   "time_clamped": 0,
@@ -36,8 +36,8 @@
       "status": "ok",
       "error": "",
       "entries": 1341,
-      "in_window": 7,
-      "kept": 7
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -47,8 +47,8 @@
       "status": "ok",
       "error": "",
       "entries": 1341,
-      "in_window": 7,
-      "kept": 7
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Google DeepMind Blog",
@@ -124,8 +124,8 @@
       "status": "ok",
       "error": "",
       "entries": 93,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Meta Newsroom (Tech)",
@@ -146,8 +146,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "AWS Machine Learning",
@@ -157,8 +157,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 9,
-      "kept": 9
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "Hugging Face Blog",
@@ -168,8 +168,8 @@
       "status": "ok",
       "error": "",
       "entries": 894,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "NVIDIA Blog",
@@ -179,8 +179,8 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 3,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Simon Willison",
@@ -190,8 +190,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Import AI",
@@ -234,8 +234,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Ben's Bites",
@@ -245,8 +245,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "ChinaTalk",
@@ -256,8 +256,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 4,
-      "kept": 3
+      "in_window": 2,
+      "kept": 1
     },
     {
       "name": "Ahead of AI",
@@ -289,8 +289,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "MIT Tech Review AI",
@@ -300,8 +300,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "TechCrunch AI",
@@ -311,9 +311,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 17,
       "kept": 12,
-      "capped": 8
+      "capped": 5
     },
     {
       "name": "The Verge AI",
@@ -334,8 +334,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 8,
-      "kept": 8
+      "in_window": 6,
+      "kept": 6
     },
     {
       "name": "The Information",
@@ -345,7 +345,7 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 16,
       "kept": 10
     },
     {
@@ -355,9 +355,9 @@
       "cat": "media",
       "status": "ok",
       "error": "",
-      "entries": 20,
-      "in_window": 20,
-      "kept": 10
+      "entries": 14,
+      "in_window": 13,
+      "kept": 6
     },
     {
       "name": "FT 人工智慧",
@@ -367,9 +367,9 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 25,
+      "in_window": 20,
       "kept": 12,
-      "capped": 13
+      "capped": 8
     },
     {
       "name": "arXiv cs.AI",
@@ -388,23 +388,22 @@
       "url": "https://rss.arxiv.org/rss/cs.CL",
       "lang": "en",
       "cat": "paper",
-      "status": "ok",
-      "error": "",
-      "entries": 279,
-      "in_window": 279,
-      "kept": 279
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "arXiv cs.LG",
       "url": "https://rss.arxiv.org/rss/cs.LG",
       "lang": "en",
       "cat": "paper",
-      "status": "ok",
-      "error": "",
-      "entries": 608,
-      "in_window": 608,
-      "kept": 600,
-      "capped": 8
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "llama.cpp releases",
@@ -425,8 +424,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Ollama releases",
@@ -436,8 +435,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "ITmedia AI+",
@@ -447,9 +446,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 15,
       "kept": 12,
-      "capped": 8
+      "capped": 3
     },
     {
       "name": "Preferred Networks",
@@ -457,7 +456,7 @@
       "lang": "ja",
       "cat": "eng",
       "status": "fail",
-      "error": "tech.preferred.jp: HTTP 404",
+      "error": "tech.preferred.jp: ReadTimeout",
       "entries": 0,
       "in_window": 0,
       "kept": 0
@@ -483,7 +482,7 @@
       "entries": 30,
       "in_window": 30,
       "kept": 12,
-      "capped": 3
+      "capped": 2
     },
     {
       "name": "ASCII.jp",
@@ -494,7 +493,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 4
+      "kept": 3
     },
     {
       "name": "Nikkei xTECH",
@@ -504,9 +503,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 60,
-      "kept": 12,
-      "capped": 11
+      "in_window": 10,
+      "kept": 2
     },
     {
       "name": "量子位 QbitAI",
@@ -527,8 +525,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 30,
-      "kept": 9
+      "in_window": 23,
+      "kept": 5
     },
     {
       "name": "APPSO (愛範兒)",
@@ -538,8 +536,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 18,
-      "kept": 12
+      "in_window": 12,
+      "kept": 9
     },
     {
       "name": "GamesIndustry.biz",
@@ -549,7 +547,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 11,
+      "in_window": 5,
       "kept": 1
     },
     {
@@ -560,7 +558,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 7,
+      "in_window": 5,
       "kept": 2
     },
     {
@@ -582,8 +580,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 1
+      "in_window": 1,
+      "kept": 0
     },
     {
       "name": "4Gamer",
@@ -593,7 +591,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 100,
+      "in_window": 72,
       "kept": 1
     },
     {
@@ -612,11 +610,11 @@
       "url": "https://www.youxituoluo.com/feed",
       "lang": "zh-CN",
       "cat": "game",
-      "status": "ok",
-      "error": "",
-      "entries": 30,
-      "in_window": 6,
-      "kept": 3
+      "status": "fail",
+      "error": "www.youxituoluo.com: ConnectTimeout",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "AI and Games",
@@ -659,8 +657,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 5,
-      "kept": 1
+      "in_window": 2,
+      "kept": 0
     },
     {
       "name": "GamesBeat",
@@ -720,12 +718,45 @@
   ],
   "failures": [
     {
+      "name": "arXiv cs.CL",
+      "url": "https://rss.arxiv.org/rss/cs.CL",
+      "lang": "en",
+      "cat": "paper",
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "arXiv cs.LG",
+      "url": "https://rss.arxiv.org/rss/cs.LG",
+      "lang": "en",
+      "cat": "paper",
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
       "name": "Preferred Networks",
       "url": "https://tech.preferred.jp/ja/blog/feed/",
       "lang": "ja",
       "cat": "eng",
       "status": "fail",
-      "error": "tech.preferred.jp: HTTP 404",
+      "error": "tech.preferred.jp: ReadTimeout",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "遊戲陀螺",
+      "url": "https://www.youxituoluo.com/feed",
+      "lang": "zh-CN",
+      "cat": "game",
+      "status": "fail",
+      "error": "www.youxituoluo.com: ConnectTimeout",
       "entries": 0,
       "in_window": 0,
       "kept": 0
