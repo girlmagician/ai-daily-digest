@@ -1,32 +1,32 @@
 {
-  "generated_at_utc": "2026-11-13T23:28:45.527136+00:00",
+  "generated_at_utc": "2026-11-14T22:16:34.698520+00:00",
   "window_hours": 48,
   "sources_total": 62,
-  "sources_ok": 60,
-  "sources_failed": 2,
-  "raw_items": 1662,
+  "sources_ok": 57,
+  "sources_failed": 5,
+  "raw_items": 756,
   "contentless_dropped": 2,
-  "clustered_items": 1322,
-  "already_published": 29,
-  "candidate_items": 1293,
-  "papers_pool_size": 1087,
-  "papers_with_signal": 47,
+  "clustered_items": 743,
+  "already_published": 37,
+  "candidate_items": 706,
+  "papers_pool_size": 559,
+  "papers_with_signal": 29,
   "papers_selected": 5,
   "hf_papers": {
-    "matched": 18,
-    "added": 39,
-    "papers": 51,
+    "matched": 7,
+    "added": 27,
+    "papers": 34,
     "error": ""
   },
   "hn": {
-    "stories": 241,
-    "matched": 5,
-    "added": 45,
+    "stories": 232,
+    "matched": 6,
+    "added": 44,
     "stale_titles": 0,
     "error": ""
   },
   "time_clamped": 0,
-  "time_estimated": 1,
+  "time_estimated": 0,
   "per_source": [
     {
       "name": "OpenAI News",
@@ -35,9 +35,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1386,
-      "in_window": 6,
-      "kept": 6
+      "entries": 1387,
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "OpenAI Blog (legacy)",
@@ -46,9 +46,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 1386,
-      "in_window": 6,
-      "kept": 6
+      "entries": 1387,
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Google DeepMind Blog",
@@ -69,8 +69,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google AI Blog",
@@ -80,8 +80,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Developers Blog",
@@ -91,8 +91,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Google Research Blog",
@@ -135,7 +135,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -146,8 +146,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "AWS Machine Learning",
@@ -157,9 +157,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
-      "kept": 12,
-      "capped": 8
+      "in_window": 7,
+      "kept": 7
     },
     {
       "name": "Hugging Face Blog",
@@ -169,8 +168,8 @@
       "status": "ok",
       "error": "",
       "entries": 907,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "NVIDIA Blog",
@@ -180,8 +179,8 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Simon Willison",
@@ -191,8 +190,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Import AI",
@@ -213,8 +212,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 4,
-      "kept": 4
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Interconnects",
@@ -224,8 +223,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 0,
-      "kept": 0
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "TLDR AI",
@@ -235,8 +234,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Ben's Bites",
@@ -246,8 +245,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "ChinaTalk",
@@ -301,8 +300,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "TechCrunch AI",
@@ -312,9 +311,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 13,
       "kept": 12,
-      "capped": 8
+      "capped": 1
     },
     {
       "name": "The Verge AI",
@@ -324,8 +323,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 10,
-      "kept": 10
+      "in_window": 7,
+      "kept": 7
     },
     {
       "name": "Ars Technica AI",
@@ -335,8 +334,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 6,
-      "kept": 6
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "The Information",
@@ -346,8 +345,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
-      "kept": 12
+      "in_window": 15,
+      "kept": 11
     },
     {
       "name": "Bloomberg Technology",
@@ -356,9 +355,9 @@
       "cat": "media",
       "status": "ok",
       "error": "",
-      "entries": 20,
-      "in_window": 20,
-      "kept": 9
+      "entries": 18,
+      "in_window": 18,
+      "kept": 8
     },
     {
       "name": "FT 人工智慧",
@@ -368,43 +367,43 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 25,
+      "in_window": 20,
       "kept": 12,
-      "capped": 13
+      "capped": 8
     },
     {
       "name": "arXiv cs.AI",
-      "url": "https://rss.arxiv.org/rss/cs.AI",
+      "url": "http://export.arxiv.org/rss/cs.AI",
       "lang": "en",
       "cat": "paper",
       "status": "ok",
       "error": "",
       "entries": 537,
       "in_window": 537,
-      "kept": 537
+      "kept": 537,
+      "fallback": true
     },
     {
       "name": "arXiv cs.CL",
       "url": "https://rss.arxiv.org/rss/cs.CL",
       "lang": "en",
       "cat": "paper",
-      "status": "ok",
-      "error": "",
-      "entries": 237,
-      "in_window": 237,
-      "kept": 237
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "arXiv cs.LG",
       "url": "https://rss.arxiv.org/rss/cs.LG",
       "lang": "en",
       "cat": "paper",
-      "status": "ok",
-      "error": "",
-      "entries": 611,
-      "in_window": 611,
-      "kept": 600,
-      "capped": 11
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "llama.cpp releases",
@@ -447,9 +446,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
-      "kept": 12,
-      "capped": 8
+      "in_window": 9,
+      "kept": 9
     },
     {
       "name": "Preferred Networks",
@@ -482,7 +480,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 11
+      "kept": 10
     },
     {
       "name": "ASCII.jp",
@@ -493,7 +491,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 1
+      "kept": 2
     },
     {
       "name": "Nikkei xTECH",
@@ -503,8 +501,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 38,
-      "kept": 8
+      "in_window": 7,
+      "kept": 2
     },
     {
       "name": "量子位 QbitAI",
@@ -525,8 +523,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 30,
-      "kept": 8
+      "in_window": 27,
+      "kept": 7
     },
     {
       "name": "APPSO (愛範兒)",
@@ -536,9 +534,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 17,
-      "kept": 12,
-      "capped": 1
+      "in_window": 8,
+      "kept": 6
     },
     {
       "name": "GamesIndustry.biz",
@@ -548,8 +545,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 16,
-      "kept": 4
+      "in_window": 7,
+      "kept": 3
     },
     {
       "name": "Game Developer",
@@ -559,8 +556,8 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 9,
-      "kept": 3
+      "in_window": 3,
+      "kept": 1
     },
     {
       "name": "Unity Blog",
@@ -570,7 +567,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -592,7 +589,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 100,
+      "in_window": 68,
       "kept": 0
     },
     {
@@ -614,8 +611,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 5,
-      "kept": 4
+      "in_window": 3,
+      "kept": 2
     },
     {
       "name": "AI and Games",
@@ -658,7 +655,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 4,
+      "in_window": 1,
       "kept": 1
     },
     {
@@ -710,14 +707,36 @@
       "url": "https://www.deeplearning.ai/the-batch/",
       "lang": "en",
       "cat": "newsletter",
-      "status": "ok",
-      "error": "",
-      "entries": 12,
-      "in_window": 1,
-      "kept": 1
+      "status": "fail",
+      "error": "索引頁 HTTP 403",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     }
   ],
   "failures": [
+    {
+      "name": "arXiv cs.CL",
+      "url": "https://rss.arxiv.org/rss/cs.CL",
+      "lang": "en",
+      "cat": "paper",
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "arXiv cs.LG",
+      "url": "https://rss.arxiv.org/rss/cs.LG",
+      "lang": "en",
+      "cat": "paper",
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
     {
       "name": "Preferred Networks",
       "url": "https://tech.preferred.jp/ja/blog/feed/",
@@ -736,6 +755,17 @@
       "cat": "game",
       "status": "fail",
       "error": "venturebeat.com: HTTP 429",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "The Batch",
+      "url": "https://www.deeplearning.ai/the-batch/",
+      "lang": "en",
+      "cat": "newsletter",
+      "status": "fail",
+      "error": "索引頁 HTTP 403",
       "entries": 0,
       "in_window": 0,
       "kept": 0
