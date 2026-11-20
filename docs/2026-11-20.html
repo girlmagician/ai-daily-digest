@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI 情報日報｜2026年11月20日</title>
+<meta name="description" content="每日自動彙整海外 AI 情報，翻譯成繁體中文並附上原始連結">
+<meta property="og:title" content="AI 情報日報｜2026年11月20日">
+<meta property="og:description" content="每日自動彙整海外 AI 情報，翻譯成繁體中文並附上原始連結">
+<meta property="og:type" content="website">
+<link rel="alternate" type="application/rss+xml" title="AI 情報日報" href="feed.xml">
+<style>
+:root{--bg:#fbfbfa;--card:#fff;--fg:#1a1a18;--dim:#6b6b66;--line:#e6e5e0;
+--accent:#8a5a2b;--accent-bg:#f3ece3;--hot:#c0442e;--barbg:#fbfbfaf2}
+@media(prefers-color-scheme:dark){:root{--bg:#16161a;--card:#1e1e23;--fg:#e8e8e4;
+--dim:#9a9a94;--line:#31313a;--accent:#d9a066;--accent-bg:#2a2620;--hot:#e0705a;
+--barbg:#16161af2}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font-family:-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+line-height:1.75;font-size:16px}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 18px 64px}
+header{border-bottom:2px solid var(--line);padding-bottom:14px}
+h1{font-size:1.6rem;margin:0 0 4px}
+h1 a{color:inherit;text-decoration:none}
+.sub{color:var(--dim);font-size:.85rem;margin:0}
+
+/* 近 7 日快速切換 */
+.days{margin:12px 0 0;font-size:.85rem;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.days .lbl{color:var(--dim);margin-right:2px}
+.days a{color:var(--accent);text-decoration:none;border:1px solid var(--line);
+border-radius:6px;padding:2px 9px;font-variant-numeric:tabular-nums}
+.days a:hover{background:var(--accent-bg)}
+.days .now{background:var(--accent);color:var(--bg);border-color:var(--accent);
+padding:2px 9px;border-radius:6px;font-variant-numeric:tabular-nums}
+.days .more{border-style:dashed}
+
+/* 分類篩選器：捲動時固定在頂端 */
+.groups{position:sticky;top:0;z-index:10;background:var(--barbg);
+backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+margin:0 -18px 4px;padding:9px 18px;display:flex;flex-wrap:wrap;gap:7px;
+align-items:center;font-size:.85rem}
+.groups a{color:var(--fg);text-decoration:none;border:1px solid var(--line);
+border-radius:999px;padding:3px 12px;white-space:nowrap}
+.groups a:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.groups a b{color:var(--dim);font-weight:400;margin-left:5px;font-size:.78rem}
+.groups a:hover b{color:var(--accent)}
+.groups .top{margin-left:auto;border-style:dashed;color:var(--dim)}
+
+/* 錨點跳轉時標題不要被固定列遮住 */
+h2{font-size:1.05rem;margin:34px 0 4px;padding-top:12px;border-top:1px solid var(--line);
+color:var(--accent);letter-spacing:.02em;scroll-margin-top:56px}
+/* 兩欄卡片。用 grid 而不是 CSS columns：grid 是先左後右（1,2／3,4），
+   閱讀順序與排名一致；columns 會變成整列往下（1,2,3 在左欄），排名就讀不出來了。
+   align-items:start 讓卡片保持自然高度，不被同列的長卡片拉長。
+   卡片本身就把行寬限制在約 38 個中文字，所以文字不需要再另外設 max-width。 */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;align-items:start;
+margin:12px 0}
+article{background:var(--card);border:1px solid var(--line);border-radius:10px;
+padding:14px 18px;margin:0}
+.t{font-size:1.06rem;font-weight:600;margin:0 0 6px;line-height:1.5}
+.t a{color:var(--fg);text-decoration:none}
+.t a:hover{color:var(--accent);text-decoration:underline}
+.n{color:var(--dim);font-variant-numeric:tabular-nums;margin-right:6px;font-weight:400}
+.s{margin:6px 0 10px;font-size:.95rem}
+.orig{color:var(--dim);font-size:.82rem;margin:6px 0;
+overflow-wrap:anywhere;border-left:2px solid var(--line);padding-left:10px}
+.meta{font-size:.78rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.tag{background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 7px;font-size:.72rem}
+.hot{color:var(--hot);font-weight:600;text-decoration:none}
+.meta a{color:var(--dim)}
+.src{color:var(--dim);text-decoration:none;overflow-wrap:anywhere}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);
+font-size:.8rem;color:var(--dim)}
+footer h3{font-size:.85rem;margin:18px 0 6px;color:var(--fg)}
+footer ul{margin:4px 0;padding-left:20px}
+.note{background:var(--accent-bg);border-radius:8px;padding:10px 14px;
+font-size:.82rem;margin:14px 0;max-width:68em}
+ul.arc{list-style:none;padding:0}
+ul.arc li{padding:8px 0;border-bottom:1px solid var(--line)}
+ul.arc a{color:var(--accent);text-decoration:none;font-weight:600}
+/* 視窗不夠寬時收成一欄：兩欄各 450px 以下，卡片會擠得難讀 */
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media(max-width:640px){
+  .groups{margin:0 -14px 4px;padding:8px 14px;gap:5px;font-size:.8rem}
+  .wrap{padding:18px 14px 56px}
+}
+</style>
+</head>
+<body><div class="wrap"><header><h1><a href="index.html">AI 情報日報</a></h1><p class="sub">2026年11月20日　共 29 則　取材自過去 48 小時　產生於 2026/11/20 08:41（台北時間）</p><nav class="days"><span class="lbl">近 7 日</span><span class="now">11/20</span><a href="2026-11-19.html">11/19</a><a href="2026-11-18.html">11/18</a><a href="2026-11-17.html">11/17</a><a href="2026-11-16.html">11/16</a><a href="2026-11-15.html">11/15</a><a href="2026-11-14.html">11/14</a><a class="more" href="archive.html">更早（共 103 天）</a><a class="more fav-link" href="favorites.html">收藏</a><a class="more" href="feed.xml">RSS</a></nav></header><nav class="groups"><a href="#g0">模型與產品發布<b>6</b></a><a href="#g1">遊戲與娛樂<b>3</b></a><a href="#g2">產業與資本<b>6</b></a><a href="#g3">研究與論文<b>4</b></a><a href="#g4">工程與工具<b>8</b></a><a href="#g5">政策與法規<b>2</b></a><a class="top" href="#">回到頂端</a></nav><p class="note">所有內容由程式自動收集、機器翻譯，每則都附上原始連結與原文標題供查證。譯文只改寫來源提供的文字，不補充任何外部資訊；來源未提供摘要者標為「僅標題」。標示「投稿 HN」者，時間是連結被貼上 Hacker News 的時間，原文發表日期可能更早。</p><h2 id="g0">模型與產品發布</h2><div class="grid"><article><p class="t"><span class="n">1.</span><a href="https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api/" target="_blank" rel="noopener">Genie 4 登上 Gemini API 開放開發者使用</a></p><p class="s">繼Genie 4昨日發表後，開發者現可透過Gemini API（經由Interactions API）與Google AI Studio使用Genie 4。開發者輸入文字提示詞、參考圖片或兩者並用，即可生成連續的720p、24fps世界，並搭配同步原生音訊，包含環境音效與角色對話。使用者可透過即時鍵盤操作搭配即時文字提示詞在環境中移動，並即時改變天氣、光線、物件或事件，Gemini的推理能力則確保世界狀態維持一致與連貫。此功能適用於互動體驗原型設計、空間概念視覺化，以及機器人與AI代理程式的訓練。所有輸出內容皆內嵌不可察覺的SynthID浮水印，開發者可在Google AI Studio試用互動畫布與範例應用程式，並查閱定價與Gemini API文件。</p><p class="orig">原文：Genie 4 is now available on the Gemini API.</p><p class="meta"><span class="tag">英</span><a class="src" href="https://blog.google/innovation-and-ai/technology/developers-tools/genie-4-in-gemini-api/" target="_blank" rel="noopener">Google DeepMind Blog｜blog.google</a><span>11/20 01:00</span></p></article><article><p class="t"><span class="n">2.</span><a href="https://www.theinformation.com/briefings/apple-developing-ai-agent-rival-meta-openai" target="_blank" rel="noopener">Apple 傳開發AI代理程式 對標Meta與OpenAI</a></p><p class="s">根據近期職缺公告，Apple正在開發一款能瀏覽網頁、使用應用程式並撰寫程式碼的AI代理程式。公告內容指出，Apple正打造一款能像人類一樣操作電腦的AI助理。這項產品將使Apple在此領域與Meta Platforms等公司形成競爭。</p><p class="orig">原文：Apple Developing AI Agent to Rival Meta and OpenAI</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.theinformation.com/briefings/apple-developing-ai-agent-rival-meta-openai" target="_blank" rel="noopener">The Information｜theinformation.com</a><span>11/20 06:49</span></p></article><article><p class="t"><span class="n">3.</span><a href="https://www.theinformation.com/articles/meta-bets-300-muse-charm-boost-ai-hardware-business" target="_blank" rel="noopener">Meta押注300美元Muse Charm裝置強化AI硬體業務</a></p><p class="s">據知情人士透露，Meta計畫將即將推出的Muse Charm裝置定價為300美元，並提供使用者補貼，希望藉此提振公司的硬體業務，同時吸引使用者使用其新的個人助理。為吸引買家，Meta計畫提供最長12個月的Verizon免費5G網路方案，讓這款口袋大小的AI裝置、個人AI代理程式Muse，無論使用者身在何處都能更快速地回應。</p><p class="orig">原文：Meta Bets on $300 Muse Charm to Boost AI Hardware Business</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.theinformation.com/articles/meta-bets-300-muse-charm-boost-ai-hardware-business" target="_blank" rel="noopener">The Information｜theinformation.com</a><span>11/20 03:11</span></p></article><article><p class="t"><span class="n">4.</span><a href="https://www.itmedia.co.jp/news/article/2611/20/2000003356/" target="_blank" rel="noopener">Mac版Gemini新增代操作App的computer use功能 先於美國推出</a></p><p class="s">Google於11月19日宣布為Mac版Gemini應用程式新增computer use功能，讓AI辨識畫面並代替使用者點擊、輸入文字來操作應用程式，先於美國提供。使用者以聊天方式下達多步驟任務，Gemini即可操作Mac內的檔案、桌面應用程式與網頁，並能跨應用程式完成工作，過程於背景視窗執行並即時預覽，不會占用使用者畫面。使用者可指定Gemini能操作的應用程式範圍，重要操作執行前會先徵求同意，整個過程也可隨時暫停。使用條件為搭載Apple Silicon、macOS Sequoia以上版本的Mac，且需以18歲以上個人Google帳號訂閱Google AI Plus、Pro或Ultra方案，目前僅限美國英文版，日本提供時間未定。Google先前已於10月向開發者釋出Gemini 2.5 Computer Use模型，Anthropic與OpenAI也分別在Claude與Codex應用程式提供類似的電腦操作功能。</p><p class="orig">原文：Mac版「Gemini」にユーザーの代わりにアプリを操作する「computer use」機能追加 まず米国で</p><p class="meta"><span class="tag">日</span><a class="src" href="https://www.itmedia.co.jp/news/article/2611/20/2000003356/" target="_blank" rel="noopener">ITmedia AI+｜itmedia.co.jp</a><span>11/20 07:41</span></p></article><article><p class="t"><span class="n">5.</span><a href="https://latent.space/p/ainews-gemini-4-neon-gdm-s-opus-sol-contender/" target="_blank" rel="noopener">Gemini 4 Neon上線 GDM七週內推第四款Gemini 4模型</a></p><p class="s">Google DeepMind在約七週內推出第四款Gemini 4模型Neon，命名延續原子量順序，上一代Argon已退役。Neon（原子序10）定位中階、速度更快且更便宜，但因蒸餾、強化學習與基準測試方式差異，部分指標甚至超越體型較大的Carbon（原子序6）。Neon定價為每百萬輸入詞元3美元、快取輸入0.15美元、輸出15美元，脈絡長度達1M詞元，提供四種推理強度。目前已上線於Gemini API、Android Studio、Gemini for business、Antigravity，以及Gemini應用程式中Pro/Ultra用戶可選用的「Deeper analysis」，同日也整合進Cursor、GitHub Copilot與LangChain。在獨立基準測試中，Neon於高推理強度下的Intelligence Index與Carbon打平，在Agent Arena排名第二，Text Arena則仍由Carbon領先。文中同時提到，Anthropic同日將IPO定價為每股83美元（高於原訂價格區間），而Palo Alto Networks則以45億美元全股票交易收購Applied Compute。</p><p class="orig">原文：[AINews] Gemini 4 Neon: GDM&#x27;s Opus/Sol Contender</p><p class="meta"><span class="tag">英</span><a class="src" href="https://latent.space/p/ainews-gemini-4-neon-gdm-s-opus-sol-contender/" target="_blank" rel="noopener">Latent Space｜latent.space</a><span>11/19 15:07</span></p></article><article><p class="t"><span class="n">6.</span><a href="https://blogs.nvidia.com/blog/microsoft-ignite-accelerated-computing-azure-windows-pcs/" target="_blank" rel="noopener">NVIDIA與微軟擴大加速運算佈局 從Azure延伸至Windows PC</a></p><p class="s">NVIDIA與微軟在Ignite大會宣布深化全端合作，將NVIDIA Vera Rubin NVL72系統導入Azure資料中心，並透過Microsoft Foundry開放NVIDIA開放模型與客製化能力，同時拓展邊緣AI部署選項。微軟也採用NVIDIA Dynamo推論軟體進行訓練後處理，並以NVIDIA RTX PRO 6000 Blackwell GPU加速Bing搜尋模型。雙方並合作將機密運算延伸至裸機與機櫃等級AI基礎設施以保護敏感模型與資料，另以NVIDIA MaxLPS技術提升資料中心用電效率。在MLPerf Training v6.1中，Azure以GB200 NVL72系統在DeepSeek-V3模型上擴展至10,240顆NVIDIA GPU，為該輪次最大規模；MLPerf Inference v6.1中，Azure的GB300 NVL72系統在DeepSeek-R1互動式吞吐量上領先雲端競品逾10%。此外，Foundry新增Nemotron 3.5系列模型，EY曾利用Foundry中的Programmed Training微調NVIDIA Nemotron開放模型，將分類準確率提升55%、成本降低15倍。</p><p class="orig">原文：NVIDIA and Microsoft Expand Accelerated Computing From Azure to Windows PCs</p><p class="meta"><span class="tag">英</span><a class="src" href="https://blogs.nvidia.com/blog/microsoft-ignite-accelerated-computing-azure-windows-pcs/" target="_blank" rel="noopener">NVIDIA Blog｜blogs.nvidia.com</a><span>11/20 04:00</span></p></article></div><h2 id="g1">遊戲與娛樂</h2><div class="grid"><article><p class="t"><span class="n">7.</span><a href="https://arxiv.org/abs/2611.24154" target="_blank" rel="noopener">Game2Player框架透過環境與玩家協同開發擴充視覺代理程式遊戲經驗</a></p><p class="s">研究團隊提出Game2Player框架，透過「建造者」代理程式改造現有網頁遊戲、揭露其內部狀態並定義具進度量測與成功判定的任務，再由程式玩家與視覺語言模型（VLM）玩家嘗試任務並回報問題供修復，形成環境驗證與訓練資料收集的循環，以解決人類遊玩資料取得成本高、現有資料集遊戲種類有限的問題。團隊以此建立568款已驗證的網頁遊戲、3,436項任務，收集15.7K條軌跡（共307小時遊玩紀錄），並保留50款遊戲作為PlayerBench基準測試。研究採用「進度加權監督微調」方式訓練VLM代理程式，對推進任務進度的步驟給予更高權重，使Game2Player-9B在PlayerBench上的進度分數從14.3%提升至31.2%，在外部GameWorld基準測試上則從30.0%提升至53.1%。</p><p class="orig">原文：Game2Player: Scaling Gameplay Experience for Visual Agents through Environment-Player Co-Development</p><p class="meta"><span class="tag">英</span><a class="src" href="https://arxiv.org/abs/2611.24154" target="_blank" rel="noopener">Hugging Face Papers｜arxiv.org</a><span>11/19 08:00</span></p></article><article><p class="t"><span class="n">8.</span><a href="https://www.qbitai.com/2026/11/511180.html" target="_blank" rel="noopener">零AI純手工打造 GTA6成媒體評分史上最高3A大作之一</a></p><p class="s">歷經13年等待，GTA6正式發售，146家媒體給出的Metacritic均分達99分，追平《塞爾達傳說：時之笛》的歷史最高分，OpenCritic同樣登頂，IGN與GameSpot皆給出滿分。GTA6在TGA 2026提名中以8項提名領跑，涵蓋年度遊戲、最佳遊戲指導與最佳敘事等獎項。遊戲首次加入同理心機制，玩家的不良行為會提高NPC警覺與後續麻煩，角色互動與NPC反應也更細膩，全作擁有超過60萬段動畫，遠多於GTA5的5.5萬段。畫面採用首發即導入的物理材質系統與光線追蹤技術，但各平台首發版本皆以30幀為目標、無60幀模式，引發部分玩家對效能表現的不滿。製作上生成式AI零參與，全由開發者手工打造世界，不過PS5 Pro使用的PSSR畫面重建技術本身屬於機器學習範疇；玩法核心仍延續系列既有公式，前期內容被認為較為平淡。</p><p class="orig">原文：GTA6刷屏！零AI纯手搓的3A大作玩一个少一个了</p><p class="meta"><span class="tag">簡中</span><a class="src" href="https://www.qbitai.com/2026/11/511180.html" target="_blank" rel="noopener">量子位 QbitAI｜qbitai.com</a><span>11/19 16:18</span></p></article><article><p class="t"><span class="n">9.</span><a href="https://www.youxituoluo.com/535077.html" target="_blank" rel="noopener">騰訊Q3遊戲：本土476億、海外189億，三角洲與無畏契約日活創紀錄</a></p><p class="s">騰訊11月18日公布2026年第三季財報，總營收2073.36億元人民幣，年增8%；增值服務收入983.26億元，年增3%。本土市場遊戲收入476億元，年增11%，主要由《三角洲行動》與《無畏契約：源能行動》帶動，兩款射擊遊戲本季日活帳戶數均創歷史新高，《王者榮耀》也維持穩定表現，增值服務毛利率由去年同期61%提升至64%。國際市場遊戲收入189億元，年減9%，若按固定匯率計算降幅收窄至4%，主要因去年同期Supercell旗下遊戲及《消逝的光芒：困獸》發售墊高基數，環比則與上季度約187億元大致持平。財報並提到AI應用已深入遊戲體驗、電競解說與引擎底層，例如《王者榮耀》靈寶日調用率達80%、《王者萬象棋》教學助手覆蓋95%新玩家，同時騰訊也在測試自研開源AI原生遊戲引擎「天工引擎」與生產平台「MagicLomix」。</p><p class="orig">原文：腾讯Q3游戏：本土476亿、海外189亿，三角洲与无畏契约日活创纪录</p><p class="meta"><span class="tag">簡中</span><a class="src" href="https://www.youxituoluo.com/535077.html" target="_blank" rel="noopener">遊戲陀螺｜youxituoluo.com</a><span>11/19 22:18</span></p></article></div><h2 id="g2">產業與資本</h2><div class="grid"><article><p class="t"><span class="n">10.</span><a href="https://www.bloomberg.com/news/videos/2026-11-19/anthropic-ipo-breaks-record-video" target="_blank" rel="noopener">Anthropic 股價 IPO 後飆漲17%，1073億美元募資創紀錄</a></p><p class="s">Anthropic今日正式掛牌上市，成為首家公開上市的AI前沿實驗室。股價較發行價飆漲17%，以1073億美元的募資規模創下史上最大規模IPO紀錄，儘管市場對AI投資熱潮已出現轉趨謹慎的跡象。Bloomberg記者Ed Ludlow將進一步說明後續發展。</p><p class="orig">原文：Anthropic Shares Jump 17% After $107.3 Billion IPO Breaks Record</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/videos/2026-11-19/anthropic-ipo-breaks-record-video" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>11/20 06:41</span></p></article><article><p class="t"><span class="n">11.</span><a href="https://www.theinformation.com/articles/nvidia-nears-acquisition-diffusion-ai-developer-500-million" target="_blank" rel="noopener">Nvidia 傳洽購擴散式AI新創Inception 金額逾5億美元</a></p><p class="s">根據三名知情人士透露，Nvidia正就收購Inception一事進行深度洽談，這家成立兩年的新創公司開發的AI技術號稱運算速度優於支撐ChatGPT與Claude等產品的技術。消息人士表示，此交易金額至少5億美元，另外可能視新進員工能否達成特定目標而發放「業績獎金」。這起洽談顯示，即便Nvidia因執行長Jensen Huang辭職而面臨領導危機，該公司的AI新創併購布局，以及開發自有AI以抗衡Anthropic的努力仍持續進行。該消息人士指出，Inception所開發的擴散式大型語言模型及相關技術人才，預計將有助於Nvidia開發其Nemotron開源模型。</p><p class="orig">原文：Nvidia Nears Acquisition of Diffusion AI Developer for More Than $500 Million</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.theinformation.com/articles/nvidia-nears-acquisition-diffusion-ai-developer-500-million" target="_blank" rel="noopener">The Information｜theinformation.com</a><span>11/20 06:43</span></p></article><article><p class="t"><span class="n">12.</span><a href="https://techcrunch.com/2026/11/19/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/" target="_blank" rel="noopener">Jensen Huang 緋聞風暴時間軸：從婚外情到被迫卸任執行長</a></p><p class="s">Nvidia共同創辦人暨前執行長Jensen Huang承認在40年婚姻中多次出軌，事件可能牽涉美國國安疑慮。美國官員懷疑其緋聞對象之一、Megaspeed主管Alice Huang可能是向北京提供情報的中國間諜，Megaspeed近兩年向Nvidia採購價值48億美元晶片，並遭美國與新加坡調查是否違法轉售晶片給中國，目前已由司法部接手調查。紐約時報另報導Huang與直屬部下、健康醫療事業副總裁Kimberly Powell亦有婚外情，Huang隨後於週四卸任執行長；路透社稍後再爆料指Huang還與另一名未具名Nvidia員工有染。11月17日Nvidia公布季營收1158億美元、年增103%優於預期，代理執行長Colette Kress表示不會重新任命Huang，董事長Harvey C. Jones亦證實公司無意讓他回任；Huang則表示收到大量員工、投資人與客戶要求他回任的訊息，並稱若能回任將深感榮幸。</p><p class="orig">原文：The unfolding Jensen Huang scandal: a timeline</p><p class="meta"><span class="tag">英</span><a class="src" href="https://techcrunch.com/2026/11/19/nvidia-ceo-jensen-huangs-affair-with-alleged-chinese-spy-a-timeline/" target="_blank" rel="noopener">TechCrunch AI｜techcrunch.com</a><span>11/20 04:18</span></p></article><article><p class="t"><span class="n">13.</span><a href="https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/" target="_blank" rel="noopener">Google與Blue Origin合作執行Project Suncatcher首次重型發射</a></p><p class="s">Google宣布與Blue Origin合作，執行Project Suncatcher計畫的首次重型發射任務，該計畫旨在利用太空中充足的太陽能，擴大AI基礎設施規模。發射預定於2029年第一季進行，將由Blue Origin的重型New Glenn火箭將Google的衛星送入太陽同步軌道，每顆衛星的運算能力大約相當於一個資料中心機架。Google表示，這次專屬發射是在既有衛星與發射夥伴合作基礎上的延伸，也是其長期規畫中的重要里程碑，目標是拓展未來運算能力的可能邊界。</p><p class="orig">原文：We’re partnering with Blue Origin on our first heavy-lift Project Suncatcher launch.</p><p class="meta"><span class="tag">英</span><a class="src" href="https://blog.google/innovation-and-ai/models-and-research/google-research/blue-origin-project-suncatcher-partnership/" target="_blank" rel="noopener">Google Models &amp; Research｜blog.google</a><span>11/19 21:00</span></p></article><article><p class="t"><span class="n">14.</span><a href="https://www.bloomberg.com/news/videos/2026-11-19/the-city-at-the-center-of-ai-video" target="_blank" rel="noopener">AI浪潮的中心城市</a></p><p class="s">Anthropic破紀錄的IPO預期將讓許多員工致富，其他AI公司可能緊接在後。這場現代淘金熱的中心是舊金山，這座城市向來習慣經歷景氣起伏，但規模從未如此龐大。</p><p class="orig">原文：The City at the Center of AI</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.bloomberg.com/news/videos/2026-11-19/the-city-at-the-center-of-ai-video" target="_blank" rel="noopener">Bloomberg Technology｜bloomberg.com</a><span>11/20 07:46</span></p></article><article><p class="t"><span class="n">15.</span><a href="https://www.ithome.com.tw/news/180568" target="_blank" rel="noopener">資安AI新創Corma相隔3個月再募資1.25億美元，估值達10億美元</a></p><p class="s">資安AI新創公司Corma在今年8月取得6,000萬美元種子輪資金後，相隔約3個月，於11月16日宣布再完成1.25億美元A輪募資，公司估值達10億美元，累計募資金額達1.85億美元。本輪由創投機構NEA領投，既有投資人Sequoia Capital、Khosla Ventures及Coatue也參與。Corma成立於2025年，在舊金山及特拉維夫設有據點，自行訓練資安防禦專用AI基礎模型，並透過AI代理產品Corma Workforce，協助資安人員運用企業既有工具調查威脅、分析防火牆與網路監控資料、找出入侵跡象並自主調查，必要時通知人員介入。公司認為一般用途AI模型雖提升攻擊能力，但未必能直接轉化為防禦能力，因此選擇自行訓練專用模型；新一輪資金將用於擴大模型訓練規模、擴充運算資源與團隊，並預告將公布下一代資安防禦AI基礎模型。</p><p class="orig">原文：資安AI新創Corma相隔3個月再募資1.25億美元，估值達10億美元</p><p class="meta"><span class="tag">繁中</span><a class="src" href="https://www.ithome.com.tw/news/180568" target="_blank" rel="noopener">iThome｜ithome.com.tw</a><span>11/20 08:34（時間存疑）</span></p></article></div><h2 id="g3">研究與論文</h2><div class="grid"><article><p class="t"><span class="n">16.</span><a href="https://www.anthropic.com/research/claude-black-hole-physics" target="_blank" rel="noopener">Claude解開黑洞物理學兩項懸而未決的難題</a></p><p class="s">Anthropic的Claude解決了量子重力理論研究中與黑洞相關的兩項長期未解難題。第一項是2003年物理學家提出、但從未完成的計算，Claude透過運行由多個自身副本組成的研究小組，獨立完成幾乎全部計算並與已知結果核對，證明即使在時空不再具有明確形狀的極端情況下，黑洞形成相關的突變（相變）依然存在，顯示黑洞形成可能是量子理論本身固有的特性，而不只是廣義相對論的特徵。第二項是在一個簡化的二維空間理論宇宙中，Claude找出用來檢驗量子重力候選理論的某項簡化技術的精確極限。文章先以淺顯方式說明兩項發現，再提供較技術性的細節，並附上兩篇預印本論文的連結。</p><p class="orig">原文：Claude solves two open problems in the physics of black holes</p><p class="meta"><span class="tag">英</span><a class="src" href="https://www.anthropic.com/research/claude-black-hole-physics" target="_blank" rel="noopener">Hacker News｜anthropic.com</a><span>原文 2026-11-17・11/20 01:30 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50563148" target="_blank" rel="noopener">HN 356分</a></p></article><article><p class="t"><span class="n">17.</span><a href="https://arxiv.org/abs/2611.24738" target="_blank" rel="noopener">Jeveration：System One 模型也能單次生成高品質圖片</a></p><p class="s">論文提出 Jeveration，證明像 Jev 這類透過快速平行預測做出決策的「System One」模型，也能以單次前向傳播生成高品質圖片。該方法建立在一個凍結的視覺語言模型上，重新運用其視覺語意知識來進行整體圖像生成，關鍵挑戰在於維持圖像的全域一致性：同一提示詞可能對應多種合理圖像，但各個平行預測位置必須收斂成同一幅連貫的結果。做法是讓所有位置共享一個隨機狀態來協調平行預測，使每次取樣產生不同但一致的圖像；由於模型在直接的圖像監督下容易忽略這個共享狀態，團隊先學習一套離散圖像編碼的分布來引導單次生成。此外，Jeveration 把文字生成圖片、圖片生成圖片與密集預測三種任務統一在同一架構下，單一檢查點即可支援全部三種任務，且各自只需一次前向傳播。實驗顯示，Jeveration 生成一張 512x512 圖像僅需 78 毫秒，比現有統一模型最快快上 122 倍，同時圖像品質與密集預測表現仍具競爭力。</p><p class="orig">原文：Jeveration: System One Models Now Generate</p><p class="meta"><span class="tag">英</span><a class="src" href="https://arxiv.org/abs/2611.24738" target="_blank" rel="noopener">Hugging Face Papers｜arxiv.org</a><span>11/19 08:00</span></p></article><article><p class="t"><span class="n">18.</span><a href="https://arxiv.org/abs/2611.21366" target="_blank" rel="noopener">ALIVE：讓串流影片模型具備互動能力</a></p><p class="s">串流影片大型語言模型雖能持續觀察外界，卻往往只能孤立地處理使用者請求。論文提出 ALIVE，一種支援主動監看、串流任務協調與尋求回饋式互動的互動型串流影片模型，團隊建構了 ALIVE-SFT-288K 與 ALIVE-RL-3K 兩個資料集進行兩階段訓練：先以對比式監督微調教導模型何時、如何回應，再透過結合行為對齊信用分配（BACA）的強化學習，整合軌跡層級與局部層級的優勢來精煉多輪互動中的決策、回應與靜默時機。團隊另外提出 FSI-Bench，用來評估模型尋求回饋以及後續完成任務的能力。結果顯示 ALIVE 在四個公開基準測試與 FSI-Bench 上，整體得分都高於比較對象，展現出較強的串流理解與互動能力。</p><p class="orig">原文：ALIVE: Making Streaming Video Models Interactive</p><p class="meta"><span class="tag">英</span><a class="src" href="https://arxiv.org/abs/2611.21366" target="_blank" rel="noopener">Hugging Face Papers｜arxiv.org</a><span>11/19 08:00</span></p></article><article><p class="t"><span class="n">19.</span><a href="https://arxiv.org/abs/2611.23068" target="_blank" rel="noopener">解析度假說：代理程式演化的關鍵在於能否辨識出真正的改進</a></p><p class="s">代理程式（agent）演化通常遵循一個簡單迴圈：提案者產生候選成果（提示詞、技能、記憶），再由篩選機制挑出分數較高者保留。但實務上存在一個謎團：不同論文提出的方法彼此勝負互見，而且演化在某些任務上常常無法啟動。論文提出「解析度假說」：演化之所以停滯，並非因為提案者提不出更好的成果，而是因為評估過程雜訊太大，無法可靠地辨識出哪些才是真正更好的成果。研究團隊橫跨七種演化方法與六個模型、超過一千萬次語言模型呼叫進行驗證，發現在候選層級上，確實存在有幫助的候選成果，但篩選機制分辨有益與有害候選的能力並不比隨機猜測好，導致誤差隨回合累積；在方法層級上，論文間常見的幾個百分點差距，其實比同一方法兩次獨立執行之間的差異還小，意味著許多已發表的排名可能只是運氣使然。這顯示自我改進代理程式的發展重點，應從設計更多候選改進系統，轉向讓真正的改進變得可被偵測且可累積。</p><p class="orig">原文：The Resolution Hypothesis: Agent Evolution&#x27;s Key Is Identifying Improvements</p><p class="meta"><span class="tag">英</span><a class="src" href="https://arxiv.org/abs/2611.23068" target="_blank" rel="noopener">Hugging Face Papers｜arxiv.org</a><span>11/19 08:00</span></p></article></div><h2 id="g4">工程與工具</h2><div class="grid"><article><p class="t"><span class="n">20.</span><a href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval/" target="_blank" rel="noopener">Gemini API推出工具檢索功能 按需載入參數結構</a></p><p class="s">Google在Gemini API的Interactions API預覽版中推出Tool Retrieval功能，讓代理程式可保留完整工具庫待命，僅在任務需要時才載入參數結構，藉此降低輸入詞元數量、減少延遲並提升工具選擇準確度。開發者只需在請求中加入tool_search工具，並在欲延遲載入的工具上設定defer_loading旗標，模型仍能看到所有工具的名稱與描述，但參數結構會保留在脈絡之外，待模型需要時才由API載入、在同一次請求內完成呼叫。此功能也相容於提示詞前綴快取，因延遲載入的結構不會出現在提示詞開頭，可維持快取前綴一致；同時支援遠端MCP伺服器，只要在mcp_server工具上設定defer_loading，該伺服器提供的所有工具即可按需載入。若開發者自行維護工具註冊表或嵌入向量索引，也可將tool_search設為用戶端執行模式，自訂搜尋邏輯，並能在對話中途動態新增工具。</p><p class="orig">原文：Introducing Tool Retrieval in the Gemini API</p><p class="meta"><span class="tag">英</span><a class="src" href="https://blog.google/innovation-and-ai/technology/developers-tools/gemini-api-tool-retrieval/" target="_blank" rel="noopener">Google Developers Blog｜blog.google</a><span>11/20 02:00</span></p></article><article><p class="t"><span class="n">21.</span><a href="https://ounapuu.ee/posts/2026/11/19/unsafeguards" target="_blank" rel="noopener">作者痛批Claude的AI安全防護阻擋修補資安漏洞</a></p><p class="s">一名資深產品工程師在部落格文章中抱怨，他請Claude Code檢查自家產品的資安問題，Claude找出一個可用一行程式碼修復的簡單漏洞，但後續嘗試驗證相關攻擊手法時卻被AI安全防護機制擋下。他批評申請例外需等待多個工作天、還得放棄資料保留豁免並提交身分證件，過程繁瑣且不保證通過。作者指出，犯罪者根本不需申請許可，直接使用沒有安全限制的開放權重模型（如經abliterated處理的模型）即可達成目的，而正派使用者反而被工具綁手綁腳。最終他改用託管於歐盟的開放權重模型GLM 5.3，順利驗證並修復了該漏洞，並質疑Anthropic此舉是否意在藉此促使監管單位出手，為其即將進行的IPO打造競爭護城河。</p><p class="orig">原文：Fuck Your AI Safeguards</p><p class="meta"><span class="tag">英</span><a class="src" href="https://ounapuu.ee/posts/2026/11/19/unsafeguards" target="_blank" rel="noopener">Hacker News｜ounapuu.ee</a><span>原文 2026-11-19・11/20 00:30 投稿 HN</span><a class="hot" href="https://news.ycombinator.com/item?id=50562262" target="_blank" rel="noopener">HN 464分</a></p></article><article><p class="t"><span class="n">22.</span><a href="https://techcrunch.com/2026/11/19/these-tech-outages-are-giving-y2k-ai-agent-style/" target="_blank" rel="noopener">科技大當機潮像AI代理程式版的Y2K危機</a></p><p class="s">過去兩週美國多個重要系統接連當機：Apple Pay、NASA內部通訊網路相繼故障，FAA一度全面停飛數小時（為9/11以來第三次），微軟Outlook、Teams、Copilot更停擺近兩天。相關公司與官員皆表示並非遭到網路攻擊或國家級行動，而是技術問題，但事件時間點與十月一連串「Black October」資安事件相近，引發外界揣測是否與AI有關。資安老將Dave DeWalt認為這是AI加速揭露既有漏洞、企業搶修所致的「陣痛期」；新創Corsha創辦人Anusha Iyer則主張問題在於企業倉促將老舊系統與現代技術整合，而非AI本身快速普及，並以FAA電信基礎設施現代化過程中舊硬體不堪負荷為例說明。參議員Mark Warner呼籲正視AI發展速度已超越管理能力的警訊，相關調查仍在進行中。</p><p class="orig">原文：These tech outages are giving Y2K, AI agent style</p><p class="meta"><span class="tag">英</span><a class="src" href="https://techcrunch.com/2026/11/19/these-tech-outages-are-giving-y2k-ai-agent-style/" target="_blank" rel="noopener">TechCrunch AI｜techcrunch.com</a><span>11/20 05:42</span></p></article><article><p class="t"><span class="n">23.</span><a href="https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast" target="_blank" rel="noopener">OpenAI Performance Factory如何讓ChatGPT保持快速</a></p><p class="s">OpenAI分享其內部打造的Performance Factory系統，透過一系列由Codex驅動的工作流程，自動找出並修復效能問題，協助維持ChatGPT的回應速度。文中僅簡要說明該系統的用途，未提供進一步技術細節。</p><p class="orig">原文：How OpenAI’s Performance Factory keeps ChatGPT fast</p><p class="meta"><span class="tag">英</span><a class="src" href="https://openai.com/index/how-openai-performance-factory-keeps-chatgpt-fast" target="_blank" rel="noopener">OpenAI News｜openai.com</a><span>11/19 16:00</span></p></article><article><p class="t"><span class="n">24.</span><a href="https://openai.com/business/learn/deploying-daybreak-red" target="_blank" rel="noopener">部署Daybreak Red：監督式資安調查架構</a></p><p class="s">OpenAI介紹名為Daybreak Red的參考架構，用於建置具備人工監督機制的資安調查系統，內容涵蓋安全控管設計、系統建置方式與監控機制。文中未提供更多細節。</p><p class="orig">原文：Deploying Daybreak Red</p><p class="meta"><span class="tag">英</span><a class="src" href="https://openai.com/business/learn/deploying-daybreak-red" target="_blank" rel="noopener">OpenAI News｜openai.com</a><span>11/19 08:00</span></p></article><article><p class="t"><span class="n">25.</span><a href="https://aws.amazon.com/blogs/machine-learning/use-kimi-code-cli-with-models-on-amazon-bedrock/" target="_blank" rel="noopener">Kimi Code CLI新增原生Bedrock整合 免管理API金鑰</a></p><p class="s">Moonshot AI推出的開放原始碼程式開發代理程式Kimi Code CLI，在v2.7.0版新增原生bedrock provider，讓使用者可直接沿用既有的AWS憑證鏈（包括具名設定檔與單一登入SSO）連接Amazon Bedrock上的模型，不需再額外取得並保管獨立的Amazon Bedrock API金鑰。文章以支援串流、可調整推論程度、圖片輸入與用戶端工具呼叫的Kimi K3.1 Pro Highspeed為例，說明新provider如何自動解析AWS憑證、產生短期存取權杖、建立區域端點，並呼叫對應的推論設定檔，生成的短期API金鑰效期最長12小時或依AWS工作階段長度而定。AWS仍建議優先使用短期憑證，並提醒使用者仍須自行妥善管理AWS憑證與權限範圍。</p><p class="orig">原文：Use Kimi Code CLI with models on Amazon Bedrock</p><p class="meta"><span class="tag">英</span><a class="src" href="https://aws.amazon.com/blogs/machine-learning/use-kimi-code-cli-with-models-on-amazon-bedrock/" target="_blank" rel="noopener">AWS Machine Learning｜aws.amazon.com</a><span>11/20 08:33</span></p></article><article><p class="t"><span class="n">26.</span><a href="https://aws.amazon.com/blogs/machine-learning/enable-ai-agents-to-pay-for-aws-marketplace-x402-products-with-amazon-bedrock-agentcore-payments/" target="_blank" rel="noopener">AgentCore payments擴大支援AWS Marketplace付款</a></p><p class="s">AWS宣布將今年8月推出的Amazon Bedrock AgentCore payments功能擴展至AWS Marketplace，讓AI代理程式能自主探索並購買支援x402協定的軟體、API、資料與內容，費用直接計入開發者的AWS帳單，不再需要穩定幣錢包或額外API金鑰。開發者可透過AgentCore policy設定花費上限與核准賣家，並由AgentCore payments強制執行每次付款工作階段的上限，確保代理程式不會超支，所有交易亦可在AWS CloudTrail與Cost Explorer中稽核。賣家以x402方式回應402 Payment Required時會附上簽署報價，代理程式透過AgentCore payments取得付款權杖後重新送出請求即可完成購買。合作夥伴Tavily等已加入經KYC驗證的賣家陣容，AWS同時在AgentCore Gateway新增Marketplace連接器，協助代理程式探索可用的產品與服務端點。</p><p class="orig">原文：Enable AI agents to pay for AWS Marketplace x402 products with Amazon Bedrock AgentCore payments</p><p class="meta"><span class="tag">英</span><a class="src" href="https://aws.amazon.com/blogs/machine-learning/enable-ai-agents-to-pay-for-aws-marketplace-x402-products-with-amazon-bedrock-agentcore-payments/" target="_blank" rel="noopener">AWS Machine Learning｜aws.amazon.com</a><span>11/20 07:02</span></p></article><article><p class="t"><span class="n">27.</span><a href="https://simonwillison.net/2026/Nov/19/postgresql-19/" target="_blank" rel="noopener">PostgreSQL 19 正式發布</a></p><p class="s">PostgreSQL 19 正式發布，往年多在九月推出，今年因應一連串 AI 回報的漏洞問題而延後兩個月。作者認為這次等待值得，最喜歡的新功能是「read-your-writes」一致性：透過新的 WAIT FOR LSN 指令，讓連到備援節點（standby）的連線可以等待該節點把 WAL 日誌重播到指定的日誌序號（LSN）後再執行查詢，確保應用程式能讀到自己剛寫入主節點的資料，該指令也可選擇設定逾時時間。作者指出這個模式他最早是在 Wikipedia 看到的：MediaWiki 針對 MySQL 複寫自行實作了類似機制，把主節點的 binlog 位置存在 session 中，每次請求開始時先等備援節點追上該位置才讀取，目前改用 MySQL 的 WAIT_FOR_EXECUTED_GTID_SET() 函式（並以 SOURCE_POS_WAIT() 作為備援）。</p><p class="orig">原文：PostgreSQL 19 Released</p><p class="meta"><span class="tag">英</span><a class="src" href="https://simonwillison.net/2026/Nov/19/postgresql-19/" target="_blank" rel="noopener">Simon Willison｜simonwillison.net</a><span>11/20 04:43</span></p></article></div><h2 id="g5">政策與法規</h2><div class="grid"><article><p class="t"><span class="n">28.</span><a href="https://www.itmedia.co.jp/aiplus/article/2611/20/2000003353/" target="_blank" rel="noopener">透過第三方AI操作Antigravity恐遭停權？Google Cloud日本解惑</a></p><p class="s">Google的程式開發工具「Google Antigravity」因一項規定引發討論：透過第三方AI工具存取該服務可能違反使用條款，導致帳號遭停權，部分使用者擔心連Google帳號整體都會被停用，相關討論貼文瀏覽次數已達49萬次。經向Google Cloud日本法人查證，該規定僅適用於個人版方案，所稱「正規使用者」主要指法人版方案用戶；若個人免費或Google AI Pro方案用戶透過第三方工具過度或濫用Antigravity，恐壓縮系統整體容量、影響法人用戶體驗。Google建議個人版用戶避免透過第三方工具存取Antigravity，並說明法人版方案適用不同條款，不會因此遭停權；Google DeepMind的Antigravity開發負責人也表示違規不會影響Google帳號本身。Google Cloud並建議第三方程式開發代理程式若要使用Gemini，應改用Gemini Enterprise或Google AI Studio核發的API金鑰，至於法人版方案是否能透過第三方工具使用Antigravity，媒體仍在向Google Cloud日本進一步確認中。</p><p class="orig">原文：Antigravityを他社AIから操作すると「垢BAN」？ 注意点をGoogle Cloud日本法人に聞いた</p><p class="meta"><span class="tag">日</span><a class="src" href="https://www.itmedia.co.jp/aiplus/article/2611/20/2000003353/" target="_blank" rel="noopener">ITmedia AI+｜itmedia.co.jp</a><span>11/20 07:15</span></p></article><article><p class="t"><span class="n">29.</span><a href="https://arstechnica.com/tech-policy/2026/11/traumatized-teens-sue-school-cops-after-doritos-bag-triggers-ai-gun-alert/" target="_blank" rel="noopener">多力多滋觸發AI槍枝警報，受創學生控告校方與警方</a></p><p class="s">2025年10月，美國巴爾的摩郡四名黑人高中生在美式足球練習後分食多力多滋洋芋片時，學校的AI槍枝偵測系統Omnilert誤將其中一人手持的洋芋片袋辨識為疑似槍枝並發出警報。校方在兩分鐘內透過監視器畫面確認並無威脅、取消警報，原本已通知可不必出動的巴爾的摩郡警方，但校方事後仍因「技術與人為雙重疏失」通知警方到場。至少六輛警車拉著警笛抵達現場，部分員警拔槍戒備，命令學生跪地、上銬並搜身，過程中未告知學生所涉嫌疑。警方搜查未發現槍枝後，學生才得知警報源自AI系統Omnilert，據稱有員警當場咕噥「這些愚蠢的AI攝影機」及「該死的Omnilert」，另有員警坦言AI並不可靠。四名學生Taki Allen、Yui-Osa Ogbeide、Devon Thompson Jr.與Keith Winfield III已對學校與警方提告。</p><p class="orig">原文：Traumatized teens sue school, cops after Doritos bag triggers AI gun alert</p><p class="meta"><span class="tag">英</span><a class="src" href="https://arstechnica.com/tech-policy/2026/11/traumatized-teens-sue-school-cops-after-doritos-bag-triggers-ai-gun-alert/" target="_blank" rel="noopener">Ars Technica AI｜arstechnica.com</a><span>11/20 04:19</span><a class="hot" href="https://news.ycombinator.com/item?id=50565836" target="_blank" rel="noopener">HN 11分</a></p></article></div><footer><h3>本次未取得的來源</h3><ul><li>Preferred Networks— tech.preferred.jp: HTTP 404</li><li>GamesBeat— venturebeat.com: HTTP 429</li><li>The Batch— 索引頁 HTTP 403</li></ul><h3>策展時剔除 15 則</h3><ul><li>量子運算成果，與 AI 關聯薄弱</li><li>氣象降尺度模型，主題偏離當日重點且票數較低</li><li>純產品示範影片轉貼，無實質新聞內容</li><li>純產品示範影片轉貼，無實質新聞內容</li><li>純 onboarding 教學影片，無實質新聞內容</li><li>廠商客戶案例行銷文，無新聞價值</li><li>創業 GTM 訪談節目，與 AI 技術或產業新聞無直接關聯</li><li>內文亂碼且為會員限定的採購檢查清單，無可讀資訊</li><li>個人隨筆雜談，無實質新聞或資訊量</li><li>年度功能回顧彙整文，內容重複且非當日新聞</li><li>早報彙整，內含項目已由各單則獨立收錄</li><li>會議嘉賓名單宣傳稿，無實質內容</li></ul><h3>本次執行</h3><p>來源 59／62 成功，原始 1172 則，去重後 951 則，策展後 29 則。</p><p>策展：claude-opus-5　翻譯：claude-sonnet-5</p><p>本頁由程式自動產生。譯文可能有誤，請以原始連結內容為準。</p></footer></div><script id="fav">(function(){
+var KEY='ai-digest-favs';
+document.head.insertAdjacentHTML('beforeend','<style>'+"\nbutton.fav{float:right;margin:1px 0 4px 10px;border:1px solid var(--line);\nbackground:var(--card);color:var(--dim);cursor:pointer;font-size:15px;line-height:1;\npadding:3px 8px;border-radius:6px;font-family:inherit}\nbutton.fav:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}\nbutton.fav.on{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}\n.fav-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}\n.fav-bar button,.fav-bar label{border:1px solid var(--line);background:var(--card);\ncolor:var(--fg);border-radius:6px;padding:3px 12px;cursor:pointer;font-size:.85rem;\nfont-family:inherit;line-height:1.7}\n.fav-bar button:hover,.fav-bar label:hover{border-color:var(--accent);\ncolor:var(--accent);background:var(--accent-bg)}\n.fav-bar input[type=file]{display:none}\n.fav-bar .danger:hover{border-color:var(--hot);color:var(--hot);background:transparent}\n"+'<\/style>');
+
+function load(){try{var v=JSON.parse(localStorage.getItem(KEY));
+return (v&&typeof v==='object'&&!Array.isArray(v))?v:{};}catch(e){return {};}}
+function save(d){try{localStorage.setItem(KEY,JSON.stringify(d));return true;}
+catch(e){alert('收藏沒有存成功：瀏覽器儲存空間已滿，或這個瀏覽器停用了本機儲存（無痕模式常見）。');
+return false;}}
+function count(){return Object.keys(load()).length;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){
+return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+function badge(){var n=count(),ls=document.querySelectorAll('a.fav-link');
+for(var i=0;i<ls.length;i++){ls[i].textContent=n?'收藏 '+n:'收藏';}}
+
+function metaText(art,re){var ns=art.querySelectorAll('.meta span');
+for(var i=0;i<ns.length;i++){var t=ns[i].textContent.trim();if(re.test(t))return t;}
+return '';}
+
+function snap(art,a){var src=art.querySelector('.meta .src');
+var grid=art.parentElement,h2=grid?grid.previousElementSibling:null;
+return {t:a.textContent.trim(),s:src?src.textContent.trim():'',
+d:metaText(art,/^[0-9]{2}\/[0-9]{2}/),
+g:(h2&&h2.tagName==='H2')?h2.textContent.trim():'',
+ts:new Date().toISOString()};}
+
+function decorate(){var arts=document.querySelectorAll('article');
+for(var i=0;i<arts.length;i++){(function(art){
+var t=art.querySelector('p.t'),a=t?t.querySelector('a'):null;
+if(!a||art.querySelector('button.fav'))return;
+var url=a.href,b=document.createElement('button');b.type='button';
+function paint(){var on=!!load()[url];b.textContent=on?'★':'☆';
+b.className='fav'+(on?' on':'');b.title=on?'取消收藏':'收藏';
+b.setAttribute('aria-pressed',on?'true':'false');}
+b.addEventListener('click',function(){var d=load();
+if(d[url]){delete d[url];}else{d[url]=snap(art,a);}
+if(save(d)){paint();badge();}});
+paint();t.insertBefore(b,t.firstChild);})(arts[i]);}}
+
+function renderList(){var box=document.getElementById('fav-list');if(!box)return;
+var d=load(),urls=Object.keys(d),sub=document.getElementById('fav-count');
+if(sub){sub.textContent=urls.length?('共 '+urls.length+' 則　依收藏時間由新到舊'):'還沒有收藏';}
+if(!urls.length){box.innerHTML='<p class="note">還沒有收藏。到任何一天的日報頁面，'
++'點卡片右上角的 ☆ 就會收進來。<\/p>';return;}
+urls.sort(function(x,y){return String(d[y].ts||'').localeCompare(String(d[x].ts||''));});
+var groups={},order=[];
+for(var i=0;i<urls.length;i++){var g=d[urls[i]].g||'其他';
+if(!groups[g]){groups[g]=[];order.push(g);}groups[g].push(urls[i]);}
+order.sort(function(x,y){var a=["模型與產品發布", "遊戲與娛樂", "產業與資本", "研究與論文", "工程與工具", "政策與法規", "其他"].indexOf(x),b=["模型與產品發布", "遊戲與娛樂", "產業與資本", "研究與論文", "工程與工具", "政策與法規", "其他"].indexOf(y);
+return (a<0?999:a)-(b<0?999:b);});
+var h='';
+for(var j=0;j<order.length;j++){var g=order[j],list=groups[g];
+h+='<h2>'+esc(g)+'<\/h2><div class="grid">';
+for(var k=0;k<list.length;k++){var u=list[k],it=d[u];
+h+='<article><p class="t"><button type="button" class="fav on" data-url="'+esc(u)
++'" title="移除收藏">★<\/button><a href="'+esc(u)+'" target="_blank" rel="noopener">'
++esc(it.t)+'<\/a><\/p><p class="meta">'
++(it.s?'<span>'+esc(it.s)+'<\/span>':'')
++(it.d?'<span>'+esc(it.d)+'<\/span>':'')
++'<span>收藏於 '+esc(String(it.ts||'').slice(0,10))+'<\/span><\/p><\/article>';}
+h+='<\/div>';}
+box.innerHTML=h;
+var bs=box.querySelectorAll('button.fav');
+for(var m=0;m<bs.length;m++){bs[m].addEventListener('click',function(){
+var d2=load();delete d2[this.getAttribute('data-url')];
+if(save(d2)){renderList();badge();}});}}
+
+function exportFavs(){var blob=new Blob([JSON.stringify(load(),null,2)],
+{type:'application/json'}),a=document.createElement('a');
+a.href=URL.createObjectURL(blob);
+a.download='ai-digest-favs-'+new Date().toISOString().slice(0,10)+'.json';
+document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(a.href);a.parentNode.removeChild(a);},0);}
+
+function importFavs(f){var r=new FileReader();
+r.onload=function(){var inc;
+try{inc=JSON.parse(r.result);}catch(e){alert('這個檔案不是有效的 JSON。');return;}
+if(!inc||typeof inc!=='object'||Array.isArray(inc)){alert('這個檔案不是收藏備份。');return;}
+var d=load(),n=0;
+for(var k in inc){if(Object.prototype.hasOwnProperty.call(inc,k)&&!d[k]
+&&inc[k]&&typeof inc[k]==='object'){d[k]=inc[k];n++;}}
+if(save(d)){renderList();badge();alert('匯入完成，新增 '+n+' 筆（重複的保留原本的）。');}};
+r.readAsText(f);}
+
+function wire(){var e=document.getElementById('fav-export');
+if(e)e.addEventListener('click',exportFavs);
+var i=document.getElementById('fav-import');
+if(i)i.addEventListener('change',function(){
+if(this.files&&this.files[0])importFavs(this.files[0]);this.value='';});
+var c=document.getElementById('fav-clear');
+if(c)c.addEventListener('click',function(){var n=count();if(!n)return;
+if(confirm('確定要清除全部 '+n+' 筆收藏？這個動作沒辦法復原，建議先匯出備份。')){
+if(save({})){renderList();badge();}}});}
+
+function init(){decorate();renderList();wire();badge();}
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',init);}else{init();}
+})();</script></body>
+</html>
