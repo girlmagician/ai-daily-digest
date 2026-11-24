@@ -580,6 +580,21 @@ Claude Code／Codex 各 1、Claude Blog 2。但 GamesBeat 當初就是**本機�
 3. 股市行情類有沒有明顯變少；Claude Code 版本更新有沒有被策展合理取捨。
 4. 三天後若有來源連續失敗，應該會收到 issue 通知信。
 
+### 本機策展實測（2026-11-24）
+
+用本機收集的候選跑 `translate.py --target 30`（未跑 extract.py，所以部分項目只有標題）：
+遊戲與娛樂 5 則（Ubisoft Motherbrain、GamesBeat Next 兩場座談、Higgsfield 可玩廣告…）、
+純行情 1 則（Rajan 談 AI 報酬）、Claude Code／Codex 版本各 1 則且摘要有實質內容、
+The Hacker News 3 則、論文 3 則、無翻譯失敗。
+
+發現一則遊戲陀螺週報（騰訊營收、GTA6 銷量，與 AI 無關）被留下來湊滿 5 則 →
+已在 `CURATE_SYSTEM` 補「不可拿 AI 不是主題的遊戲新聞湊數，寧可不到 5 則」。
+
+**成本注意**：本機這次花 US$2.70，CI 平常約 US$0.6。差異主要是 cache_read
+（本機 275 萬 token、CI 約 7,700）——本機 CLI 每次呼叫都載入使用者自己的設定、
+記憶與連接器。CI 的成本要看上線後第一次執行的 `state/last-digest.json`。
+（CI 自己也偶有高的日子：11/19 是 US$2.84。）
+
 ### 仍然是盲區
 
 「新冒出來的 GitHub repo」（MoneyPrinterTurbo、Claude-Code-Game-Studios、Plannotator 這類）
