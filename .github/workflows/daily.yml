@@ -33,6 +33,7 @@ on:
 
 permissions:
   contents: write           # 需要把 docs/ 與 state/ 推回 repo
+  issues: write             # 來源連續失敗時開 issue 通知（2026-11-24）
 
 concurrency:
   group: daily-digest
@@ -149,7 +150,50 @@ jobs:
         # 重複的部分由 state/seen.json 擋掉。
         # --top 45 而策展的 --target 是 30：候選數要大於目標數，策展才有得裁。
         # 兩邊都是 30 的時候，只要擠進機械評分前 30 名幾乎就等於會上稿。
-        run: python collect.py --hours 48 --top 45
+        # --max-papers 3（2026-11-24 由 5 降，使用者要求論文減量）。
+        # 遊戲保障席次 --min-game 用程式預設值 6，見 collect.MIN_GAME。
+        run: python collect.py --hours 48 --top 45 --max-papers 3
+
+      - name: 來源連續失敗通知（不阻斷）
+        # 2026-11-24：GamesBeat 連續 81 天失敗、Preferred Networks 連續 88 天，
+        # 只寫在日報頁尾，沒有人發現。collect.py 在某來源「剛好」連續失敗
+        # FAIL_ALERT_DAYS 天時寫出 out/source_alert.md，這裡把它開成 issue
+        # （GitHub 會寄通知信）。持續壞掉的不會每天重開；同名 issue 還開著也不重開。
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, re, sys, urllib.error, urllib.request
+          if not os.path.exists("out/source_alert.md"):
+              print("沒有新達到門檻的來源")
+              sys.exit(0)
+          repo, token = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_TOKEN"]
+          body = open("out/source_alert.md", encoding="utf-8").read()
+          names = re.findall(r"^\| (?!來源 |---)([^|]+?) \|", body, re.M)
+          title = "來源連續抓取失敗：" + "、".join(names)
+
+          def api(path, method="GET", data=None):
+              req = urllib.request.Request(
+                  "https://api.github.com/repos/%s%s" % (repo, path), method=method,
+                  data=json.dumps(data).encode() if data else None,
+                  headers={"Authorization": "Bearer %s" % token,
+                           "Accept": "application/vnd.github+json",
+                           "X-GitHub-Api-Version": "2022-11-28"})
+              try:
+                  with urllib.request.urlopen(req) as r:
+                      return r.status, json.loads(r.read() or b"null")
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read().decode("utf-8", "replace")
+
+          status, issues = api("/issues?state=open&per_page=100")
+          if status == 200 and any(i["title"] == title for i in issues):
+              print("已有同名 issue 開著，不重複通知：" + title)
+          else:
+              status, resp = api("/issues", "POST", {"title": title, "body": body})
+              print("已開 issue：%s" % resp["html_url"] if status == 201
+                    else "開 issue 失敗（%s）：%s" % (status, resp))
+          PY
 
       - name: 補抓原文全文
         # RSS 多半只給導言。沒有這步，摘要就只能靠模型腦補

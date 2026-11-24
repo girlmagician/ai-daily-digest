@@ -155,6 +155,21 @@ MIN_SCORE = 1.6
 # 0.34 × 30 則 = 10 席，是實測正常日子的水準（2026-09-14 那期就是 10 席）。
 HN_SHARE = 0.34
 
+# 遊戲類（cat: game）在候選名單裡的保障席次（見 select()）。2026-11-24 使用者要求
+# 遊戲內容往前排：近四週「遊戲與娛樂」每天只有約 3 則（佔 11%）。
+# 遊戲媒體都過 ai_filter，有效權重要 ai_strength ≥ 4 才拿得滿，
+# 相關性中等的 AI × 遊戲項目常常卡在 1.6 下限或擠不進前 45 名。
+# 這裡保證最多 MIN_GAME 則進候選（豁免分數下限，但仍要高於 GAME_FLOOR），
+# 留不留由策展決定。
+MIN_GAME = 6
+GAME_FLOOR = 1.2
+
+# 來源連續失敗幾天就發出告警（見 update_source_health()）。
+# 2026-11-24 發現 GamesBeat 連續 81 天失敗、Preferred Networks 連續 88 天，
+# 只寫在日報頁尾，沒有任何人收到通知。
+HEALTH = ROOT / "state" / "source-health.json"
+FAIL_ALERT_DAYS = 3
+
 # HN 版主重貼舊文時，慣例是在標題結尾補上原文年份，例如
 # 「Due to concerns about malicious applications, GPT2 will not be released (2019)」。
 # 這是收集階段唯一拿得到的舊文訊號——HN 補進來的項目時間欄位是「投稿到 HN
@@ -265,11 +280,22 @@ def fetch_source(src: dict, cutoff: datetime, cap: int | None = None) -> dict:
         report.update(status="fail", error="解析不到項目")
         return {"report": report, "items": []}
 
+    # 版本發布類 feed 的選配欄位（2026-11-24，Claude Code／Codex releases）：
+    #   skip_title    標題符合就略過（Codex 一天發好幾個 alpha，內文只有一行）
+    #   title_prefix  標題只是版號時補上產品名，否則「v2.1.331」讀者看不出是什麼
+    #   max_items     取代 PER_SOURCE_CAP，幾乎天天發版的來源只取最新幾則
+    skip_title = re.compile(src["skip_title"]) if src.get("skip_title") else None
+    prefix = src.get("title_prefix") or ""
+
     for entry in parsed.entries:
         link = (getattr(entry, "link", "") or "").strip()
         title = strip_html(getattr(entry, "title", ""), limit=300)
         if not link or not title:
             continue
+        if skip_title and skip_title.search(title):
+            continue
+        if prefix and not title.startswith(prefix.strip()):
+            title = prefix + title
 
         published, clamped, estimated = entry_time(entry, fallback=fetched_at)
         if published < cutoff:
@@ -318,7 +344,8 @@ def fetch_source(src: dict, cutoff: datetime, cap: int | None = None) -> dict:
     # 留到 merge_hn 併入熱度、score() 算完分數之後再由 select() 排名，
     # 否則「訊號還沒套用就先砍掉九成」——一篇 300 分的論文若排在 feed 第 150 筆，
     # 在 HN 分數有機會貼上去之前就已經不存在了。
-    limit = cap or (PAPER_SOURCE_CAP if src["cat"] == "paper" else PER_SOURCE_CAP)
+    limit = cap or src.get("max_items") or (
+        PAPER_SOURCE_CAP if src["cat"] == "paper" else PER_SOURCE_CAP)
     if src["cat"] == "paper" and cap is None:
         limit = PAPER_SOURCE_CAP_RAW
     items.sort(key=lambda i: i["published_utc"], reverse=True)
@@ -556,7 +583,7 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
 
 def select(
     items: list[dict], target: int, max_pinned: int, max_papers: int,
-    max_per_source: int, min_score: float = 0.0
+    max_per_source: int, min_score: float = 0.0, min_game: int = 0
 ) -> dict:
     """論文獨立成區，不與新聞在同一個池子裡競爭。
 
@@ -626,6 +653,25 @@ def select(
         # 原本這裡漏了計數，導致 source_distribution 少算回補進來的席次
         per_source[item["source"]] += 1
 
+    # 遊戲保障席次：名單裡的遊戲項目不到 min_game 則，就從沒選上的遊戲項目
+    # （含低於分數下限的）依分數補進來。是「追加」不是替換——候選數略多於 --top，
+    # 策展只能刪不能加，所以候選裡要先有，策展才有得留。
+    # GAME_FLOOR 擋掉 AI 只是順帶一提、權重又低的項目，避免拿雜訊湊數。
+    game_added = []
+    if min_game:
+        chosen = {i["id"] for i in ranked} | pinned_ids
+        have = sum(1 for i in ranked + pinned_selected if i["cat"] == "game")
+        spare = sorted(
+            (i for i in contenders
+             if i["cat"] == "game" and i["id"] not in chosen and i["score"] >= GAME_FLOOR),
+            key=lambda i: (-i["score"], i["published_utc"]),
+        )
+        game_added = spare[:max(0, min_game - have)]
+        for item in game_added:
+            ranked.append(item)
+            per_source[item["source"]] += 1
+        below_floor = [i for i in below_floor if i not in game_added]
+
     return {
         "official": pinned_selected,
         "ranked": ranked,
@@ -639,6 +685,7 @@ def select(
             if i.get("hn_points", 0) > 0 or i.get("hf_upvotes", 0) > 0),
         "overflow_pinned": pinned[max_pinned:],
         "below_floor": below_floor,
+        "game_reserved": len(game_added),
         "source_distribution": dict(sorted(per_source.items(), key=lambda kv: -kv[1])),
     }
 
@@ -650,7 +697,10 @@ def main() -> None:
     ap.add_argument("--hours", type=int, default=48, help="時間窗（小時），預設 48")
     ap.add_argument("--top", type=int, default=30, help="目標則數，預設 30")
     ap.add_argument("--max-pinned", type=int, default=12, help="官方公告最多佔幾則")
-    ap.add_argument("--max-papers", type=int, default=5, help="論文區最多幾則")
+    ap.add_argument("--max-papers", type=int, default=3,
+                    help="論文區最多幾則（2026-11-24 由 5 降為 3，使用者要求論文減量）")
+    ap.add_argument("--min-game", type=int, default=MIN_GAME,
+                    help=f"遊戲類在候選名單的保障則數，預設 {MIN_GAME}；0 表示不保障")
     ap.add_argument("--no-hf-papers", action="store_true",
                     help="跳過 Hugging Face Daily Papers（除錯用）")
     ap.add_argument("--max-per-source", type=int, default=3, help="單一來源在名單裡最多佔幾席")
@@ -660,6 +710,8 @@ def main() -> None:
     ap.add_argument("--no-hn", action="store_true", help="跳過 Hacker News（除錯用）")
     ap.add_argument("--ignore-seen", action="store_true", help="不排除前幾天已發布過的項目（重跑用）")
     ap.add_argument("--no-scrape", action="store_true", help="跳過無 RSS 來源的爬蟲（除錯用）")
+    ap.add_argument("--no-health", action="store_true",
+                    help="不更新 state/source-health.json（本機測試用，避免本機結果污染 CI 的連續失敗計數）")
     args = ap.parse_args()
 
     now = datetime.now(timezone.utc)
@@ -729,7 +781,7 @@ def main() -> None:
     scored = [score(i, now, args.hours) for i in fresh]
     selection = select(
         scored, args.top, args.max_pinned, args.max_papers, args.max_per_source,
-        min_score=args.min_score,
+        min_score=args.min_score, min_game=args.min_game,
     )
 
     # ── 終端摘要 ──
@@ -875,6 +927,76 @@ def main() -> None:
     )
     print(f"\n輸出：{OUT / 'candidates.json'}")
     print(f"      {OUT / 'run_report.json'}")
+
+    if not args.no_health:
+        update_source_health(reports, now)
+
+
+def update_source_health(reports: list[dict], now: datetime) -> list[dict]:
+    """記錄每個來源連續失敗幾天，剛好達到 FAIL_ALERT_DAYS 時寫出告警檔。
+
+    由來（2026-11-24）：GamesBeat 從 9/4 起每天 HTTP 429、Preferred Networks
+    從 8/28 起每天逾時，兩個都只出現在日報頁尾的「未取得來源」，持續將近三個月
+    沒有人發現——頁尾每天都有幾行失敗，看久了就成了背景噪音。
+
+    只在「剛好跨過門檻」的那一天告警一次：持續壞掉的來源不會每天重複開 issue，
+    恢復後又壞掉才會再告警一次。同一天重跑（手動補跑）不會重複累計，
+    所以也不會重複告警。
+
+    告警檔 out/source_alert.md 由 daily.yml 的下一步讀取並開 issue。
+    狀態檔在 state/，跟著日報一起推回 repo。
+    """
+    today = now.astimezone(timezone(timedelta(hours=8))).strftime("%Y-%m-%d")
+    try:
+        health = json.loads(HEALTH.read_text(encoding="utf-8")) if HEALTH.exists() else {}
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"警告：{HEALTH} 無法讀取（{e}），連續失敗天數從頭計算")
+        health = {}
+
+    new, crossed = {}, []
+    for r in reports:
+        if r["status"] == "ok":
+            continue  # 成功就不記錄，等於歸零
+        prev = health.get(r["name"]) or {}
+        if prev.get("last_date") == today:
+            entry = dict(prev, error=r["error"])  # 同一天重跑：不累計
+        else:
+            entry = {"streak": prev.get("streak", 0) + 1,
+                     "since": prev.get("since") or today,
+                     "last_date": today, "error": r["error"], "url": r["url"]}
+            if entry["streak"] == FAIL_ALERT_DAYS:
+                crossed.append({"name": r["name"], **entry})
+        new[r["name"]] = entry
+
+    HEALTH.parent.mkdir(exist_ok=True)
+    HEALTH.write_text(json.dumps(new, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    long_fail = {k: v for k, v in new.items() if v["streak"] >= FAIL_ALERT_DAYS}
+    if long_fail:
+        print(f"\n連續失敗 {FAIL_ALERT_DAYS} 天以上的來源：")
+        for k, v in sorted(long_fail.items(), key=lambda kv: -kv[1]["streak"]):
+            print(f"  {k:<24} 連續 {v['streak']} 天（自 {v['since']}）{v['error']}")
+
+    alert = OUT / "source_alert.md"
+    if crossed:
+        lines = [
+            f"以下來源已連續 {FAIL_ALERT_DAYS} 天抓取失敗，日報只會在頁尾列出，不會有其他提醒。",
+            "",
+            "| 來源 | 網址 | 錯誤 | 開始失敗 |",
+            "|---|---|---|---|",
+        ]
+        lines += [f"| {c['name']} | {c['url']} | {c['error']} | {c['since']} |" for c in crossed]
+        lines += [
+            "",
+            "處理方式：本機用瀏覽器開該網址，確認是網站搬家、改版，還是只擋 GitHub 的機房 IP"
+            "（本機正常、Actions 失敗）。搬家就改 `sources.yaml` 的網址；確定救不回來就移到 `dropped`。",
+            "持續失敗不會重複開 issue；修好後又失敗，才會再通知一次。",
+        ]
+        alert.write_text("\n".join(lines), encoding="utf-8")
+        print(f"\n新達到告警門檻：{'、'.join(c['name'] for c in crossed)} → {alert}")
+    elif alert.exists():
+        alert.unlink()
+    return crossed
 
 
 if __name__ == "__main__":

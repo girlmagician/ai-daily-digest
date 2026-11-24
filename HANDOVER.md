@@ -67,8 +67,7 @@
   要回補得改用 arXiv API。
 - **越早的日期來源越薄。** 8/16 只撈到 23 則候選（`--top 30` 等於不篩選，策展仍剔掉 3 則），
   只有 20 則上稿，是十天裡最少的。品質低於其他天是來源使然，不是程式問題。
-- **The Batch 每天都會失敗。** GitHub 的資料中心 IP 被 deeplearning.ai 回 403
-  （本機正常），會固定出現在頁尾的「本次未取得來源」。這是誠實揭露，不是漏失。
+- ~~**The Batch 每天都會失敗。**~~ 2026-11-24 已停用（111 期只上過 1 則），見第十節。
 - **FT 人工智慧的摘要會很短。** 文章在付費牆後抓不到全文，只能用 74 字的 feed 導言。
   它的價值在「有沒有報導這件事」的訊號，權重壓到 1.1。加上分數下限 1.6 之後，
   它要有 HN 分數或跨來源佐證才上得了稿——這是刻意的。
@@ -101,7 +100,8 @@
   （那個 feed 顯示「1 天前更新」）。唯一可行的是定期人工抽查：拿廠商官網最近的重大發布，
   回頭確認日報有沒有收到。Microsoft Source AI 已查過，是單純發文頻率低，不是搬家。
 
-- **開源釋出層是刻意的盲區，不是漏抓。** 這條管線覆蓋的是「關於 AI 的新聞」——媒體報導、廠商公告、
+- **開源釋出層是刻意的盲區，不是漏抓。**（2026-11-24 部分修正：使用者決定補上
+  Claude Code／Codex 的官方版本更新與 GitHub Blog；「新冒出來的 repo」仍是盲區，見第十節。） 這條管線覆蓋的是「關於 AI 的新聞」——媒體報導、廠商公告、
   論文、融資。它幾乎不覆蓋「今天 GitHub 上放出了什麼」。`sources.yaml` 裡跟 GitHub 有關的只有
   llama.cpp／vLLM／Ollama 三個 `releases.atom`，那是追蹤既有專案的新版本，不是發現新專案。
   唯一的間接路徑是 HN，而 `hn.py` 的 `MIN_POINTS = 20` 對新 repo 是很高的門檻。
@@ -531,3 +531,57 @@ cron: 18:07 / 19:37 / 21:07 UTC   （台北 02:07 / 03:37 / 05:07）
   收藏腳本走同一條路注入，所以 8/10 以來的每一頁都能收藏。
   副作用：日期落在最近七天之外的頁面（目前 8/10–8/12），日期列上不會有代表「你在這頁」
   的高亮，因為那一天已經不在窗內。頁首本來就寫著日期，判斷上不會混淆。
+
+---
+
+## 十、2026-11-24 來源審視（拿同事 AI 簡報對照）
+
+使用者給了同事的四份 AI 分享簡報（8/28 OPO 週報 AI 分享、9/10 AI 資訊快遞、
+10/21 AI 情報週報、11/20 新知週報），要求確認來源與篩選符合需求。
+原始比對結果與分析腳本在 `D:\vscode ai\06_AI情報\_作業紀錄_20261124_日報來源審視\`，
+修改前的檔案也備份在那裡（對應 commit `531eda7`）。
+
+### 方法
+
+把 `docs/` 111 期（3,044 則）解析成清單，拿簡報裡約 49 則可比對的條目逐一搜尋，
+命中後人工確認是不是同一件事（關鍵字誤命中很多，例如「Medicare」撞到另一則）。
+
+### 結論
+
+- **大新聞幾乎全有**：Claude 5.5 三款、GPT-6.1 Sol、Gemini 4 全系列、Nvidia 收購 HF
+  （跟同事同一天）、Scion、CESA 調查、Unity Spark、紐約市議會、TokenEconomizer。
+- **漏的集中在三類**：GitHub 開源工具／Claude Code 周邊（約 18 則幾乎全漏）、
+  AI 代理資安事件（Plugin4Shell、PixelLeak、DeepSeek Harness CVE）、
+  遊戲／博弈細項（EA Javelin、Ramen Aura、IrisAgent、MGA AI Gaming Charter）。
+- **來源靜默失效**：GamesBeat 9/4 起連續 81 天 429、Preferred Networks 8/28 起失效、
+  Anthropic 產品公告搬到 claude.com（Claude Meetings 整則漏掉）。
+  三個都只出現在頁尾，沒有人發現 → 新增連續失敗 3 天開 issue。
+- **比例**：近四週產業與資本 27%、論文 21%、遊戲只有 11%（日均 3 則）。
+
+### 使用者的決定與實作
+
+| 項目 | 決定 | 實作 |
+|---|---|---|
+| 開源工具 | 補官方版本更新 | Claude Code／Codex releases（權重 1.6／1.5，才過得了 1.6 下限）、GitHub Blog |
+| 資安 | 加入 | The Hacker News（ai_filter） |
+| 遊戲博弈 | PocketGamer.biz、iGaming Business、往前排、其他遊戲來源也收 | 共 7 個新來源、`--min-game 6` 保障席次、策展目標每天 5 則 |
+| 比例 | 股市財經減量、論文減量 | Bloomberg 1.6→1.3、策展規則 2.8；`--max-papers` 5→3 |
+| OpenAI 公關稿 | 未選，維持 | 只移除重複的 legacy feed |
+
+### 上線後要確認的（本機驗證過，但機房 IP 的行為可能不同）
+
+本機跑過 `collect.py --no-health`：70 個來源全部成功，候選 48 則裡遊戲 8、資安 3、
+Claude Code／Codex 各 1、Claude Blog 2。但 GamesBeat 當初就是**本機正常、CI 429**，
+所以新來源要看 CI 實跑：
+
+1. 頁尾「未取得來源」有沒有新來源（特別是 gamesbeat.com、GameDiscoverCo——
+   後者是 Substack 自訂網域，Import AI 的 Substack 就被機房 IP 擋過）。
+2. 「遊戲與娛樂」每天有沒有到 5 則左右。
+3. 股市行情類有沒有明顯變少；Claude Code 版本更新有沒有被策展合理取捨。
+4. 三天後若有來源連續失敗，應該會收到 issue 通知信。
+
+### 仍然是盲區
+
+「新冒出來的 GitHub repo」（MoneyPrinterTurbo、Claude-Code-Game-Studios、Plannotator 這類）
+仍然抓不到。GitHub 星數排行實測不可用（見 `sources.yaml` 的 `dropped`），
+使用者這次選擇只補官方版本更新，沒有做每週工具精選。

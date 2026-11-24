@@ -12,7 +12,14 @@
 sources:
   # ══ 各大 AI 公司官方（pinned，當日全收）═══════════════
   - {name: "OpenAI News",          lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://openai.com/news/rss.xml"]}
-  - {name: "OpenAI Blog (legacy)", lang: en, cat: vendor, weight: 1.5, pinned: true,  ai_filter: false, urls: ["https://openai.com/blog/rss.xml"]}
+  # 2026-11-24：OpenAI Blog (legacy) 移到 dropped——它現在跟 OpenAI News 是同一份 feed。
+  # Anthropic 的產品公告（Claude Meetings、Sheets／Whiteboards、Managed Agents 自架…）
+  # 從 2026 秋天起發在 claude.com 的部落格，anthropic.com/news 只剩公司層級消息
+  # （IPO、政策、人事）。跟 8 月 Google 搬家同一型：舊來源還活著，內容搬走了。
+  # 實測 11/12 的 Claude Meetings 完全沒進日報；Sheets／Whiteboards 是靠 HN 138 分撈回；
+  # 11/23 的 Claude Ship 是靠 TechCrunch 才進來。這個 feed 混了客戶案例（J. Crew、
+  # JPMorgan），pinned 會讓它們進候選，由策展剔除——跟 OpenAI News 的處境相同。
+  - {name: "Claude Blog",          lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://claude.com/blog/rss.xml"]}
   - {name: "Google DeepMind Blog", lang: en, cat: vendor, weight: 2.0, pinned: true,  ai_filter: false, urls: ["https://blog.google/technology/google-deepmind/rss/"]}
   # 2026-08-27：Google 把模型發布搬到 /innovation-and-ai/models-and-research/，
   # 舊的 /technology/ai/ 仍回 200 且持續更新，但只剩消費性行銷貼文——feed 沒壞、
@@ -78,7 +85,9 @@ sources:
   # Bloomberg 與 The Information 是綜合科技，必須過 ai_filter；
   # FT 那個網址本身就是 AI 分類，不必過濾。
   - {name: "The Information",      lang: en, cat: media, weight: 1.7, pinned: false, ai_filter: true,  urls: ["https://www.theinformation.com/feed"]}
-  - {name: "Bloomberg Technology", lang: en, cat: media, weight: 1.6, pinned: false, ai_filter: true,  urls: ["https://feeds.bloomberg.com/technology/news.rss"]}
+  # 2026-11-24 權重 1.6 → 1.3：近四週上了 73 則（全來源第三多），多是股價、大盤賣壓、
+  # 市場情緒，使用者要求股市財經減量。1.3 加滿新鮮度 1.8，夠新、AI 相關性夠強才過 1.6
+  - {name: "Bloomberg Technology", lang: en, cat: media, weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://feeds.bloomberg.com/technology/news.rss"]}
   # FT 的 feed 導言只有 74 字，幾乎只剩標題，權重壓低——
   # 讓它只在議題真的熱、或有其他來源佐證時才擠進名單
   - {name: "FT 人工智慧",           lang: en, cat: media, weight: 1.1, pinned: false, ai_filter: false, urls: ["https://www.ft.com/artificial-intelligence?format=rss"]}
@@ -100,12 +109,32 @@ sources:
   - {name: "llama.cpp releases",   lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/ggml-org/llama.cpp/releases.atom"]}
   - {name: "vLLM releases",        lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/vllm-project/vllm/releases.atom"]}
   - {name: "Ollama releases",      lang: en, cat: eng, weight: 1.0, pinned: false, ai_filter: false, urls: ["https://github.com/ollama/ollama/releases.atom"]}
+  # 2026-11-24：coding agent 的官方版本更新。同事的 AI 週報有整頁在追 Claude Code
+  # 的版本（安全修補、計價、管控設定），日報原本完全沒有。
+  # 權重刻意給到 1.6／1.5：上面三個 release feed 是 1.0，加滿新鮮度也只有 1.5，
+  # 永遠構不到 1.6 下限——近四週 0 則上稿，等於沒訂。這兩個是使用者明確要的，要真的進得來。
+  # Claude Code 幾乎天天發版，max_items 2 只取時間窗內最新兩版，其餘留給隔天；
+  # 值不值得登由策展判斷（有新功能、計價、安全修補才留）。
+  # Codex 一天會發好幾個 alpha，內文只有一行「Release 0.174.0-alpha.1」，用 skip_title 擋掉。
+  # 兩者標題都只是版號，title_prefix 補上產品名，否則策展與讀者看不出是什麼。
+  - {name: "Claude Code releases", lang: en, cat: eng, weight: 1.6, pinned: false, ai_filter: false, max_items: 2, title_prefix: "Claude Code ", urls: ["https://github.com/anthropics/claude-code/releases.atom"]}
+  - {name: "Codex CLI releases",   lang: en, cat: eng, weight: 1.5, pinned: false, ai_filter: false, max_items: 2, title_prefix: "Codex CLI ", skip_title: "(?i)alpha|beta|rc", urls: ["https://github.com/openai/codex/releases.atom"]}
+  # GitHub 官方部落格：Copilot、MCP、開源生態的公告。混了一般開發者文章，必須過 ai_filter
+  - {name: "GitHub Blog",          lang: en, cat: eng, weight: 1.4, pinned: false, ai_filter: true,  urls: ["https://github.blog/feed/"]}
+
+  # ══ 資安（2026-11-24 加入）═══════════════════════════════
+  # 同事週報整頁在追 AI 代理相關的資安事件（Plugin4Shell、PixelLeak、DeepSeek Harness CVE），
+  # 日報一則都沒有——原本沒有任何資安來源。只收 AI 相關的（ai_filter）。
+  # 注意：資安新聞是翻譯階段安全分類器誤判的常客（見 HANDOVER 2026-10-13），
+  # 現在單則失敗只會捨棄那一則並在頁尾揭露，不會讓日報開天窗。
+  # BleepingComputer 本機實測 403，沒有採用。
+  - {name: "The Hacker News",      lang: en, cat: media, weight: 1.4, pinned: false, ai_filter: true,  urls: ["https://feeds.feedburner.com/TheHackersNews"]}
 
   # 社群熱度訊號改由 Hacker News（hn.py）提供——Reddit 全數移到 dropped，見下方
 
   # ══ 日文 ════════════════════════════════════════════
   - {name: "ITmedia AI+",          lang: ja, cat: media, weight: 1.4, pinned: false, ai_filter: false, urls: ["https://rss.itmedia.co.jp/rss/2.0/aiplus.xml"]}
-  - {name: "Preferred Networks",   lang: ja, cat: eng,   weight: 1.0, pinned: false, ai_filter: false, urls: ["https://tech.preferred.jp/ja/blog/feed/"]}
+  # Preferred Networks 2026-11-24 移到 dropped（網站改版，feed 失效）
   - {name: "Qiita AI タグ",         lang: ja, cat: eng,   weight: 0.7, pinned: false, ai_filter: false, urls: ["https://qiita.com/tags/ai/feed"]}
   - {name: "GIGAZINE",             lang: ja, cat: media, weight: 0.8, pinned: false, ai_filter: true,  urls: ["https://gigazine.net/news/rss_2.0/"]}
   - {name: "ASCII.jp",             lang: ja, cat: media, weight: 1.0, pinned: false, ai_filter: true,  urls: ["https://ascii.jp/rss.xml"]}
@@ -134,8 +163,22 @@ sources:
   - {name: "Naavik",               lang: en,    cat: game, weight: 1.8, pinned: false, ai_filter: true, urls: ["https://naavik.co/feed/"]}
   - {name: "Deconstructor of Fun", lang: en,    cat: game, weight: 1.6, pinned: false, ai_filter: true, urls: ["https://www.deconstructoroffun.com/blog?format=rss"]}
   - {name: "MobileGamer.biz",      lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://mobilegamer.biz/feed/"]}
-  # VentureBeat 的 AI 分類 feed 已停更（見 dropped），但遊戲分類仍在更新
-  - {name: "GamesBeat",            lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://venturebeat.com/category/games/feed/"]}
+  # 2026-11-24：GamesBeat 從 9/4 起連續 81 天抓取失敗（venturebeat.com 對資料中心 IP
+  # 回 HTTP 429，本機正常），只在頁尾「未取得來源」出現，沒有人發現。
+  # GamesBeat 已獨立成 gamesbeat.com，新 feed 實測正常；舊網址留作備援
+  - {name: "GamesBeat",            lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://gamesbeat.com/feed/", "https://venturebeat.com/category/games/feed/"]}
+  # 2026-11-24 補強（使用者要求遊戲內容往前排、遊戲相關的都可以收）。全部過 ai_filter，
+  # 只收 AI × 遊戲的交集。拿同事 AI 週報對照，日報漏掉的遊戲項目（MTG 用 AI 降預告片成本、
+  # EA Javelin、Ramen Aura、IrisAgent）都出自這類產業媒體。
+  - {name: "PocketGamer.biz",      lang: en,    cat: game, weight: 1.6, pinned: false, ai_filter: true, urls: ["https://www.pocketgamer.biz/rss/"]}
+  - {name: "Game World Observer",  lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://gameworldobserver.com/feed"]}
+  - {name: "AUTOMATON (EN)",       lang: en,    cat: game, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://automaton-media.com/en/feed/"]}
+  - {name: "GameDiscoverCo",       lang: en,    cat: game, weight: 1.5, pinned: false, ai_filter: true, urls: ["https://newsletter.gamediscover.co/feed"]}
+  # 博弈產業：AI 在責任博弈、監理（MGA AI Gaming Charter）、營運上的應用。
+  # 這幾家 AI 相關的比例很低（一天 0～5 則），ai_filter 擋掉其餘
+  - {name: "iGaming Business",     lang: en,    cat: game, weight: 1.6, pinned: false, ai_filter: true, urls: ["https://igamingbusiness.com/feed/"]}
+  - {name: "SBC News",             lang: en,    cat: game, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://sbcnews.co.uk/feed/"]}
+  - {name: "Inside Asian Gaming",  lang: en,    cat: game, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://www.asgam.com/feed/"]}
 
   # ══ 法規／政策 ═══════════════════════════════════════
   - {name: "EU AI Act",            lang: en, cat: policy, weight: 1.5, pinned: false, ai_filter: false, urls: ["https://artificialintelligenceact.eu/feed/"]}
@@ -152,9 +195,7 @@ no_feed:
   - {name: "Anthropic News", lang: en, cat: vendor, weight: 2.0, pinned: true, strategy: scraper,
      target: "https://www.anthropic.com/news", link_pattern: "/news/", max_links: 15,
      note: "官方公告，必須覆蓋。4 個 feed 候選全 404/403"}
-  - {name: "The Batch", lang: en, cat: newsletter, weight: 1.6, pinned: false, strategy: scraper,
-     target: "https://www.deeplearning.ai/the-batch/", link_pattern: "/the-batch/", max_links: 12,
-     note: "2026-08-18 複查仍無 RSS（/feed 與 /rss.xml 回 404/500），改爬公開頁面，不必動用 Gmail"}
+  # The Batch 的爬蟲 2026-11-24 停用，見 dropped
 
   - {name: "機器之心",           lang: zh-CN, strategy: none,    target: "https://www.jiqizhixin.com/",             note: "首頁只回 3,251 字的 JS 空殼，沒有瀏覽器抓不到內容。量子位覆蓋簡中"}
   - {name: "The Batch",        lang: en,    strategy: gmail,   target: "訂閱信",                                    note: "2026-08-18 複查仍無 RSS（/feed 與 /rss.xml 回 404/500）。只能走 Gmail 或爬 the-batch 頁面"}
@@ -166,6 +207,10 @@ no_feed:
 
 # 放棄（已有同語言同類型來源覆蓋，或站台無法連線）
 dropped:
+  # 2026-11-24 來源審視（拿同事 AI 簡報對照 + 檢查 111 期日報的來源健康）
+  - {name: "OpenAI Blog (legacy)", reason: "openai.com/blog/rss.xml 現在跟 openai.com/news/rss.xml 是同一份 feed（同為 1,425 則、內容相同），重複訂閱"}
+  - {name: "Preferred Networks",   reason: "2026-08-28 起每天失敗。tech.preferred.jp 改版，舊 feed 301 轉到 www.preferred.jp/ja/blog/tech/feed 後 404，tech.preferred.jp/ja/feed/ 回 200 但 0 則。找不到替代 feed，日文工程文章的實際上稿量本來就近乎 0"}
+  - {name: "The Batch",            reason: "爬蟲在 GitHub Actions 上幾乎每天都是索引頁 403（本機正常；近 28 天有 25 天失敗），111 期日報裡只上過 1 則（8/14）；Andrew Ng 的評論多半也會出現在其他電子報。要恢復得走 Gmail API"}
   - {name: "VentureBeat AI",  reason: "AI 分類 feed 最新一篇 89 天前，已停更。TechCrunch/Verge/Ars/MIT TR 已覆蓋"}
   - {name: "36Kr",            reason: "403 擋機器人。量子位已覆蓋簡中"}
   - {name: "Ledge.ai",        reason: "站台改版，feed 已撤。ITmedia AI+／ASCII.jp 已覆蓋日文"}

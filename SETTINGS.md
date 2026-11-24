@@ -1,6 +1,6 @@
 # 設定一覽
 
-最後核對：2026-08-19（對應 commit `c042ebf`）
+最後核對：2026-11-24（來源審視，見第八節變更紀錄）
 
 這份文件記錄**現在實際生效的參數值、它在哪個檔案、以及為什麼是這個值**，
 用來在調整或優化前先確認現況。三份文件的分工：
@@ -28,7 +28,8 @@
 | 執行環境 | `ubuntu-latest` | 同上 |
 | 逾時 | `timeout-minutes: 75` | 同上 |
 | 併發 | group `daily-digest`，`cancel-in-progress: false` | 同上 |
-| 權限 | `contents: write`（要把 `docs/` 與 `state/` 推回 repo） | 同上 |
+| 權限 | `contents: write`（要把 `docs/` 與 `state/` 推回 repo）、`issues: write`（來源連續失敗通知） | 同上 |
+| 來源失敗通知 | 某來源**剛好**連續失敗 3 天時開一張 issue（GitHub 寄信）；持續壞掉不重複開 | `collect.update_source_health()` ＋ workflow「來源連續失敗通知」 |
 | 認證 | GitHub Secret `CLAUDE_CODE_OAUTH_TOKEN` | repo Settings → Secrets |
 | 執行報告 | `out/` 上傳為 artifact，保留 14 天（失敗時也上傳） | 同上 |
 | 看門狗 | `cron` 三次：UTC 01:17 / 03:17 / 05:17（名目台北 09:17 / 11:17 / 13:17，**實際延遲 5～7 小時，真正跑在台北 14:30～20:16**） | `.github/workflows/watchdog.yml` |
@@ -76,7 +77,7 @@
 
 ```
 python preflight.py                       # 檢查 CLI 與認證
-python collect.py --hours 48 --top 45     # 收集、去重、評分、選候選
+python collect.py --hours 48 --top 45 --max-papers 3   # 收集、去重、評分、選候選
 python extract.py                         # 補抓原文全文
 python translate.py --target 30           # 策展與翻譯（呼叫模型）
 python render.py                          # 產生網頁
@@ -90,9 +91,11 @@ python render.py                          # 產生網頁
 | `--top` | **45** | 30 | 候選數。**刻意大於策展目標 30**，策展才有得裁 |
 | `--min-score` | **1.6** | 1.6 | 一般新聞的分數下限。官方公告與論文豁免 |
 | `--max-pinned` | 12 | 12 | 官方公告最多佔幾則 |
-| `--max-papers` | 5 | 5 | 論文區最多幾則（獨立區，不與新聞競爭） |
+| `--max-papers` | **3** | 3 | 論文區最多幾則（獨立區，不與新聞競爭）。2026-11-24 由 5 降為 3 |
+| `--min-game` | 6 | 6 | 遊戲類（`cat: game`）在候選名單的保障則數，見 3-2 第 4 點 |
 | `--max-per-source` | 3 | 3 | 單一來源在名單裡最多幾席 |
 | `--workers` | 8 | 8 | 抓取併發數 |
+| `--no-health` | — | — | 不更新 `state/source-health.json`。**本機測試一律加**，否則本機結果會污染 CI 的連續失敗計數 |
 
 模組常數（`collect.py`）：
 
@@ -104,6 +107,13 @@ python render.py                          # 產生網頁
 | `MIN_SUBSTANCE` | 80 | 摘要少於此字數才進「無內容」判定 |
 | `SOCIAL_HN_DISCOUNT` | **0.5** | 社群貼文的 HN 熱度加成乘數 |
 | `MIN_SCORE` | **1.6** | 分數下限的預設值 |
+| `MIN_GAME` | 6 | `--min-game` 的預設值 |
+| `GAME_FLOOR` | 1.2 | 遊戲保障席次也要高於這個分數，擋掉 AI 只是順帶一提的項目 |
+| `FAIL_ALERT_DAYS` | 3 | 來源連續失敗幾天開 issue |
+
+`sources.yaml` 每個來源可選填的欄位（2026-11-24 新增，給版本發布類 feed 用）：
+`max_items`（取代 `PER_SOURCE_CAP`）、`title_prefix`（標題只是版號時補產品名）、
+`skip_title`（正規式，符合就略過，例如 Codex 的 alpha 版）。
 
 其他旗標：`--no-hn`、`--ignore-seen`、`--no-scrape`（皆為除錯用）。
 
@@ -141,6 +151,8 @@ python render.py                          # 產生網頁
 | 2.5 | 舊聞（HN 舊文重貼的最後一道） | 2026-09-16，見 Hacker News 段 |
 | 2.6 | 抓不到內文、標題又看不懂的「僅標題」項目 | 2026-09-30 |
 | 2.7 | AI 只是背景的社會新聞 | 2026-09-30 |
+| 2.8 | 純股市行情（股價、大盤、市場情緒、目標價、富豪榜）一天最多留 1 則；AI 公司本身的併購／IPO／募資／財報不受限 | 2026-11-24，使用者要求股市財經減量 |
+| 2.9 | Claude Code／Codex 版本說明：有新功能、計價、安全修補、預設模型更換才留 | 2026-11-24，新增版本發布來源 |
 
 **2.6 的由來**：`extract.py` 抓不到內文時，HN 項目會空著一路走到最後。
 9 月 876 則裡有 46 則（5.3%）是僅標題，**全部來自 Hacker News**。
@@ -161,8 +173,9 @@ Anthropic 遞交 IPO、控告 OpenAI 違法協議這類必須留。
 四個邊界案例（五角大廈誤擊、Anthropic IPO、反壟斷訴訟、一般日文新聞）全部保留。
 改動只讓 prompt 長約 200 token，日常成本不變。
 
-使用者偏好寫在 `CURATE_SYSTEM` 裡：**遊戲與娛樂產業的 AI 應用**、
-各大 AI 公司的最新消息、當下熱門議題。
+使用者偏好寫在 `CURATE_SYSTEM` 裡：**遊戲與娛樂產業的 AI 應用**（目標每天 5 則以上，
+博弈產業的 AI 應用與監理也歸這組）、各大 AI 公司的最新消息、當下熱門議題，
+以及 Claude Code／Codex 等寫程式工具的更新、AI 代理相關的資安事件（2026-11-24 補）。
 
 ### 2-4 產生網頁　`render.py`
 
@@ -236,6 +249,9 @@ HN 加成用平方根壓縮，避免單一爆紅文章分數失控：50 分 → 
 2. **官方公告**（`pinned: true` 的來源）取分數最高的 `--max-pinned`（12）則。**豁免分數下限**
 3. **其餘新聞**先濾掉低於 `--min-score`（1.6）的，再依分數排序填滿剩餘名額；
    單一來源最多 `--max-per-source`（3）席，名額沒填滿才回頭補被壓下的項目
+4. **遊戲保障席次**（2026-11-24）：名單裡的遊戲類不到 `--min-game`（6）則，就從沒選上的
+   遊戲項目依分數**追加**（含低於 1.6 的，但要 ≥ `GAME_FLOOR` 1.2）。是追加不是替換，
+   候選數會略多於 `--top`。策展只能刪不能加，候選裡先有，策展才有得留
 
 **為什麼論文與官方公告要豁免**：論文權重 0.8–0.9，加滿新鮮度也構不到 1.6，
 一併套用會整批清空；官方公告是日報的骨幹，超過 40 小時的舊公告也會掉到 1.6 以下。
@@ -266,19 +282,33 @@ HN 加成用平方根壓縮，避免單一爆紅文章分數失控：50 分 → 
 
 ## 四、來源
 
-`sources.yaml`，共 **58 個 RSS + 2 個爬蟲**。
+`sources.yaml`，共 **70 個 RSS + 1 個爬蟲**（2026-11-24 起）。
 
 | 面向 | 分布 |
 |---|---|
-| 分類 | media 14、vendor 12、game 12、analysis 5、newsletter 5、eng 5、paper 3、policy 2 |
-| 語言 | en 46、ja 8、zh-CN 3、zh-TW 1 |
-| 官方公告（`pinned`） | 7 個 |
-| 需 AI 關鍵字過濾（`ai_filter`） | 24 個 |
-| 權重分布 | 2.2×1、2.0×6、1.8×3、1.7×1、1.6×5、1.5×9、1.4×7、1.3×6、1.2×5、1.1×3、1.0×7、0.9×2、0.8×2、0.7×1 |
+| 分類 | game 19、media 15、vendor 14、eng 7、analysis 5、newsletter 5、paper 3、policy 2 |
+| 語言 | en 59、ja 7、zh-CN 3、zh-TW 1 |
+| 官方公告（`pinned`） | 7 個（OpenAI News、Google DeepMind、Google Models & Research、Google Research、Microsoft Source AI、Mistral、**Claude Blog**；另有爬蟲 Anthropic News） |
+| 需 AI 關鍵字過濾（`ai_filter`） | 33 個 |
+| 權重分布 | 2.2×1、2.0×7、1.8×3、1.7×1、1.6×7、1.5×12、1.4×12、1.3×7、1.2×6、1.1×3、1.0×6、0.9×2、0.8×2、0.7×1 |
 
-爬蟲（`no_feed` 區標 `strategy: scraper`）：**Anthropic News**、**The Batch**。
+爬蟲（`no_feed` 區標 `strategy: scraper`）：**Anthropic News**（只剩公司層級消息，
+產品公告看 Claude Blog）。The Batch 已於 2026-11-24 停用。
 
-`dropped` 區記錄 18 個評估過但不採用的來源與原因，`api_sources` 記錄尚未實作的
+2026-11-24 的增減（依據：拿同事四份 AI 簡報對照 111 期日報，詳見 HANDOVER 第十節）：
+
+| 動作 | 來源 | 原因 |
+|---|---|---|
+| 新增 | Claude Blog（pinned） | Anthropic 產品公告搬到 claude.com，Claude Meetings 整則漏掉 |
+| 新增 | Claude Code releases、Codex CLI releases、GitHub Blog | coding agent 工具更新原本完全沒有 |
+| 新增 | The Hacker News | 原本沒有資安來源，AI 代理資安事件全漏 |
+| 新增 | PocketGamer.biz、Game World Observer、AUTOMATON (EN)、GameDiscoverCo | 遊戲 × AI 補強 |
+| 新增 | iGaming Business、SBC News、Inside Asian Gaming | 博弈產業的 AI 應用與監理 |
+| 修復 | GamesBeat → gamesbeat.com | 舊網址對機房 IP 回 429，連續 81 天失敗 |
+| 降權 | Bloomberg Technology 1.6 → 1.3 | 股市財經減量 |
+| 移除 | OpenAI Blog (legacy)、Preferred Networks、The Batch | 重複 feed／feed 失效／CI 上幾乎每天 403 |
+
+`dropped` 區記錄 23 個評估過但不採用的來源與原因，`api_sources` 記錄尚未實作的
 API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這兩區，避免重踩。**
 
 ### Hacker News（`hn.py`）
@@ -378,6 +408,8 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | `state/seen.json` | 是 | 已發布清單 `{"ids": {項目雜湊: 日期}}`，保留 21 天 |
 | `state/last-digest.json` | 是 | 首頁內容快照，`--replay` 用 |
 | `state/last-report.json` | 是 | 上次執行的統計 |
+| `state/source-health.json` | 是 | 目前失敗中的來源：連續天數、開始日期、錯誤。成功的來源不列 |
+| `out/source_alert.md` | 否 | 當天有來源剛好達到告警門檻時才產生，workflow 讀它開 issue |
 | `out/` | 否 | 中間產物（`candidates.json`、`digest.json`、`run_report.json`） |
 | `sources_verified.yaml`、`feed_report.md` | 否 | `verify_feeds.py` 的快照，不是設定檔 |
 
@@ -398,7 +430,11 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 | 舊文剔除太嚴／太鬆 | `extract.STALE_DAYS`（預設 14） | 只影響 HN 來源。調到 7 以下會開始誤殺「發表後幾天才被投上 HN」的正常文章 |
 | 除錯時想保留舊文 | `python extract.py --keep-stale` | 只給人工檢查用，正常執行與 CI 不要開 |
 | 超大網頁的解析上限 | `fetchlib.MAX_HTML_BYTES`（預設 5 MB） | `extract.py` 與 `scrape.py` 共用。防 libxml2 在原生層 abort（見 HANDOVER 第三節）。多數文章頁 < 1 MB，調低會開始誤殺正常的長文頁 |
-| 論文太多／太少 | `collect.py --max-papers` | 論文豁免分數下限 |
+| 論文太多／太少 | workflow 的 `collect.py --max-papers`（現 3） | 論文豁免分數下限 |
+| 遊戲太多／太少 | `collect.MIN_GAME`（候選保障）＋ `translate.CURATE_SYSTEM` 的「目標每天 5 則」 | 兩邊要一起調；只調候選數，策展仍可能剔掉 |
+| 股市新聞太多／太少 | `CURATE_SYSTEM` 第 2.8 點、Bloomberg 的 `weight` | |
+| 新增版本發布類來源 | `sources.yaml` 加 `max_items`／`title_prefix`／`skip_title` | 權重低於 1.6 就永遠過不了下限（llama.cpp 等三個就是這樣） |
+| 來源失敗告警太吵／太慢 | `collect.FAIL_ALERT_DAYS`（預設 3） | 只在剛好達到門檻那天通知一次 |
 | 只調版面 | `render.py` 的 `CSS`，然後 `python render.py --replay` | 不呼叫模型、不花錢、三秒完成 |
 | 改分組名稱 | `translate.GROUPS` 與 `render.GROUP_ORDER` **兩邊都要改** | 不一致會讓分類篩選器排序錯亂 |
 | 改執行時間 | workflow 的 `cron`（UTC） | 避開整點，理由見第一節 |
@@ -412,6 +448,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-11-24 | 來源審視：新增 11 個來源、修復 GamesBeat、移除 3 個、Bloomberg 降權（見第四節）；論文 5→3；遊戲保障席次 `--min-game 6`；策展規則 2.8 股市從嚴、2.9 版本更新；來源連續失敗 3 天開 issue；`sources.yaml` 新增 `max_items`／`title_prefix`／`skip_title` | |
 | 2026-10-13 | 翻譯整批失敗改為逐則重試，單則翻不出來就捨棄該則而非中止整份日報（安全分類器誤判資安新聞所致）；頁尾揭露被捨棄的項目 | |
 | 2026-10-06 | 排程改為三時段 UTC 18:07/19:37/21:07 ＋ 新增 `guard` job（今天發過就跳過，只擋排程）。10/05 的單一時段提前方案作廢：20:47 UTC 實測延遲 4h40m，比原本的 23:23 還糟 | |
 | 2026-10-05 | ~~排程提前 2h36m：cron `23 23` → `47 20`~~ **已於 10/06 作廢**，改用多時段方案 | |
