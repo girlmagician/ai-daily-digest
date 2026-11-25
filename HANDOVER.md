@@ -595,6 +595,17 @@ The Hacker News 3 則、論文 3 則、無翻譯失敗。
 記憶與連接器。CI 的成本要看上線後第一次執行的 `state/last-digest.json`。
 （CI 自己也偶有高的日子：11/19 是 US$2.84。）
 
+### 上線後第一次 CI 實跑（2026-11-25，手動觸發 #208）
+
+排程被 GitHub 延遲到台北 09:30 仍未啟動，改由使用者手動觸發，19 分 50 秒完成。
+- 71 個來源 70 個成功，唯一失敗是遊戲陀螺（老毛病，偶發逾時）。**11 個新來源與
+  gamesbeat.com 在機房 IP 上全部正常**。
+- 遊戲與娛樂 6 則（含 SBC News「保加利亞議員用 Claude 檢驗博弈廣告監管」、
+  PocketGamer.biz「UE6 捨棄 Blueprints」）；Claude Code／Codex 各 1、The Hacker News 1、論文 3。
+- 成本 US$0.92（輸出 5.8 萬 token），比改版前常態 US$0.4～0.65 高約五成，
+  推測是版本說明與遊戲項目的摘要較長。持續觀察一週。
+- `state/source-health.json` 已開始記錄（遊戲陀螺 streak 1）。
+
 ### 仍然是盲區
 
 「新冒出來的 GitHub repo」（MoneyPrinterTurbo、Claude-Code-Game-Studios、Plannotator 這類）
