@@ -128,7 +128,10 @@ INPUT_CHARS = 4000
 
 TPE = timezone(timedelta(hours=8))
 
-GROUPS = ["模型與產品發布", "產業與資本", "研究與論文", "遊戲與娛樂", "政策與法規", "工程與工具", "其他"]
+# 2026-11-25 新增「資訊安全」（使用者要求）。改這裡要同步改 render.GROUP_ORDER
+GROUPS = ["模型與產品發布", "產業與資本", "研究與論文", "遊戲與娛樂", "資訊安全", "政策與法規", "工程與工具", "其他"]
+# 各組每日上限（程式強制，見 main()）。使用者要求資訊安全每天 3～5 則
+GROUP_CAPS = {"資訊安全": 5}
 KINDS = ["譯", "摘", "僅標題"]
 
 GLOSSARY = """inference→推論　fine-tune→微調　prompt→提示詞　token→詞元
@@ -195,13 +198,27 @@ CURATE_SYSTEM = f"""你是 AI 情報日報的策展編輯。輸入是一份已�
 不論當天遊戲類剩幾則——寧缺勿濫。
 （2026-11-25 實測：寫「目標每天 5 則」會讓你拿騰訊財報、非法賭博營收這類
 與 AI 無關的項目湊數，所以不設數量目標。）博弈產業（線上博弈、賭場、彩券）的 AI 應用與監理也歸「遊戲與娛樂」。
-此外也關注：Claude Code、Codex 等 AI 寫程式工具的更新，以及 AI 代理相關的資安事件
-（漏洞、外掛攻擊、資料外洩）——後者歸「工程與工具」或「政策與法規」。"""
+此外也關注 Claude Code、Codex 等 AI 寫程式工具的更新。
+
+**「資訊安全」組（2026-11-25 新增）：每天 3～5 則，最多 5 則；夠格的不足 3 則就照實少選。**
+**超過 5 則的會被程式依 rank 刪掉，當天總則數就會不足**，所以只挑最重要的 5 則，
+其餘名額留給別組。（實測不寫上限時，你一天挑了 10 則。）
+收錄 AI 與資安的交集，任何一種都算：
+- AI 系統本身的安全：提示詞注入、越獄、模型或代理程式的漏洞、AI 工具／外掛／MCP 的弱點、
+  AI 產品造成的資料外洩
+- 攻擊方用 AI：AI 輔助的網路攻擊、深偽詐騙、AI 生成的惡意程式或釣魚
+- 防守方用 AI：AI 找漏洞、AI 資安產品或工具的實質進展（只有新品公關稿、沒有實質內容的剔除）
+- AI 資安的政策、事件調查與重要研究
+**必須跟 AI 直接相關**，跟 AI 無關的一般資安新聞照第 2.7 點剔除，例如：
+一般漏洞公告（CISA 警告某軟體漏洞遭利用）、一般資料外洩事件與評論、資安公司併購、
+多則拼盤的「資安日報」——除非 AI 就是那則新聞的主題。
+同一則同時符合別組時，資安是主題就歸「資訊安全」。不論來源是不是資安媒體，
+只要內容符合就歸這組。"""
 
 CURATE_CONTRACT = """{
   "selected": [
     {"id": "候選清單裡的 id，原字串照抄",
-     "group": "只能是這七個之一：模型與產品發布／產業與資本／研究與論文／遊戲與娛樂／政策與法規／工程與工具／其他",
+     "group": "只能是這八個之一：模型與產品發布／產業與資本／研究與論文／遊戲與娛樂／資訊安全／政策與法規／工程與工具／其他",
      "rank": 1,
      "duplicate_ids": ["被合併進這則的其他 id，沒有就給空陣列 []"]}
   ],
@@ -589,7 +606,8 @@ def verify(translated: list[dict], batch: list[dict]) -> list[str]:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=0, help="只處理前 N 則（試跑用）")
-    ap.add_argument("--target", type=int, default=30, help="策展後保留幾則")
+    ap.add_argument("--target", type=int, default=35,
+                    help="策展後保留幾則（2026-11-25 由 30 增為 35，新增資訊安全組）")
     ap.add_argument("--skip-curate", action="store_true", help="跳過策展，直接翻譯（除錯）")
     ap.add_argument("--curate-model", default=llm.MODEL_CURATE, help="策展用模型（需要判斷力）")
     ap.add_argument("--translate-model", default=llm.MODEL_TRANSLATE, help="翻譯用模型")
@@ -648,7 +666,19 @@ def main() -> None:
                 selected.append(s)
         dropped = [d for d in res["data"]["dropped"] if d.get("id") in valid_ids]
         selected.sort(key=lambda s: s["rank"])
-        selected = selected[: args.target]
+        # 分組上限由程式強制（2026-11-25）：策展第一次實測就把「資訊安全」選了 10 則，
+        # 提示詞寫了 3～5 則也不保證遵守。超過的依 rank 剔除並記進 dropped
+        kept, count = [], {}
+        for s in selected:
+            cap = GROUP_CAPS.get(s["group"])
+            count[s["group"]] = count.get(s["group"], 0) + 1
+            if cap is not None and count[s["group"]] > cap:
+                dropped.append({"id": s["id"],
+                                "reason": f"「{s['group']}」超過每日上限 {cap} 則，依排名剔除"})
+                print(f"  「{s['group']}」超過上限 {cap} 則，剔除 rank {s['rank']}")
+                continue
+            kept.append(s)
+        selected = kept[: args.target]
         print(f"  選入 {len(selected)} 則，剔除 {len(dropped)} 則")
         merged = sum(len(s["duplicate_ids"]) for s in selected)
         if merged:

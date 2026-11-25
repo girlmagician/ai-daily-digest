@@ -163,6 +163,9 @@ HN_SHARE = 0.34
 # 留不留由策展決定。
 MIN_GAME = 6
 GAME_FLOOR = 1.2
+# 資訊安全（cat: security）的保障席次，2026-11-25 使用者要求每天 3～5 則 AI 相關資安新聞。
+# 給 7 則候選讓策展挑 3～5 則；分數門檻同 GAME_FLOOR
+MIN_SECURITY = 7
 
 # 來源連續失敗幾天就發出告警（見 update_source_health()）。
 # 2026-11-24 發現 GamesBeat 連續 81 天失敗、Preferred Networks 連續 88 天，
@@ -583,7 +586,8 @@ def score(item: dict, now: datetime, window_hours: int) -> dict:
 
 def select(
     items: list[dict], target: int, max_pinned: int, max_papers: int,
-    max_per_source: int, min_score: float = 0.0, min_game: int = 0
+    max_per_source: int, min_score: float = 0.0, min_game: int = 0,
+    min_security: int = 0,
 ) -> dict:
     """論文獨立成區，不與新聞在同一個池子裡競爭。
 
@@ -657,20 +661,27 @@ def select(
     # （含低於分數下限的）依分數補進來。是「追加」不是替換——候選數略多於 --top，
     # 策展只能刪不能加，所以候選裡要先有，策展才有得留。
     # GAME_FLOOR 擋掉 AI 只是順帶一提、權重又低的項目，避免拿雜訊湊數。
-    game_added = []
-    if min_game:
+    # 2026-11-25 起資訊安全（cat: security）用同一套機制，見 MIN_SECURITY。
+    def reserve(cat: str, want: int) -> list[dict]:
+        if not want:
+            return []
         chosen = {i["id"] for i in ranked} | pinned_ids
-        have = sum(1 for i in ranked + pinned_selected if i["cat"] == "game")
+        have = sum(1 for i in ranked + pinned_selected if i["cat"] == cat)
         spare = sorted(
             (i for i in contenders
-             if i["cat"] == "game" and i["id"] not in chosen and i["score"] >= GAME_FLOOR),
+             if i["cat"] == cat and i["id"] not in chosen and i["score"] >= GAME_FLOOR),
             key=lambda i: (-i["score"], i["published_utc"]),
         )
-        game_added = spare[:max(0, min_game - have)]
-        for item in game_added:
+        added = spare[:max(0, want - have)]
+        for item in added:
             ranked.append(item)
             per_source[item["source"]] += 1
-        below_floor = [i for i in below_floor if i not in game_added]
+        return added
+
+    game_added = reserve("game", min_game)
+    security_added = reserve("security", min_security)
+    added_ids = {i["id"] for i in game_added + security_added}
+    below_floor = [i for i in below_floor if i["id"] not in added_ids]
 
     return {
         "official": pinned_selected,
@@ -686,6 +697,7 @@ def select(
         "overflow_pinned": pinned[max_pinned:],
         "below_floor": below_floor,
         "game_reserved": len(game_added),
+        "security_reserved": len(security_added),
         "source_distribution": dict(sorted(per_source.items(), key=lambda kv: -kv[1])),
     }
 
@@ -701,6 +713,8 @@ def main() -> None:
                     help="論文區最多幾則（2026-11-24 由 5 降為 3，使用者要求論文減量）")
     ap.add_argument("--min-game", type=int, default=MIN_GAME,
                     help=f"遊戲類在候選名單的保障則數，預設 {MIN_GAME}；0 表示不保障")
+    ap.add_argument("--min-security", type=int, default=MIN_SECURITY,
+                    help=f"資訊安全類在候選名單的保障則數，預設 {MIN_SECURITY}；0 表示不保障")
     ap.add_argument("--no-hf-papers", action="store_true",
                     help="跳過 Hugging Face Daily Papers（除錯用）")
     ap.add_argument("--max-per-source", type=int, default=3, help="單一來源在名單裡最多佔幾席")
@@ -781,7 +795,7 @@ def main() -> None:
     scored = [score(i, now, args.hours) for i in fresh]
     selection = select(
         scored, args.top, args.max_pinned, args.max_papers, args.max_per_source,
-        min_score=args.min_score, min_game=args.min_game,
+        min_score=args.min_score, min_game=args.min_game, min_security=args.min_security,
     )
 
     # ── 終端摘要 ──

@@ -79,9 +79,9 @@
 
 ```
 python preflight.py                       # 檢查 CLI 與認證
-python collect.py --hours 48 --top 45 --max-papers 3   # 收集、去重、評分、選候選
+python collect.py --hours 48 --top 50 --max-papers 3   # 收集、去重、評分、選候選
 python extract.py                         # 補抓原文全文
-python translate.py --target 30           # 策展與翻譯（呼叫模型）
+python translate.py --target 35           # 策展、翻譯、事實核對（呼叫模型）
 python render.py                          # 產生網頁
 ```
 
@@ -90,7 +90,7 @@ python render.py                          # 產生網頁
 | 參數 | 現值 | 預設 | 說明 |
 |---|---|---|---|
 | `--hours` | 48 | 48 | 時間窗。大於執行間隔 24 小時，某天失敗也不會漏新聞；重複由 `state/seen.json` 擋 |
-| `--top` | **45** | 30 | 候選數。**刻意大於策展目標 30**，策展才有得裁 |
+| `--top` | **50** | 30 | 候選數。**刻意大於策展目標 30**，策展才有得裁 |
 | `--min-score` | **1.6** | 1.6 | 一般新聞的分數下限。官方公告與論文豁免 |
 | `--max-pinned` | 12 | 12 | 官方公告最多佔幾則 |
 | `--max-papers` | **3** | 3 | 論文區最多幾則（獨立區，不與新聞競爭）。2026-11-24 由 5 降為 3 |
@@ -110,6 +110,7 @@ python render.py                          # 產生網頁
 | `SOCIAL_HN_DISCOUNT` | **0.5** | 社群貼文的 HN 熱度加成乘數 |
 | `MIN_SCORE` | **1.6** | 分數下限的預設值 |
 | `MIN_GAME` | 6 | `--min-game` 的預設值 |
+| `MIN_SECURITY` | 7 | `--min-security` 的預設值：資訊安全類（`cat: security`）的候選保障則數 |
 | `GAME_FLOOR` | 1.2 | 遊戲保障席次也要高於這個分數，擋掉 AI 只是順帶一提的項目 |
 | `FAIL_ALERT_DAYS` | 3 | 來源連續失敗幾天開 issue |
 
@@ -132,14 +133,15 @@ python render.py                          # 產生網頁
 
 | 項目 | 值 | 說明 |
 |---|---|---|
-| `--target` | **30** | 策展後保留幾則（上限，可以更少） |
+| `--target` | **35** | 策展後保留幾則（上限，可以更少）。2026-11-25 由 30 增 |
+| `GROUP_CAPS` | `{"資訊安全": 5}` | 各組每日上限，**程式強制**（策展第一次實測選了 10 則資安） |
 | `BATCH_SIZE` | 5 | 翻譯與事實核對的分批大小 |
 | `TRANSLATE_WORKERS` | 3 | 翻譯與事實核對同時跑幾批（2026-11-25 起平行） |
 | `INPUT_CHARS` | 4000 | 送進翻譯的單則字數上限 |
 | 策展模型 | `claude-opus-5-5`，effort `high` | `llm.MODEL_CURATE`、`EFFORT_CURATE`。Opus 5.5 預設 effort 是 medium，要明確設 |
 | 翻譯模型 | `claude-sonnet-5-5` | `llm.MODEL_TRANSLATE`。單則失敗時改用 `MODEL_TRANSLATE_FALLBACK`（`claude-sonnet-5`）再試 |
 | 事實核對模型 | `claude-opus-5-5`，effort `high` | `llm.MODEL_FACTCHECK`。逐則比對譯文與原文（數字／名稱／日期／語氣／無中生有）；問題必須附上逐字對得上的引文才採信，修正版要再過 `verify()`。確認有錯卻修不好的事實類錯誤會捨棄整則 |
-| 分組 | 模型與產品發布／產業與資本／研究與論文／遊戲與娛樂／政策與法規／工程與工具／其他 | `GROUPS` |
+| 分組 | 模型與產品發布／產業與資本／研究與論文／遊戲與娛樂／**資訊安全**／政策與法規／工程與工具／其他 | `GROUPS`（頁面順序在 `render.GROUP_ORDER`，資訊安全排在遊戲之後） |
 | 標記種類 | 譯／摘／僅標題 | `KINDS` |
 
 策展編輯只做三件事：合併跨語言重複、剔除、分組排序。
@@ -454,6 +456,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-11-25 | 新增「資訊安全」組：12 個資安來源（`cat: security`）、候選保障 7 則、策展每天 3～5 則且程式強制上限 5；日報 30→35 則、`--top` 45→50。本機實測 34 則、US$2.66（Opus $1.96＝策展＋核對、Sonnet $0.70＝翻譯） | |
 | 2026-11-25 | 主要觸發改由 Cloudflare Worker（台北 07:40／08:35）；`guard` 把 `trigger=cloudflare` 當排程；模型升級 Opus 5.5／Sonnet 5.5；新增事實核對（Opus 5.5）；翻譯與核對 3 批平行；翻譯單則失敗改用 Sonnet 5 再試；CLI 加 `--strict-mcp-config`；逐筆用量紀錄；遊戲類取消「每天 5 則」目標改為寧缺勿濫 | |
 | 2026-11-24 | 來源審視：新增 11 個來源、修復 GamesBeat、移除 3 個、Bloomberg 降權（見第四節）；論文 5→3；遊戲保障席次 `--min-game 6`；策展規則 2.8 股市從嚴、2.9 版本更新；來源連續失敗 3 天開 issue；`sources.yaml` 新增 `max_items`／`title_prefix`／`skip_title` | |
 | 2026-10-13 | 翻譯整批失敗改為逐則重試，單則翻不出來就捨棄該則而非中止整份日報（安全分類器誤判資安新聞所致）；頁尾揭露被捨棄的項目 | |

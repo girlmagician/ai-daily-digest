@@ -128,7 +128,29 @@ sources:
   # 注意：資安新聞是翻譯階段安全分類器誤判的常客（見 HANDOVER 2026-10-13），
   # 現在單則失敗只會捨棄那一則並在頁尾揭露，不會讓日報開天窗。
   # BleepingComputer 本機實測 403，沒有採用。
-  - {name: "The Hacker News",      lang: en, cat: media, weight: 1.4, pinned: false, ai_filter: true,  urls: ["https://feeds.feedburner.com/TheHackersNews"]}
+  #
+  # 2026-11-25 擴充為獨立的「資訊安全」分類（使用者要求每天 3～5 則 AI 相關資安新聞）。
+  # cat: security 的項目在 collect.select() 有保障席次（MIN_SECURITY），策展另有專組。
+  # 綜合資安媒體一律過 ai_filter，只收 AI × 資安的交集；本機實測 72 小時內
+  # 交集約 30 則（THN 4、Help Net 6、Infosecurity 6、iThome 資安 5、SecurityWeek AI 3…），
+  # 每天 3～5 則綽綽有餘。BleepingComputer 403、HiddenLayer／Lakera 找不到 feed，未採用。
+  # 廠商部落格（Wiz、Unit 42）與研究者部落格權重壓低，量少但常有一手研究。
+  - {name: "The Hacker News",      lang: en, cat: security, weight: 1.5, pinned: false, ai_filter: true,  urls: ["https://feeds.feedburner.com/TheHackersNews"]}
+  # SecurityWeek 的 AI 分類本身就是 AI × 資安，不必過濾
+  - {name: "SecurityWeek AI",      lang: en, cat: security, weight: 1.6, pinned: false, ai_filter: false, urls: ["https://www.securityweek.com/category/artificial-intelligence/feed/"]}
+  - {name: "Dark Reading",         lang: en, cat: security, weight: 1.5, pinned: false, ai_filter: true,  urls: ["https://www.darkreading.com/rss.xml"]}
+  - {name: "The Register Security", lang: en, cat: security, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://www.theregister.com/security/headlines.atom"]}
+  - {name: "Infosecurity Magazine", lang: en, cat: security, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://www.infosecurity-magazine.com/rss/news/"]}
+  # Help Net Security 混了大量廠商新品稿（「某某公司推出…」），權重壓低交給策展剔除
+  - {name: "Help Net Security",    lang: en, cat: security, weight: 1.2, pinned: false, ai_filter: true,  urls: ["https://www.helpnetsecurity.com/feed/"]}
+  # 繁中資安：iThome 主 feed 已訂（綜合科技），這個是資安分類，同網址的項目會在 cluster() 去重
+  - {name: "iThome 資安",           lang: zh-TW, cat: security, weight: 1.4, pinned: false, ai_filter: true, urls: ["https://www.ithome.com.tw/rss/security"]}
+  - {name: "Unit 42",              lang: en, cat: security, weight: 1.4, pinned: false, ai_filter: true,  urls: ["https://unit42.paloaltonetworks.com/feed/"]}
+  - {name: "Wiz Blog",             lang: en, cat: security, weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://www.wiz.io/feed/rss.xml"]}
+  - {name: "Trail of Bits",        lang: en, cat: security, weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://blog.trailofbits.com/feed/"]}
+  # 提示詞注入研究的代表部落格，幾乎每篇都是 AI 資安，量很少
+  - {name: "Embrace The Red",      lang: en, cat: security, weight: 1.5, pinned: false, ai_filter: false, urls: ["https://embracethered.com/blog/index.xml"]}
+  - {name: "Schneier on Security", lang: en, cat: security, weight: 1.3, pinned: false, ai_filter: true,  urls: ["https://www.schneier.com/feed/atom/"]}
 
   # 社群熱度訊號改由 Hacker News（hn.py）提供——Reddit 全數移到 dropped，見下方
 

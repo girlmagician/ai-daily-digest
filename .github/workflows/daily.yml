@@ -166,7 +166,9 @@ jobs:
         # 兩邊都是 30 的時候，只要擠進機械評分前 30 名幾乎就等於會上稿。
         # --max-papers 3（2026-11-24 由 5 降，使用者要求論文減量）。
         # 遊戲保障席次 --min-game 用程式預設值 6，見 collect.MIN_GAME。
-        run: python collect.py --hours 48 --top 45 --max-papers 3
+        # --top 50（2026-11-25 由 45 增）：日報由 30 則增為 35 則，候選要跟著多，策展才有得裁。
+        # 遊戲（6）與資訊安全（7）另有保障席次，會追加在這 50 則之後。
+        run: python collect.py --hours 48 --top 50 --max-papers 3
 
       - name: 來源連續失敗通知（不阻斷）
         # 2026-11-24：GamesBeat 連續 81 天失敗、Preferred Networks 連續 88 天，
@@ -227,7 +229,8 @@ jobs:
       - name: 策展與翻譯
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: python translate.py --target 30
+        # 35 則（2026-11-25 由 30 增，使用者要求新增資訊安全組每天 3～5 則）
+        run: python translate.py --target 35
 
       - name: 覆蓋率稽核（不阻斷）
         # 抓「feed 還活著但重要內容搬到別的分類」這一類無聲失敗——
