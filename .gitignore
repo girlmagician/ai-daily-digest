@@ -12,3 +12,7 @@ feed_report.md
 # docs/ 與 state/ 必須進版控：
 #   docs/  是 GitHub Pages 的網站內容與歷史存檔
 #   state/ 是已發布清單，跨執行才擋得掉重複刊登
+
+# Cloudflare Worker 的本機暫存
+trigger-worker/.wrangler/
+trigger-worker/node_modules/

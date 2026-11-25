@@ -30,6 +30,15 @@ on:
     - cron: "37 19 * * *"
     - cron: "7 21 * * *"
   workflow_dispatch:        # 也可以手動觸發，用來補跑或測試
+    inputs:
+      trigger:
+        # 2026-11-25：GitHub 的排程延遲拉長到 +10 小時（11/24 中午才發），
+        # 改由 Cloudflare Worker（trigger-worker/）每天準時呼叫 workflow_dispatch。
+        # Worker 送 trigger=cloudflare，guard 把它當排程看待：今天發過就跳過。
+        # 人在網頁上按 Run workflow 時維持預設 manual，一律照跑（用來重出）。
+        description: "觸發來源（人工手動請保持 manual）"
+        required: false
+        default: manual
 
 permissions:
   contents: write           # 需要把 docs/ 與 state/ 推回 repo
@@ -62,6 +71,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EVENT_NAME: ${{ github.event_name }}
+          TRIGGER: ${{ inputs.trigger }}
         run: |
           python - <<'PY'
           import json, os, sys, urllib.error, urllib.request
@@ -78,7 +88,11 @@ jobs:
                   f.write("skip=%s\n" % ("true" if skip else "false"))
               sys.exit(0)
 
-          if os.environ.get("EVENT_NAME") != "schedule":
+          # Cloudflare Worker 的定時觸發走 workflow_dispatch，但本質是排程，
+          # 必須跟 schedule 一樣「今天發過就跳過」，否則會重演 10/06 第二批覆寫第一批
+          automated = (os.environ.get("EVENT_NAME") == "schedule"
+                       or os.environ.get("TRIGGER") == "cloudflare")
+          if not automated:
               out(False, "手動觸發，不做跳過判斷，照跑")
 
           req = urllib.request.Request(

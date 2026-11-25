@@ -1,0 +1,16 @@
+name = "ai-digest-trigger"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# 不開 workers.dev 網址：這支 Worker 沒有 fetch handler，只靠排程觸發
+workers_dev = false
+
+[observability]
+enabled = true
+
+[triggers]
+# UTC。台北 = UTC+8。使用者要求每天 09:30 前發布，執行約 20 分鐘。
+#   23:40 UTC = 台北 07:40  主要時段 → 約 08:00 發布
+#   00:35 UTC = 台北 08:35  備援：第一次失敗或被擋時再試；已發布則 guard 幾秒內跳過
+# 避開整點（GitHub 與 Anthropic 的尖峰），理由見 SETTINGS.md 第一節
+crons = ["40 23 * * *", "35 0 * * *"]
