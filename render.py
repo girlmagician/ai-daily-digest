@@ -454,7 +454,8 @@ def render_footer(digest: dict, report: dict) -> str:
     # 跟「本次未取得的來源」同樣的理由：寧可讓讀者知道少了什麼。
     failed = digest.get("failed_items", [])
     if failed:
-        parts.append(f"<h3>翻譯失敗而捨棄 {len(failed)} 則</h3><ul>")
+        # 2026-11-25 起也包含「事實核對發現錯誤且修不好」而捨棄的項目
+        parts.append(f"<h3>翻譯或事實核對未通過而捨棄 {len(failed)} 則</h3><ul>")
         for f in failed[:12]:
             title = esc(f.get("title_original", ""))
             url = f.get("url", "")

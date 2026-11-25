@@ -31,6 +31,7 @@ import json
 import re
 import sys
 from datetime import datetime, timedelta, timezone
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import llm
@@ -47,6 +48,8 @@ DIGEST = OUT / "digest.json"
 # 每批翻譯幾則。改抓全文後單則輸入可達 6000 字，批次太大不利重試
 # （一則不合格就整批重跑），也容易讓模型後面幾則草率帶過
 BATCH_SIZE = 5
+# 翻譯與事實核對同時跑幾批（2026-11-25）。6 批依序約 10 分鐘，3 批並行約 4 分鐘
+TRANSLATE_WORKERS = 3
 URL_IN_TEXT = re.compile(r"https?://|www\.", re.IGNORECASE)
 # 繁簡錯誤的辨識標記：translate_batch 靠它把「只是字形不合」跟
 # 「內容不可信」分開處理，不要改字面
@@ -186,9 +189,12 @@ CURATE_SYSTEM = f"""你是 AI 情報日報的策展編輯。輸入是一份已�
 報導家數多代表跨媒體擴散。兩者都缺但來自官方公告的項目仍應保留。
 
 使用者特別關注：**遊戲與娛樂產業的 AI 應用**、各大 AI 公司的最新消息、以及當下熱門議題。
-遊戲相關項目若確實涉及 AI，請往前排；**只要確實涉及 AI 就保留，目標是每天 5 則以上**
-（候選裡有的話）。但**不可拿 AI 不是主題的遊戲新聞湊數**——營收財報、銷量、
-週報彙整等，把 AI 拿掉仍完全成立的，照第 2.7 點剔除，寧可當天不到 5 則。博弈產業（線上博弈、賭場、彩券）的 AI 應用與監理也歸「遊戲與娛樂」。
+遊戲相關項目若確實涉及 AI，請往前排；**AI 是主題的遊戲項目一律保留**。
+但遊戲類同樣適用第 2.7 點：營收財報、銷量排行、市場報告、玩家行為調查、
+週報彙整等，**AI 只在文中順帶一提、拿掉 AI 仍完全成立的，一律剔除**，
+不論當天遊戲類剩幾則——寧缺勿濫。
+（2026-11-25 實測：寫「目標每天 5 則」會讓你拿騰訊財報、非法賭博營收這類
+與 AI 無關的項目湊數，所以不設數量目標。）博弈產業（線上博弈、賭場、彩券）的 AI 應用與監理也歸「遊戲與娛樂」。
 此外也關注：Claude Code、Codex 等 AI 寫程式工具的更新，以及 AI 代理相關的資安事件
 （漏洞、外掛攻擊、資料外洩）——後者歸「工程與工具」或「政策與法規」。"""
 
@@ -285,7 +291,8 @@ def curate(pool: list[dict], target: int, model: str) -> dict:
         f"候選項目共 {len(pool)} 則，請選出最多 {target} 則。\n\n"
         + "\n\n".join(lines)
     )
-    return llm.ask_json(CURATE_SYSTEM, user, model, CURATE_CONTRACT, validate=_shape_curate)
+    return llm.ask_json(CURATE_SYSTEM, user, model, CURATE_CONTRACT, validate=_shape_curate,
+                        effort=llm.EFFORT_CURATE)
 
 
 # ────────────────────────────────────────────────────────────
@@ -417,6 +424,117 @@ def translate_batch(batch: list[dict], model: str) -> dict:
 
 
 # ────────────────────────────────────────────────────────────
+# 第三階段：事實核對（2026-11-25，使用者要求提高準確度）
+# ────────────────────────────────────────────────────────────
+# 翻譯模型被要求「不得補充、數字照抄、據報導要譯出不確定性」，但沒有人檢查它
+# 有沒有做到。這一步用另一個模型逐則比對譯文與原文，只抓「原文可以證明是錯的」
+# 那幾類錯誤，並給出修正版。
+#
+# 防止核對者自己腦補：每一個問題都必須附上兩段引文——譯文裡有問題的那句
+# （zh_quote）與原文裡證明它錯的那句（source_quote）。程式逐字確認兩段引文
+# 真的存在，引文對不上的問題一律不採信。「無中生有」類沒有原文可引，
+# 只要求 zh_quote 存在。修正版還要再過一次 verify()（字數、簡體、網址）才會套用。
+FACTCHECK_SYSTEM = """你是新聞譯文的事實核對員。輸入是幾則新聞的「原文」與「繁體中文摘要譯文」。
+你的唯一工作：找出譯文中**與原文矛盾、或原文完全沒有提到**的內容，並給出修正後的譯文。
+
+只抓這五類錯誤：
+- 數字：金額、百分比、數量、版本號與原文不符
+- 名稱：人名、公司名、產品名、職稱與原文不符或張冠李戴
+- 日期：日期、時間、期間與原文不符
+- 語氣：原文是傳聞、據報導、計畫、可能，譯文寫成既成事實（或反過來）
+- 無中生有：譯文出現原文完全沒有的事實、數字或評論
+
+**不要**挑剔用字風格、句子通不通順、摘要漏了哪些細節——摘要本來就會省略。
+**不要**用你自己的知識判斷原文對不對；原文就是唯一標準。
+找不到問題就回傳空的 issues，並把原本的譯文原封不動放回 title_zh、summary_zh。
+有問題時，在 title_zh、summary_zh 放「只改有問題的地方」的修正版，其餘字句保持不變。
+修正版同樣必須是台灣繁體中文、不得含網址、長度不得比原譯文長超過 20 字。"""
+
+FACTCHECK_CONTRACT = """{
+  "items": [
+    {"id": "輸入的 id，原字串照抄",
+     "issues": [
+       {"type": "只能是：數字／名稱／日期／語氣／無中生有",
+        "zh_quote": "譯文中有問題的那一小段，逐字照抄譯文（10～40 字）",
+        "source_quote": "原文中證明它錯的那一小段，逐字照抄原文；無中生有類給空字串",
+        "problem": "一句話說明哪裡錯"}
+     ],
+     "title_zh": "修正後的標題；沒問題就照抄原譯文",
+     "summary_zh": "修正後的摘要；沒問題就照抄原譯文"}
+  ]
+}
+
+items 的長度必須等於輸入的則數；沒有問題的項目 issues 給空陣列 []。"""
+
+FACT_TYPES = {"數字", "名稱", "日期", "語氣", "無中生有"}
+_WS = re.compile(r"\s+")
+
+
+def _norm(s: str) -> str:
+    return _WS.sub("", s or "").lower()
+
+
+def factcheck_batch(pairs: list[tuple[dict, dict]], model: str) -> dict:
+    """pairs = [(原始項目, 翻譯結果)]。回傳 {"fixed": {id: 新譯文}, "log": [...], 成本}。"""
+    lines = []
+    for src, tr in pairs:
+        original = (src.get("summary_original") or "")[:INPUT_CHARS]
+        lines.append(
+            f"id={src['id']}\n原文標題：{src['title_original']}\n原文：{original}\n"
+            f"譯文標題：{tr['title_zh']}\n譯文摘要：{tr['summary_zh']}"
+        )
+    user = f"請核對以下 {len(pairs)} 則：\n\n" + "\n\n---\n\n".join(lines)
+    want = {s["id"] for s, _ in pairs}
+
+    def validate(data: dict) -> None:
+        items = data.get("items")
+        if not isinstance(items, list):
+            raise LLMError("缺少 items 陣列")
+        got = {t.get("id") for t in items if isinstance(t, dict)}
+        if got != want:
+            raise LLMError(f"id 對不上：多出 {got - want}、缺少 {want - got}")
+        for t in items:
+            if not isinstance(t.get("issues"), list):
+                raise LLMError(f"{t.get('id')} 缺少 issues 陣列")
+            for key in ("title_zh", "summary_zh"):
+                if not isinstance(t.get(key), str):
+                    raise LLMError(f"{t.get('id')} 缺少 {key}")
+
+    res = llm.ask_json(FACTCHECK_SYSTEM, user, model, FACTCHECK_CONTRACT,
+                       validate=validate, effort=llm.EFFORT_FACTCHECK)
+    by_id = {s["id"]: (s, tr) for s, tr in pairs}
+    fixed, log = {}, []
+    for t in res["data"]["items"]:
+        src, tr = by_id[t["id"]]
+        if not t["issues"]:
+            continue
+        original_n = _norm(src.get("summary_original", "")[:INPUT_CHARS] + src["title_original"])
+        trans_n = _norm(tr["title_zh"] + tr["summary_zh"])
+        accepted, rejected = [], []
+        for iss in t["issues"]:
+            ok = (isinstance(iss, dict) and iss.get("type") in FACT_TYPES
+                  and _norm(iss.get("zh_quote", "")) and _norm(iss["zh_quote"]) in trans_n
+                  and (iss["type"] == "無中生有"
+                       or (_norm(iss.get("source_quote", ""))
+                           and _norm(iss["source_quote"]) in original_n)))
+            (accepted if ok else rejected).append(iss)
+        entry = {"id": t["id"], "title_original": src["title_original"],
+                 "accepted": accepted, "rejected": rejected, "applied": False}
+        if accepted:
+            candidate = {"id": t["id"], "title_zh": t["title_zh"],
+                         "summary_zh": t["summary_zh"], "kind": tr["kind"]}
+            errs = verify([candidate], [src])
+            grew = len(candidate["summary_zh"]) - len(tr["summary_zh"]) > 20
+            if not errs and not grew and candidate["summary_zh"].strip():
+                fixed[t["id"]] = candidate
+                entry["applied"] = True
+            else:
+                entry["not_applied_reason"] = "；".join(errs) or "修正版過長或為空"
+        log.append(entry)
+    return {"fixed": fixed, "log": log, "cost": res["cost"], "usage": res["usage"]}
+
+
+# ────────────────────────────────────────────────────────────
 # 驗證：模型輸出必須對得上輸入
 # ────────────────────────────────────────────────────────────
 def verify(translated: list[dict], batch: list[dict]) -> list[str]:
@@ -475,6 +593,10 @@ def main() -> None:
     ap.add_argument("--skip-curate", action="store_true", help="跳過策展，直接翻譯（除錯）")
     ap.add_argument("--curate-model", default=llm.MODEL_CURATE, help="策展用模型（需要判斷力）")
     ap.add_argument("--translate-model", default=llm.MODEL_TRANSLATE, help="翻譯用模型")
+    ap.add_argument("--translate-fallback-model", default=llm.MODEL_TRANSLATE_FALLBACK,
+                    help="單則翻譯失敗時改用的模型；空字串表示不換")
+    ap.add_argument("--factcheck-model", default=llm.MODEL_FACTCHECK,
+                    help="事實核對用模型；空字串表示跳過核對")
     args = ap.parse_args()
 
     if not llm.available():
@@ -539,26 +661,18 @@ def main() -> None:
     degraded_batches = []
     failed_items = []
 
-    def record_ok(res: dict, label: str, batch: list[dict]) -> None:
-        if res.get("degraded"):
-            # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
-            # 而繁簡問題正是這樣拖了十天才被使用者發現的。
-            degraded_batches.append({
-                "batch": label,
-                "reason": res["degraded"],
-                "ids": [i["id"] for i in batch],
-            })
-        account(res)
-        for t in res["data"]["items"]:
-            results[t["id"]] = t
+    def run_batch(start: int) -> dict:
+        """翻一批。整批失敗時逐則重試（見下方註解），回傳結果讓主執行緒合併。
 
-    for start in range(0, len(items), BATCH_SIZE):
+        在執行緒裡跑，所以不碰任何共用狀態，全部放進回傳值。
+        """
         batch = items[start : start + BATCH_SIZE]
         label = f"{start + 1}-{start + len(batch)}"
-        print(f"翻譯 {label}／{len(items)}（{args.translate_model}）…")
+        out = {"label": label, "oks": [], "failed": [], "log": []}
         try:
             # ask_json 內含結構＋語意驗證與重試，通過才會回來
-            res = translate_batch(batch, args.translate_model)
+            out["oks"].append((translate_batch(batch, args.translate_model), label, batch))
+            return out
         except LLMError as e:
             # 整批失敗時逐則重試，把問題隔離到單一則，不要賠掉整份日報。
             #
@@ -571,34 +685,114 @@ def main() -> None:
             # 原本這裡直接 sys.exit，理由是「不要產出不可信內容」。那個原則沒變，
             # 只是把範圍縮到該縮的地方：單則翻不出來就捨棄單則，不是整份放棄。
             # 捨棄而不是放原文，因為放未翻譯的原文同樣違反那個原則。
-            print(f"  整批失敗，改為逐則重試：{str(e)[:160]}")
-            for item in batch:
+            out["log"].append(f"  {label} 整批失敗，改為逐則重試：{str(e)[:160]}")
+        for item in batch:
+            # 2026-11-25：單則失敗時先換上一代模型再試一次。Sonnet 5.5 的安全分類器
+            # 對資安內容更敏感，而日報從 11/24 起加了 The Hacker News
+            models = [args.translate_model]
+            if args.translate_fallback_model and args.translate_fallback_model != args.translate_model:
+                models.append(args.translate_fallback_model)
+            last_err = None
+            for m in models:
                 try:
-                    one = translate_batch([item], args.translate_model)
+                    one = translate_batch([item], m)
                 except LLMError as e_one:
-                    print(f"  ✗ 捨棄 {item['id']}：{item['title_original'][:50]}")
-                    print(f"      {str(e_one)[:200]}")
-                    failed_items.append({
-                        "id": item["id"],
-                        "title_original": item["title_original"],
-                        "source": item["source"],
-                        "url": item.get("url", ""),
-                        "error": str(e_one)[:300],
-                    })
+                    last_err = e_one
                     continue
-                record_ok(one, f"{label} 內的單則", [item])
-            continue
-        if res.get("degraded"):
-            # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
-            # 而繁簡問題正是這樣拖了十天才被使用者發現的。
-            degraded_batches.append({
-                "batch": f"{start + 1}-{start + len(batch)}",
-                "reason": res["degraded"],
-                "ids": [i["id"] for i in batch],
-            })
-        account(res)
-        for t in res["data"]["items"]:
-            results[t["id"]] = t
+                if m != args.translate_model:
+                    out["log"].append(f"  {item['id']} 改用 {m} 才翻出來")
+                    one["fallback_model"] = m
+                out["oks"].append((one, f"{label} 內的單則", [item]))
+                last_err = None
+                break
+            if last_err is not None:
+                out["log"].append(f"  ✗ 捨棄 {item['id']}：{item['title_original'][:50]}\n"
+                                  f"      {str(last_err)[:200]}")
+                out["failed"].append({
+                    "id": item["id"],
+                    "title_original": item["title_original"],
+                    "source": item["source"],
+                    "url": item.get("url", ""),
+                    "error": str(last_err)[:300],
+                })
+        return out
+
+    # 2026-11-25 改為平行：原本 6 批依序跑，翻譯佔整次執行一半以上的時間。
+    # 每批各自獨立（各自一次 CLI 呼叫），平行不影響內容。數量不開太大，
+    # 避免同時打太多請求撞上速率限制（撞上了 llm.py 也會退避重試）
+    starts = list(range(0, len(items), BATCH_SIZE))
+    print(f"翻譯 {len(items)} 則，{len(starts)} 批，同時 {TRANSLATE_WORKERS} 批"
+          f"（{args.translate_model}）…")
+    with ThreadPoolExecutor(max_workers=TRANSLATE_WORKERS) as ex:
+        outs = list(ex.map(run_batch, starts))
+    for o in outs:  # 依原順序合併，輸出可重現
+        for line in o["log"]:
+            print(line)
+        for res, label, batch in o["oks"]:
+            if res.get("degraded"):
+                # 降級一定要留下紀錄。靜默放行等於下次沒人知道發生過，
+                # 而繁簡問題正是這樣拖了十天才被使用者發現的。
+                degraded_batches.append({
+                    "batch": label,
+                    "reason": res["degraded"],
+                    "ids": [i["id"] for i in batch],
+                })
+            if res.get("fallback_model"):
+                degraded_batches.append({
+                    "batch": label, "reason": f"fallback:{res['fallback_model']}",
+                    "ids": [i["id"] for i in batch]})
+            account(res)
+            for t in res["data"]["items"]:
+                results[t["id"]] = t
+        failed_items.extend(o["failed"])
+        print(f"  {o['label']} 完成")
+
+    # ── 第三階段：事實核對 ──
+    factcheck_log = []
+    if args.factcheck_model and results:
+        pairs = [(i, results[i["id"]]) for i in items if i["id"] in results
+                 and (i.get("summary_original") or "").strip()]
+        chunks = [pairs[k : k + BATCH_SIZE] for k in range(0, len(pairs), BATCH_SIZE)]
+        print(f"事實核對 {len(pairs)} 則，{len(chunks)} 批（{args.factcheck_model}）…")
+
+        def run_check(chunk):
+            try:
+                return factcheck_batch(chunk, args.factcheck_model)
+            except LLMError as e:
+                # 核對失敗不擋日報：譯文本身已經過 verify()，核對是加分項
+                return {"error": str(e)[:200], "ids": [s["id"] for s, _ in chunk]}
+
+        with ThreadPoolExecutor(max_workers=TRANSLATE_WORKERS) as ex:
+            checks = list(ex.map(run_check, chunks))
+        for c in checks:
+            if "error" in c:
+                print(f"  ⚠ 核對失敗（不影響發布）：{c['error']}")
+                factcheck_log.append({"error": c["error"], "ids": c["ids"]})
+                continue
+            account(c)
+            factcheck_log.extend(c["log"])
+            for fid, new_tr in c["fixed"].items():
+                results[fid] = new_tr
+        for e in factcheck_log:
+            if "accepted" not in e:
+                continue
+            for iss in e["accepted"]:
+                mark = "已修正" if e["applied"] else "未能修正"
+                print(f"  [{mark}] {e['id']} {iss['type']}：{iss.get('problem', '')[:80]}")
+            # 確認有錯（引文都對得上）卻修不好的，數字／名稱／日期／無中生有屬於
+            # 事實錯誤，寧可捨棄整則也不要登錯的事實；語氣類保留
+            serious = [x for x in e["accepted"] if x["type"] != "語氣"]
+            if serious and not e["applied"]:
+                results.pop(e["id"], None)
+                src = by_id[e["id"]]
+                failed_items.append({
+                    "id": e["id"], "title_original": src["title_original"],
+                    "source": src["source"], "url": src.get("url", ""),
+                    "error": "事實核對發現錯誤且無法自動修正：" + serious[0].get("problem", "")[:200],
+                })
+        n_fix = sum(1 for e in factcheck_log if e.get("applied"))
+        n_rej = sum(len(e.get("rejected", [])) for e in factcheck_log)
+        print(f"  核對完成：修正 {n_fix} 則；引文對不上而不採信的問題 {n_rej} 個")
 
     # 逐則重試之後仍然一則都沒譯出來，就沒有日報可言了，該中止還是要中止。
     if not results:
@@ -612,13 +806,15 @@ def main() -> None:
     digest = {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "source_window_hours": data["window_hours"],
-        "model": {"curate": args.curate_model, "translate": args.translate_model},
+        "model": {"curate": args.curate_model, "translate": args.translate_model,
+                  "factcheck": args.factcheck_model},
         "items": [],
         "dropped": dropped,
         "usage": usage_total,
         "cost_usd": round(cost_total, 4),
         "degraded_batches": degraded_batches,
         "failed_items": failed_items,
+        "factcheck": factcheck_log,
     }
     for s in selected:
         src = by_id.get(s["id"])

@@ -29,15 +29,28 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
 import time
+from pathlib import Path
 
 CLI = shutil.which("claude") or shutil.which("claude.cmd") or shutil.which("claude.CMD")
 
 # 一定要寫完整 ID：實測 --model opus 會解析成 claude-opus-4-8 而不是 Opus 5
 # 策展需要判斷力（合併跨語言重複、排序）用 Opus；翻譯是機械性工作，
 # Sonnet 的中文品質已足夠，且每天要跑好幾批，成本差 5 倍
-MODEL_CURATE = "claude-opus-5"
-MODEL_TRANSLATE = "claude-sonnet-5"
+#
+# 2026-11-25 升級到新一代（使用者決定）：Opus 5 → Opus 5.5（單價 $5/$25 → $4/$20，
+# 反而更便宜）、Sonnet 5 → Sonnet 5.5（單價不變）。Opus 5.5 的預設 effort 是 medium
+# （Opus 5 是 high），策展需要判斷力，所以 EFFORT_CURATE 明確設 high。
+# Sonnet 5.5 的安全分類器對資安內容較敏感，翻譯單則失敗時會改用
+# MODEL_TRANSLATE_FALLBACK（上一代）再試一次，見 translate.py。
+MODEL_CURATE = "claude-opus-5-5"
+MODEL_TRANSLATE = "claude-sonnet-5-5"
+MODEL_TRANSLATE_FALLBACK = "claude-sonnet-5"
+# 事實核對：用跟翻譯不同、判斷力較強的模型，才不會自己核對自己
+MODEL_FACTCHECK = "claude-opus-5-5"
+EFFORT_CURATE = "high"
+EFFORT_FACTCHECK = "high"
 
 # 實測：只把格式規定放在系統提示詞尾端，模型會忽略它去寫 markdown 文章。
 # 必須開頭先定調身分，結尾再壓一次，使用者訊息末尾還要再提醒一次。
@@ -148,7 +161,28 @@ def extract_json(text: str) -> dict:
     raise LLMError(f"JSON 物件未閉合（可能被截斷）：{t[-200:]}")
 
 
-def _run(system: str, user: str, model: str, timeout: int) -> dict:
+_LOG_LOCK = threading.Lock()
+CALL_LOG = Path(__file__).parent / "out" / "llm_calls.jsonl"
+
+
+def _log_call(model: str, effort: str | None, res: dict, prompt_chars: int) -> None:
+    """每次呼叫一行，記成本與 token（2026-11-25）。
+
+    原本只有整份日報的總成本，升級模型後本機試跑 US$2.86、比預估高，
+    卻分不出是策展、翻譯還是事實核對花的。out/ 會隨 artifact 上傳，CI 也查得到。
+    翻譯改為平行後會從多個執行緒寫入，所以加鎖。
+    """
+    row = {"t": time.strftime("%H:%M:%S"), "model": model, "effort": effort,
+           "prompt_chars": prompt_chars, "cost": res["cost"], **res["usage"]}
+    try:
+        CALL_LOG.parent.mkdir(exist_ok=True)
+        with _LOG_LOCK, CALL_LOG.open("a", encoding="utf-8") as f:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+    except OSError:
+        pass  # 記錄失敗不該影響日報
+
+
+def _run(system: str, user: str, model: str, timeout: int, effort: str | None = None) -> dict:
     if CLI is None:
         sys.exit("找不到 claude CLI。請確認已安裝並在 PATH 中（npm i -g @anthropic-ai/claude-code）")
 
@@ -159,7 +193,13 @@ def _run(system: str, user: str, model: str, timeout: int) -> dict:
         "--system-prompt", JSON_HEAD + system + JSON_TAIL,
         "--exclude-dynamic-system-prompt-sections",
         "--tools", "",
+        # 不載入任何 MCP 伺服器（2026-11-25）。本機的 CLI 會帶上使用者自己的連接器
+        # 定義，實測每次呼叫的前置內容從約 18,800 token 降到約 2,000 token，
+        # 本機試跑成本因此是 CI 的四倍。這條管線不用任何工具，關掉沒有副作用
+        "--strict-mcp-config",
     ]
+    if effort:
+        cmd += ["--effort", effort]
     try:
         proc = subprocess.run(
             cmd,
@@ -215,6 +255,7 @@ def ask_json(
     validate=None,
     attempts: int = 3,
     timeout: int = 900,
+    effort: str | None = None,
 ) -> dict:
     """呼叫模型並取回 JSON 物件，失敗自動重試。
 
@@ -237,7 +278,7 @@ def ask_json(
 
     while True:
         try:
-            res = _run(system, prompt, model, timeout)
+            res = _run(system, prompt, model, timeout, effort)
         except LLMAuthError as e:
             raise LLMAuthError(
                 f"認證失敗，重試無用：{e}。"
@@ -255,6 +296,7 @@ def ask_json(
         cost_total += res["cost"]
         for k in usage_total:
             usage_total[k] += res["usage"][k]
+        _log_call(model, effort, res, len(system) + len(prompt))
 
         content_tries += 1
         data = None

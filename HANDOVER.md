@@ -611,3 +611,38 @@ The Hacker News 3 則、論文 3 則、無翻譯失敗。
 「新冒出來的 GitHub repo」（MoneyPrinterTurbo、Claude-Code-Game-Studios、Plannotator 這類）
 仍然抓不到。GitHub 星數排行實測不可用（見 `sources.yaml` 的 `dropped`），
 使用者這次選擇只補官方版本更新，沒有做每週工具精選。
+
+---
+
+## 十一、2026-11-25 準時觸發與準確度升級
+
+### 排程改由 Cloudflare Worker 觸發
+
+GitHub schedule 的延遲從 8 月的 +2～4 小時拉長到 11 月的 +10 小時（11/24 台北中午才發，
+11/25 到 09:30 還沒開始）。改由使用者 Cloudflare 帳號裡的 Worker `ai-digest-trigger`
+每天台北 07:40、08:35 呼叫 `workflow_dispatch`（`trigger=cloudflare`），
+`guard` 把它當排程：今天發過就跳過。GitHub 自己的排程與看門狗保留當備援。
+
+- 程式：`trigger-worker/`。部署：在該資料夾執行 `npx.cmd wrangler deploy`
+- **改 cron 後最多 15 分鐘才生效**（實測 4、9 分鐘後的測試觸發都沒跑，22 分鐘後的有跑）
+- 2026-11-25 實測：Worker 10:56 觸發 → GitHub #210「Manually run by girlmagician」
+  → 當天已發布，guard 跳過，未重複出稿
+- 執行紀錄：Cloudflare dashboard → Workers → ai-digest-trigger；或 GraphQL
+  `workersInvocationsScheduled`（wrangler 的 OAuth token 可查）
+
+**權杖每年要換（2027-11-25 到期）**：GitHub → Settings → Developer settings →
+Fine-grained tokens → `ai-digest-trigger` → Regenerate，然後在 `trigger-worker\`
+執行 `npx.cmd wrangler secret put GITHUB_TOKEN` 貼上新權杖。過期的症狀是
+Worker 執行失敗（401），日報退回 GitHub 排程，又開始中午才發。
+
+### 準確度與速度升級（使用者決定全部採用，接受每天約 US$2.9）
+
+- 策展 Opus 5 → **Opus 5.5**（effort high）；翻譯 Sonnet 5 → **Sonnet 5.5**，
+  單則失敗再用 Sonnet 5 試一次（Sonnet 5.5 對資安內容較敏感）
+- **事實核對**（Opus 5.5）：本機實測 30 則修正 7 則，皆為真錯（two dozen 譯成「逾二十位」、
+  詞彙量六十倍譯成「加倍」、問句譯成肯定句等），捏造引文 0 個
+- 翻譯與核對 3 批平行：兩階段合計 2 分 40 秒（原本光翻譯約 10 分鐘）
+- **成本估錯**：原估 US$1.2～1.6，本機實測 US$2.86。中日文原文的 token 數比預期多，
+  核對又把原文讀一遍。`out/llm_calls.jsonl` 從這版起記錄每次呼叫，可拆出各階段
+- 遊戲類：寫「目標每天 5 則」會讓策展拿騰訊財報、非法賭博營收湊數，已改為寧缺勿濫。
+  **這個修正尚未實測**，看 11/26 日報驗證

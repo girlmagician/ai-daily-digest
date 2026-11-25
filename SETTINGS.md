@@ -23,7 +23,9 @@
 
 | 項目 | 值 | 位置 |
 |---|---|---|
-| 排程 | `cron` 三次：UTC **18:07 / 19:37 / 21:07**（台北 02:07 / 03:37 / 05:07）＋ `guard` job 擋掉重複 | `.github/workflows/daily.yml` |
+| **主要觸發** | **Cloudflare Worker `ai-digest-trigger`**：UTC **23:40 / 00:35**（台北 **07:40** 主要、**08:35** 備援），呼叫 `workflow_dispatch` 並帶 `trigger=cloudflare` | `trigger-worker/`（`wrangler.toml` 的 `crons`） |
+| 觸發權杖 | Fine-grained PAT `ai-digest-trigger`，只授權本 repo、Actions: Read and write，**2027-11-25 到期**，存在 Cloudflare secret `GITHUB_TOKEN` | 更新方式見 HANDOVER 第十一節 |
+| GitHub 排程（備援） | `cron` 三次：UTC 18:07 / 19:37 / 21:07＋ `guard` job 擋掉重複。2026-11 延遲已達 +10 小時，只當備援 | `.github/workflows/daily.yml` |
 | 手動觸發 | 有（`workflow_dispatch`） | 同上 |
 | 執行環境 | `ubuntu-latest` | 同上 |
 | 逾時 | `timeout-minutes: 75` | 同上 |
@@ -131,10 +133,12 @@ python render.py                          # 產生網頁
 | 項目 | 值 | 說明 |
 |---|---|---|
 | `--target` | **30** | 策展後保留幾則（上限，可以更少） |
-| `BATCH_SIZE` | 5 | 翻譯分批大小 |
+| `BATCH_SIZE` | 5 | 翻譯與事實核對的分批大小 |
+| `TRANSLATE_WORKERS` | 3 | 翻譯與事實核對同時跑幾批（2026-11-25 起平行） |
 | `INPUT_CHARS` | 4000 | 送進翻譯的單則字數上限 |
-| 策展模型 | `claude-opus-5` | `llm.MODEL_CURATE`。需要判斷力 |
-| 翻譯模型 | `claude-sonnet-5` | `llm.MODEL_TRANSLATE` |
+| 策展模型 | `claude-opus-5-5`，effort `high` | `llm.MODEL_CURATE`、`EFFORT_CURATE`。Opus 5.5 預設 effort 是 medium，要明確設 |
+| 翻譯模型 | `claude-sonnet-5-5` | `llm.MODEL_TRANSLATE`。單則失敗時改用 `MODEL_TRANSLATE_FALLBACK`（`claude-sonnet-5`）再試 |
+| 事實核對模型 | `claude-opus-5-5`，effort `high` | `llm.MODEL_FACTCHECK`。逐則比對譯文與原文（數字／名稱／日期／語氣／無中生有）；問題必須附上逐字對得上的引文才採信，修正版要再過 `verify()`。確認有錯卻修不好的事實類錯誤會捨棄整則 |
 | 分組 | 模型與產品發布／產業與資本／研究與論文／遊戲與娛樂／政策與法規／工程與工具／其他 | `GROUPS` |
 | 標記種類 | 譯／摘／僅標題 | `KINDS` |
 
@@ -388,7 +392,9 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 |---|---|
 | CLI 尋找順序 | `claude` → `claude.cmd` → `claude.CMD` |
 | 重試等待 | 10、30、60、120、240 秒（總計約 7.5 分鐘後放棄） |
-| 每日成本 | 約 **US$0.7**，執行約 11 分鐘 |
+| 每日成本 | 約 **US$2.9**（2026-11-25 起：新模型＋事實核對；本機實測 US$2.86），整條流程約 7 分鐘。改版前約 US$0.4～0.9、20 分鐘 |
+| 逐筆用量紀錄 | `out/llm_calls.jsonl`，每次呼叫一行（模型、effort、token、成本），隨 artifact 上傳 |
+| CLI 參數 | `--strict-mcp-config`：不載入 MCP。本機不加的話每次呼叫多帶約 1.7 萬 token 的連接器定義，試跑成本變四倍 |
 | 歷史回補成本 | 每天 US$0.9–2.5，八天合計 US$10.87 |
 
 成本主力是**翻譯階段約 4 萬輸出 token**。策展階段的輸入只有約 3,600 token，
@@ -448,6 +454,7 @@ API 來源（GDELT、arXiv API、Gmail API 等）。**要加來源前先看這�
 
 | 日期 | 變更 | commit |
 |---|---|---|
+| 2026-11-25 | 主要觸發改由 Cloudflare Worker（台北 07:40／08:35）；`guard` 把 `trigger=cloudflare` 當排程；模型升級 Opus 5.5／Sonnet 5.5；新增事實核對（Opus 5.5）；翻譯與核對 3 批平行；翻譯單則失敗改用 Sonnet 5 再試；CLI 加 `--strict-mcp-config`；逐筆用量紀錄；遊戲類取消「每天 5 則」目標改為寧缺勿濫 | |
 | 2026-11-24 | 來源審視：新增 11 個來源、修復 GamesBeat、移除 3 個、Bloomberg 降權（見第四節）；論文 5→3；遊戲保障席次 `--min-game 6`；策展規則 2.8 股市從嚴、2.9 版本更新；來源連續失敗 3 天開 issue；`sources.yaml` 新增 `max_items`／`title_prefix`／`skip_title` | |
 | 2026-10-13 | 翻譯整批失敗改為逐則重試，單則翻不出來就捨棄該則而非中止整份日報（安全分類器誤判資安新聞所致）；頁尾揭露被捨棄的項目 | |
 | 2026-10-06 | 排程改為三時段 UTC 18:07/19:37/21:07 ＋ 新增 `guard` job（今天發過就跳過，只擋排程）。10/05 的單一時段提前方案作廢：20:47 UTC 實測延遲 4h40m，比原本的 23:23 還糟 | |
