@@ -1,27 +1,27 @@
 {
-  "generated_at_utc": "2026-11-25T23:41:12.164460+00:00",
+  "generated_at_utc": "2026-11-26T23:41:15.334127+00:00",
   "window_hours": 48,
   "sources_total": 82,
   "sources_ok": 82,
   "sources_failed": 0,
-  "raw_items": 1378,
+  "raw_items": 1304,
   "contentless_dropped": 0,
-  "clustered_items": 1121,
+  "clustered_items": 1050,
   "already_published": 23,
-  "candidate_items": 1098,
-  "papers_pool_size": 854,
-  "papers_with_signal": 97,
+  "candidate_items": 1027,
+  "papers_pool_size": 824,
+  "papers_with_signal": 96,
   "papers_selected": 3,
   "hf_papers": {
-    "matched": 37,
-    "added": 69,
-    "papers": 97,
+    "matched": 28,
+    "added": 76,
+    "papers": 96,
     "error": ""
   },
   "hn": {
-    "stories": 232,
-    "matched": 3,
-    "added": 43,
+    "stories": 206,
+    "matched": 0,
+    "added": 39,
     "stale_titles": 0,
     "error": ""
   },
@@ -36,8 +36,8 @@
       "status": "ok",
       "error": "",
       "entries": 1430,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Claude Blog",
@@ -47,8 +47,8 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google DeepMind Blog",
@@ -58,8 +58,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Models & Research",
@@ -69,8 +69,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google AI Blog",
@@ -80,8 +80,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Google Developers Blog",
@@ -157,8 +157,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Hugging Face Blog",
@@ -167,9 +167,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 917,
-      "in_window": 4,
-      "kept": 4
+      "entries": 918,
+      "in_window": 6,
+      "kept": 6
     },
     {
       "name": "NVIDIA Blog",
@@ -179,7 +179,7 @@
       "status": "ok",
       "error": "",
       "entries": 18,
-      "in_window": 0,
+      "in_window": 1,
       "kept": 0
     },
     {
@@ -245,8 +245,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "ChinaTalk",
@@ -256,8 +256,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Ahead of AI",
@@ -278,7 +278,7 @@
       "status": "ok",
       "error": "",
       "entries": 15,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -311,9 +311,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
-      "kept": 12,
-      "capped": 8
+      "in_window": 12,
+      "kept": 12
     },
     {
       "name": "The Verge AI",
@@ -323,8 +322,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 10,
-      "kept": 10
+      "in_window": 6,
+      "kept": 6
     },
     {
       "name": "Ars Technica AI",
@@ -334,8 +333,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 7,
-      "kept": 7
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "The Information",
@@ -345,8 +344,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 15,
-      "kept": 11
+      "in_window": 8,
+      "kept": 5
     },
     {
       "name": "Bloomberg Technology",
@@ -367,9 +366,9 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 21,
+      "in_window": 18,
       "kept": 12,
-      "capped": 9
+      "capped": 6
     },
     {
       "name": "arXiv cs.AI",
@@ -378,9 +377,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 447,
-      "in_window": 447,
-      "kept": 447
+      "entries": 398,
+      "in_window": 398,
+      "kept": 398
     },
     {
       "name": "arXiv cs.CL",
@@ -389,9 +388,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 193,
-      "in_window": 193,
-      "kept": 193
+      "entries": 177,
+      "in_window": 177,
+      "kept": 177
     },
     {
       "name": "arXiv cs.LG",
@@ -400,9 +399,9 @@
       "cat": "paper",
       "status": "ok",
       "error": "",
-      "entries": 391,
-      "in_window": 391,
-      "kept": 391
+      "entries": 419,
+      "in_window": 419,
+      "kept": 419
     },
     {
       "name": "llama.cpp releases",
@@ -423,8 +422,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Ollama releases",
@@ -434,8 +433,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Claude Code releases",
@@ -456,8 +455,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "GitHub Blog",
@@ -467,7 +466,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 3,
+      "in_window": 2,
       "kept": 1
     },
     {
@@ -478,8 +477,8 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 19,
-      "kept": 4
+      "in_window": 16,
+      "kept": 3
     },
     {
       "name": "SecurityWeek AI",
@@ -489,8 +488,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Dark Reading",
@@ -500,7 +499,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 8,
+      "in_window": 5,
       "kept": 1
     },
     {
@@ -511,8 +510,8 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 11,
-      "kept": 6
+      "in_window": 12,
+      "kept": 2
     },
     {
       "name": "Infosecurity Magazine",
@@ -523,7 +522,7 @@
       "error": "",
       "entries": 250,
       "in_window": 12,
-      "kept": 5
+      "kept": 4
     },
     {
       "name": "Help Net Security",
@@ -555,8 +554,8 @@
       "status": "ok",
       "error": "",
       "entries": 15,
-      "in_window": 3,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Wiz Blog",
@@ -565,9 +564,9 @@
       "cat": "security",
       "status": "ok",
       "error": "",
-      "entries": 731,
+      "entries": 733,
       "in_window": 3,
-      "kept": 2
+      "kept": 3
     },
     {
       "name": "Trail of Bits",
@@ -599,8 +598,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "ITmedia AI+",
@@ -610,9 +609,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 19,
+      "in_window": 20,
       "kept": 12,
-      "capped": 7
+      "capped": 8
     },
     {
       "name": "Qiita AI タグ",
@@ -634,7 +633,8 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 12
+      "kept": 12,
+      "capped": 4
     },
     {
       "name": "ASCII.jp",
@@ -645,7 +645,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 1
+      "kept": 3
     },
     {
       "name": "Nikkei xTECH",
@@ -657,7 +657,7 @@
       "entries": 100,
       "in_window": 100,
       "kept": 12,
-      "capped": 8
+      "capped": 6
     },
     {
       "name": "量子位 QbitAI",
@@ -689,7 +689,7 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 11,
+      "in_window": 12,
       "kept": 11
     },
     {
@@ -700,7 +700,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 13,
+      "in_window": 14,
       "kept": 2
     },
     {
@@ -711,7 +711,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 1,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -722,7 +722,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 2,
+      "in_window": 0,
       "kept": 0
     },
     {
@@ -745,7 +745,7 @@
       "error": "",
       "entries": 100,
       "in_window": 100,
-      "kept": 2
+      "kept": 3
     },
     {
       "name": "電ファミニコゲーマー",
@@ -766,7 +766,7 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 6,
+      "in_window": 7,
       "kept": 2
     },
     {
@@ -799,8 +799,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "MobileGamer.biz",
@@ -822,7 +822,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 2
+      "kept": 3
     },
     {
       "name": "PocketGamer.biz",
@@ -832,8 +832,8 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 23,
-      "kept": 3
+      "in_window": 17,
+      "kept": 1
     },
     {
       "name": "Game World Observer",
@@ -854,7 +854,7 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 17,
+      "in_window": 14,
       "kept": 3
     },
     {
@@ -865,8 +865,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "iGaming Business",
@@ -876,7 +876,7 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 15,
+      "in_window": 12,
       "kept": 1
     },
     {
@@ -888,7 +888,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 2
+      "kept": 1
     },
     {
       "name": "Inside Asian Gaming",
