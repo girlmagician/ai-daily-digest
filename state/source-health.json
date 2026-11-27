@@ -1,1 +1,16 @@
-{}
+{
+  "arXiv cs.LG": {
+    "streak": 1,
+    "since": "2026-11-28",
+    "last_date": "2026-11-28",
+    "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+    "url": "https://rss.arxiv.org/rss/cs.LG"
+  },
+  "Naavik": {
+    "streak": 1,
+    "since": "2026-11-28",
+    "last_date": "2026-11-28",
+    "error": "naavik.co: HTTP 415",
+    "url": "https://naavik.co/feed/"
+  }
+}

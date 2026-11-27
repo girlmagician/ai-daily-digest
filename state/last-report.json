@@ -1,27 +1,27 @@
 {
-  "generated_at_utc": "2026-11-26T23:41:15.334127+00:00",
+  "generated_at_utc": "2026-11-27T23:41:15.554943+00:00",
   "window_hours": 48,
   "sources_total": 82,
-  "sources_ok": 82,
-  "sources_failed": 0,
-  "raw_items": 1304,
-  "contentless_dropped": 0,
-  "clustered_items": 1050,
-  "already_published": 23,
-  "candidate_items": 1027,
-  "papers_pool_size": 824,
-  "papers_with_signal": 96,
+  "sources_ok": 80,
+  "sources_failed": 2,
+  "raw_items": 815,
+  "contentless_dropped": 1,
+  "clustered_items": 725,
+  "already_published": 24,
+  "candidate_items": 701,
+  "papers_pool_size": 550,
+  "papers_with_signal": 76,
   "papers_selected": 3,
   "hf_papers": {
-    "matched": 28,
-    "added": 76,
-    "papers": 96,
+    "matched": 29,
+    "added": 53,
+    "papers": 78,
     "error": ""
   },
   "hn": {
-    "stories": 206,
-    "matched": 0,
-    "added": 39,
+    "stories": 175,
+    "matched": 1,
+    "added": 34,
     "stale_titles": 0,
     "error": ""
   },
@@ -102,8 +102,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Microsoft Source AI",
@@ -167,9 +167,9 @@
       "cat": "vendor",
       "status": "ok",
       "error": "",
-      "entries": 918,
-      "in_window": 6,
-      "kept": 6
+      "entries": 919,
+      "in_window": 4,
+      "kept": 4
     },
     {
       "name": "NVIDIA Blog",
@@ -190,8 +190,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 5,
-      "kept": 5
+      "in_window": 3,
+      "kept": 3
     },
     {
       "name": "Import AI",
@@ -212,8 +212,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 4,
-      "kept": 4
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Interconnects",
@@ -300,8 +300,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "TechCrunch AI",
@@ -311,8 +311,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 12,
-      "kept": 12
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "The Verge AI",
@@ -322,8 +322,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 6,
-      "kept": 6
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Ars Technica AI",
@@ -333,8 +333,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 2,
-      "kept": 2
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "The Information",
@@ -344,8 +344,8 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 8,
-      "kept": 5
+      "in_window": 6,
+      "kept": 4
     },
     {
       "name": "Bloomberg Technology",
@@ -356,7 +356,7 @@
       "error": "",
       "entries": 20,
       "in_window": 20,
-      "kept": 8
+      "kept": 10
     },
     {
       "name": "FT 人工智慧",
@@ -366,9 +366,9 @@
       "status": "ok",
       "error": "",
       "entries": 25,
-      "in_window": 18,
+      "in_window": 13,
       "kept": 12,
-      "capped": 6
+      "capped": 1
     },
     {
       "name": "arXiv cs.AI",
@@ -397,11 +397,11 @@
       "url": "https://rss.arxiv.org/rss/cs.LG",
       "lang": "en",
       "cat": "paper",
-      "status": "ok",
-      "error": "",
-      "entries": 419,
-      "in_window": 419,
-      "kept": 419
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "llama.cpp releases",
@@ -433,8 +433,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Claude Code releases",
@@ -444,8 +444,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Codex CLI releases",
@@ -466,8 +466,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 2,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "The Hacker News",
@@ -477,7 +477,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 16,
+      "in_window": 13,
       "kept": 3
     },
     {
@@ -488,8 +488,8 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Dark Reading",
@@ -499,7 +499,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 5,
+      "in_window": 3,
       "kept": 1
     },
     {
@@ -510,7 +510,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 12,
+      "in_window": 9,
       "kept": 2
     },
     {
@@ -521,7 +521,7 @@
       "status": "ok",
       "error": "",
       "entries": 250,
-      "in_window": 12,
+      "in_window": 9,
       "kept": 4
     },
     {
@@ -533,7 +533,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 1
+      "kept": 4
     },
     {
       "name": "iThome 資安",
@@ -544,7 +544,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 9
+      "kept": 10
     },
     {
       "name": "Unit 42",
@@ -554,8 +554,8 @@
       "status": "ok",
       "error": "",
       "entries": 15,
-      "in_window": 1,
-      "kept": 1
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Wiz Blog",
@@ -565,8 +565,8 @@
       "status": "ok",
       "error": "",
       "entries": 733,
-      "in_window": 3,
-      "kept": 3
+      "in_window": 2,
+      "kept": 2
     },
     {
       "name": "Trail of Bits",
@@ -598,7 +598,7 @@
       "status": "ok",
       "error": "",
       "entries": 10,
-      "in_window": 1,
+      "in_window": 2,
       "kept": 1
     },
     {
@@ -609,9 +609,9 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 20,
+      "in_window": 18,
       "kept": 12,
-      "capped": 8
+      "capped": 6
     },
     {
       "name": "Qiita AI タグ",
@@ -633,8 +633,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 12,
-      "capped": 4
+      "kept": 10
     },
     {
       "name": "ASCII.jp",
@@ -645,7 +644,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 3
+      "kept": 2
     },
     {
       "name": "Nikkei xTECH",
@@ -655,9 +654,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 100,
-      "kept": 12,
-      "capped": 6
+      "in_window": 33,
+      "kept": 7
     },
     {
       "name": "量子位 QbitAI",
@@ -679,7 +677,7 @@
       "error": "",
       "entries": 30,
       "in_window": 30,
-      "kept": 10
+      "kept": 11
     },
     {
       "name": "APPSO (愛範兒)",
@@ -689,7 +687,7 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 12,
+      "in_window": 20,
       "kept": 11
     },
     {
@@ -700,8 +698,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 14,
-      "kept": 2
+      "in_window": 11,
+      "kept": 0
     },
     {
       "name": "Game Developer",
@@ -745,7 +743,7 @@
       "error": "",
       "entries": 100,
       "in_window": 100,
-      "kept": 3
+      "kept": 1
     },
     {
       "name": "電ファミニコゲーマー",
@@ -766,8 +764,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 7,
-      "kept": 2
+      "in_window": 3,
+      "kept": 0
     },
     {
       "name": "AI and Games",
@@ -777,19 +775,19 @@
       "status": "ok",
       "error": "",
       "entries": 20,
-      "in_window": 0,
-      "kept": 0
+      "in_window": 1,
+      "kept": 1
     },
     {
       "name": "Naavik",
       "url": "https://naavik.co/feed/",
       "lang": "en",
       "cat": "game",
-      "status": "ok",
-      "error": "",
-      "entries": 10,
-      "in_window": 1,
-      "kept": 1
+      "status": "fail",
+      "error": "naavik.co: HTTP 415",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
     },
     {
       "name": "Deconstructor of Fun",
@@ -822,7 +820,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 3
+      "kept": 2
     },
     {
       "name": "PocketGamer.biz",
@@ -832,7 +830,7 @@
       "status": "ok",
       "error": "",
       "entries": 50,
-      "in_window": 17,
+      "in_window": 13,
       "kept": 1
     },
     {
@@ -854,8 +852,8 @@
       "status": "ok",
       "error": "",
       "entries": 30,
-      "in_window": 14,
-      "kept": 3
+      "in_window": 17,
+      "kept": 1
     },
     {
       "name": "GameDiscoverCo",
@@ -876,8 +874,8 @@
       "status": "ok",
       "error": "",
       "entries": 100,
-      "in_window": 12,
-      "kept": 1
+      "in_window": 9,
+      "kept": 0
     },
     {
       "name": "SBC News",
@@ -888,7 +886,7 @@
       "error": "",
       "entries": 10,
       "in_window": 10,
-      "kept": 1
+      "kept": 0
     },
     {
       "name": "Inside Asian Gaming",
@@ -935,5 +933,28 @@
       "kept": 0
     }
   ],
-  "failures": []
+  "failures": [
+    {
+      "name": "arXiv cs.LG",
+      "url": "https://rss.arxiv.org/rss/cs.LG",
+      "lang": "en",
+      "cat": "paper",
+      "status": "fail",
+      "error": "rss.arxiv.org: 解析不到項目；export.arxiv.org: 解析不到項目",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    },
+    {
+      "name": "Naavik",
+      "url": "https://naavik.co/feed/",
+      "lang": "en",
+      "cat": "game",
+      "status": "fail",
+      "error": "naavik.co: HTTP 415",
+      "entries": 0,
+      "in_window": 0,
+      "kept": 0
+    }
+  ]
 }
